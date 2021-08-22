@@ -17,15 +17,12 @@
  ******************************************************************************
  */
 
-//#include <stdint.h>
+
 #include "led_timer.h"
 #include "system.h"
 #include "blink.h"
-/*
-#if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-#endif
-*/
+#include "systemClock.h"
+
 
 RGBStream framedata[80];
 RGBStream * frame = framedata;
@@ -38,6 +35,7 @@ uint32_t* rawdata_ptr = rawdata;
 
 int main(void)
 {
+    setupClock();
 
 	//initTimer();
 	//frame->rgb.b=255;
@@ -46,8 +44,11 @@ int main(void)
 	//decompressRgbArray(frame,80);
 	//sendToLed();
 
+
 	initLedPort();
 	initBlinkTimer();
+
+
     /* Loop forever */
 	for(;;);
 }

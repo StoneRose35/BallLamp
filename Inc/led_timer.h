@@ -63,18 +63,65 @@ typedef struct {
 
 } GPIOTypeDef;
 
+typedef struct {
+	volatile uint32_t CR;
+	volatile uint32_t CFGR;
+	volatile uint32_t CIR;
+	volatile uint32_t APB2RSTR;
+	volatile uint32_t APB1RSTR;
+	volatile uint32_t AHBENR;
+	volatile uint32_t APB2ENR;
+	volatile uint32_t APB1ENR;
+	volatile uint32_t BDCR;
+	volatile uint32_t CSR;
+	volatile uint32_t AHBRSTR;
+	volatile uint32_t CFGR2;
+	volatile uint32_t CFGR3;
+
+} RCCTypeDef;
+
+typedef struct {
+	volatile uint32_t ACR;
+	volatile uint32_t KEYR;
+	volatile uint32_t OPTKEYR;
+	volatile uint32_t SR;
+	volatile uint32_t CR;
+	volatile uint32_t AR;
+	volatile uint32_t OBR;
+	volatile uint32_t WRPR;
+} FlashTypeDef;
+
 // GPIO bits
 #define INPUT (0)
 #define OUTPUT (1)
 #define AF (2)
 #define ANALOG (3)
 
+// RCC bits
+#define PLLON (24)
+#define PLLRDY (25)
+#define CSSON (19)
+#define HSIRDY (1)
+#define HSION (0)
+#define PLLNODIV (31)
+#define PLLMULT (18)
+#define PLLSRC (15)
+#define PPRE2 (11)
+#define PPRE1 (8)
+#define SWS (2)
+#define SW (0)
+
+// Flash bits
+#define LATENCY (0)
 
 #define CEN (0)
 #define OC1M (4)
 #define OC1PE (3)
 #define OC1FE (2)
 #define TIM2EN (0)
+#define IOPAEN (17)
+#define IOPBEN (18)
+#define DMA1EN (0)
 #define PINA0POS (0)
 #define UIE (0)
 #define CC1DE (9)
@@ -94,14 +141,14 @@ typedef struct {
 #define TCIE (1)
 #define EN (0)
 
-#define RCC_APB1ENR ((volatile uint32_t*)0x4002101CUL)
-#define RCC_AHBENR ((volatile uint32_t*)0x40021014UL) //0x14
-//#define GPIOA_AFRL ((volatile uint32_t*)0x48000020UL)
+
+#define RCC ((RCCTypeDef*)0x40021000UL)
 #define GPIOA ((GPIOTypeDef*)0x48000000UL)
 #define GPIOB ((GPIOTypeDef*)0x48000400UL)
 #define TIM2 ((TIM23TypeDef*)0x40000000UL)
 #define DMA ((DMATypeDef*)0x40020000UL)
 #define NVIC_ISER0 ((volatile uint32_t*)0xE000E100UL)
+#define FLASH ((FlashTypeDef*)0x40022000UL)
 
 void initTimer();
 void decompressRgbArray(RGBStream * frame,uint8_t length);

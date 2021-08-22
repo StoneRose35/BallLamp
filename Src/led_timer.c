@@ -75,7 +75,9 @@ void DMA1_Stream1_IRQHandler()
 void initTimer()
 {
 
-    *RCC_APB1ENR |= 1 << TIM2EN;
+    RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
+    RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio b and dma 1
+
 
     TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1PE) | (1 << OC1FE); // set PWM settings
 
