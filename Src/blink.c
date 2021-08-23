@@ -7,6 +7,7 @@
 #include "led_timer.h"
 
 
+#ifdef BLINK
 void TIM2_IRQHandler()
 {
 
@@ -26,6 +27,7 @@ void TIM2_IRQHandler()
 
 	return;
 }
+#endif
 
 void initBlinkTimer()
 {

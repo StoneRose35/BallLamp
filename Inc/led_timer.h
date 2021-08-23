@@ -157,6 +157,6 @@ void sendToLed();
 extern RGBStream * frame;
 extern uint32_t clr_cnt;
 extern uint32_t bit_cnt;
-extern uint32_t * rawdata_ptr;
+extern uint8_t * rawdata_ptr;
 
 #endif /* LED_TIMER_H_ */

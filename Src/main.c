@@ -29,26 +29,34 @@ RGBStream * frame = framedata;
 uint32_t clr_cnt = 0;
 uint32_t bit_cnt = 0;
 
-uint32_t rawdata[80*24];
-uint32_t* rawdata_ptr = rawdata;
+uint8_t rawdata[80*24];
+uint8_t* rawdata_ptr = rawdata;
 
 
 int main(void)
 {
     setupClock();
 
-	//initTimer();
-	//frame->rgb.b=255;
-	//(frame+1)->rgb.g=255;
-	//(frame+2)->rgb.r=255;
-	//decompressRgbArray(frame,80);
-	//sendToLed();
+	initTimer();
+	frame->rgb.b=255;
+	frame->rgb.g=123;
+	frame->rgb.r=46;
+	(frame+1)->rgb.g=255;
+	(frame+2)->rgb.r=255;
+	decompressRgbArray(frame,80);
+	sendToLed();
 
 
-	initLedPort();
-	initBlinkTimer();
+	//initLedPort();
+	//initBlinkTimer();
 
 
     /* Loop forever */
-	for(;;);
+	for(;;)
+	{
+		if ((TIM2->CR1 & 1) != 1) // if timer 2 is not running, i.e. data transfer is over
+		{
+			sendToLed();
+		}
+	}
 }

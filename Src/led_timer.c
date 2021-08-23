@@ -6,7 +6,18 @@
  */
 #include "led_timer.h"
 
+#ifndef BLINK
+void TIM2_IRQHandler()
+{
+	if ((TIM2->SR & 0x1) == 0x1) // update interrupt flag
+	{
+		//TIM2->CR1 &= ~(1);
 
+
+		TIM2->SR &= ~(0x1); // clear interrupt
+	}
+}
+#endif
 
 
 void decompressRgbArray(RGBStream * frame,uint8_t length)
@@ -22,13 +33,13 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
 			}
-			cbfr = cbfr << 1;
+			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
 		}
 		cbfr = (*(frame+cnt)).rgb.r;
@@ -36,13 +47,13 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
 			}
-			cbfr = cbfr << 1;
+			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
 		}
 		cbfr = (*(frame+cnt)).rgb.b;
@@ -50,25 +61,47 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 2)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
 			}
-			cbfr = cbfr << 1;
+			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
 		}
 	}
 }
 
-void DMA1_Stream1_IRQHandler()
+void DMA1_CH5_IRQHandler()
 {
+	//
+
 	// all data transferred, disable timer
-	TIM2->CR1 &= ~(1 << CEN);
+	//TIM2->CR1 &= ~(1 << CEN);
+
+	//re-enable timer to ensure a refresh rate of 1/30
+	TIM2->ARR = 1979733;
+
+	// clear output compare mode
+	TIM2->CCMR1 &= ~(0xF << OC1M);
+
+	// enable update interrupt, disable update dma request
+	TIM2->DIER |= 1;
+	TIM2->DIER &= ~(1 << UDE);
+
+	//enable timer 2
+	//TIM2->CR1 |= (1 << CEN);
+
+
+	//disable capture/compare 1
+	TIM2->CCER &= ~0x1;
 
 	// globally clear the interrupt flags
 	DMA->IFCR = 1 << 4;
+
+	// disable dma
+    DMA->CHANNEL[4].CCR &= ~(1 << EN);
 	return;
 }
 
@@ -76,40 +109,49 @@ void initTimer()
 {
 
     RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
-    RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio b and dma 1
-
-
-    TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1PE) | (1 << OC1FE); // set PWM settings
+    RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio a and dma 1
 
     GPIOA->MODER |= AF << PINA0POS; // alternate function in pina0
 	GPIOA->AFRL |= 1 << PINA0POS; // AF1 of pina0 is TIM2_CH1
 
-	// set timing
-	TIM2->ARR = WS2818_CNT;
-
-	// enable dma request on CCR1
-	TIM2->DIER |= 1 << UDE;
-
     // DMA configuration
 
     //set peripheral register to capture/compare register 1 of timer 2
-    DMA->CHANNEL[1].CPAR = (uint32_t)&(TIM2->CCR1);
+    DMA->CHANNEL[4].CPAR = (uint32_t)&(TIM2->CCR1);
 
     // set memory address to the raw data pointer
-    DMA->CHANNEL[1].CMAR = (uint32_t)rawdata_ptr;
+    DMA->CHANNEL[4].CMAR = (uint32_t)rawdata_ptr;
 
     // set number of bytes to transfer
-    DMA->CHANNEL[1].CNDTR=80*24;
+    DMA->CHANNEL[4].CNDTR=80*24;
 
-    DMA->CHANNEL[1].CCR |= (3 << PL) | (2 << MSIZE) | (2 << PSIZE) | (1 << MINC) | (1 << DIR) | (1 << TCIE);
-    DMA->CHANNEL[1].CCR |= (1 << EN);
+    DMA->CHANNEL[4].CCR |= (3 << PL) | (0 << MSIZE) | (0 << PSIZE) | (1 << MINC) | (1 << DIR) | 0xF;//| (1 << TCIE);
+
+    *NVIC_ISER0 |= (1 << 15) | (1 << 28); // enable channel 5 interrupt and tim2 global interrupt
+
 
 }
 
 void sendToLed()
 {
+    TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1PE) | (1 << OC1FE); // set PWM settings
+
+	// set timing
+	TIM2->ARR = WS2818_CNT;
+
+	TIM2->CCR1 = 0x28;
+	// enable dma request on update of channel 1, disable update interrupt
+	TIM2->DIER |= (1 << UDE) | 1;
+	TIM2->DIER &= ~1;
+
+	// enable capture / compare 1
+	TIM2->CCER |= 1;
+
     // set timer value to generate an update dma request shortly
-    TIM2->CNT = WS2818_CNT - 1;
+    TIM2->CNT = 0; //WS2818_CNT - 1;
 	// enable timer
     TIM2->CR1 |= 1 << CEN;
+
+    DMA->CHANNEL[4].CCR |= (1 << EN);
+
 }
