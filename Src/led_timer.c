@@ -11,8 +11,7 @@ void TIM2_IRQHandler()
 {
 	if ((TIM2->SR & 0x1) == 0x1) // update interrupt flag
 	{
-		//TIM2->CR1 &= ~(1);
-
+		TIM2->CR1 &= ~(1);
 
 		TIM2->SR &= ~(0x1); // clear interrupt
 	}
@@ -73,7 +72,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	}
 }
 
-void DMA1_CH5_IRQHandler()
+void DMA1_CH2_IRQHandler()
 {
 	//
 
@@ -101,7 +100,7 @@ void DMA1_CH5_IRQHandler()
 	DMA->IFCR = 1 << 4;
 
 	// disable dma
-    DMA->CHANNEL[4].CCR &= ~(1 << EN);
+    DMA->CHANNEL[1].CCR &= ~(1 << EN);
 	return;
 }
 
@@ -117,17 +116,14 @@ void initTimer()
     // DMA configuration
 
     //set peripheral register to capture/compare register 1 of timer 2
-    DMA->CHANNEL[4].CPAR = (uint32_t)&(TIM2->CCR1);
+    DMA->CHANNEL[1].CPAR = (uint32_t)&(TIM2->CCR1);
 
     // set memory address to the raw data pointer
-    DMA->CHANNEL[4].CMAR = (uint32_t)rawdata_ptr;
+    DMA->CHANNEL[1].CMAR = (uint32_t)rawdata_ptr;
 
-    // set number of bytes to transfer
-    DMA->CHANNEL[4].CNDTR=80*24;
+    DMA->CHANNEL[1].CCR |= (3 << PL) | (0 << MSIZE) | (0 << PSIZE) | (1 << MINC) | (1 << DIR) | 0xF;//| (1 << TCIE);
 
-    DMA->CHANNEL[4].CCR |= (3 << PL) | (0 << MSIZE) | (0 << PSIZE) | (1 << MINC) | (1 << DIR) | 0xF;//| (1 << TCIE);
-
-    *NVIC_ISER0 |= (1 << 15) | (1 << 28); // enable channel 5 interrupt and tim2 global interrupt
+    *NVIC_ISER0 |= (1 << 12) | (1 << 28); // enable channel 2 interrupt and tim2 global interrupt
 
 
 }
@@ -141,17 +137,21 @@ void sendToLed()
 
 	TIM2->CCR1 = 0x28;
 	// enable dma request on update of channel 1, disable update interrupt
-	TIM2->DIER |= (1 << UDE) | 1;
+	TIM2->DIER |= (1 << UDE);
 	TIM2->DIER &= ~1;
 
 	// enable capture / compare 1
 	TIM2->CCER |= 1;
 
     // set timer value to generate an update dma request shortly
-    TIM2->CNT = 0; //WS2818_CNT - 1;
+    TIM2->CNT = WS2818_CNT - 1;
+
+    // set number of bytes to transfer
+    DMA->CHANNEL[1].CNDTR=80*24;
+
+    DMA->CHANNEL[1].CCR |= (1 << EN);
+
 	// enable timer
     TIM2->CR1 |= 1 << CEN;
-
-    DMA->CHANNEL[4].CCR |= (1 << EN);
 
 }
