@@ -118,6 +118,7 @@ typedef struct {
 #define OC1M (4)
 #define OC1PE (3)
 #define OC1FE (2)
+#define ARPE (7)
 #define TIM2EN (0)
 #define IOPAEN (17)
 #define IOPBEN (18)

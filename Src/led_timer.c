@@ -11,7 +11,20 @@ void TIM2_IRQHandler()
 {
 	if ((TIM2->SR & 0x1) == 0x1) // update interrupt flag
 	{
-		TIM2->CR1 &= ~(1);
+		//re-enable timer to ensure a refresh rate of 1/30
+		if (TIM2->ARR > WS2818_CNT)
+		{
+			// waited the remaining time of 1/30s
+			TIM2->CR1 &= ~(1);
+		}
+		else
+		{
+			// finished clocking of the last data bit
+			TIM2->ARR = 1979733;
+			TIM2->CCR1 = 0x0;
+			// disable capture compare
+			TIM2->CCER &= ~1;
+		}
 
 		TIM2->SR &= ~(0x1); // clear interrupt
 	}
@@ -24,6 +37,8 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	uint8_t cnt = 0;
 	uint8_t cbfr;
 	uint16_t rdata_cnt = 0;
+	*(rawdata_ptr + rdata_cnt) = 0;
+	rdata_cnt=1;
 	for(cnt=0;cnt<length;cnt++)
 	{
 		// refer to specific hardware implementation to check which color comes first
@@ -32,11 +47,11 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_SHORT_CNT;
 			}
 			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
@@ -46,11 +61,11 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_SHORT_CNT;
 			}
 			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
@@ -60,11 +75,11 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		{
 			if((cbfr & 0x80) == 0x80)
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_LONG_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_LONG_CNT;
 			}
 			else
 			{
-				*(rawdata_ptr + (rdata_cnt << 0)) = WS2818_SHORT_CNT;
+				*(rawdata_ptr + rdata_cnt) = WS2818_SHORT_CNT;
 			}
 			cbfr = 0xFF & (cbfr << 1);
 			rdata_cnt++;
@@ -74,27 +89,10 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 
 void DMA1_CH2_IRQHandler()
 {
-	//
-
-	// all data transferred, disable timer
-	//TIM2->CR1 &= ~(1 << CEN);
-
-	//re-enable timer to ensure a refresh rate of 1/30
-	TIM2->ARR = 1979733;
-
-	// clear output compare mode
-	TIM2->CCMR1 &= ~(0xF << OC1M);
 
 	// enable update interrupt, disable update dma request
 	TIM2->DIER |= 1;
 	TIM2->DIER &= ~(1 << UDE);
-
-	//enable timer 2
-	//TIM2->CR1 |= (1 << CEN);
-
-
-	//disable capture/compare 1
-	TIM2->CCER &= ~0x1;
 
 	// globally clear the interrupt flags
 	DMA->IFCR = 1 << 4;
@@ -106,12 +104,15 @@ void DMA1_CH2_IRQHandler()
 
 void initTimer()
 {
-
+	uint8_t dummy;
     RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
     RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio a and dma 1
 
     GPIOA->MODER |= AF << PINA0POS; // alternate function in pina0
 	GPIOA->AFRL |= 1 << PINA0POS; // AF1 of pina0 is TIM2_CH1
+
+	// enable capture / compare 1
+	TIM2->CCER |= 1;
 
     // DMA configuration
 
@@ -121,37 +122,44 @@ void initTimer()
     // set memory address to the raw data pointer
     DMA->CHANNEL[1].CMAR = (uint32_t)rawdata_ptr;
 
-    DMA->CHANNEL[1].CCR |= (3 << PL) | (0 << MSIZE) | (0 << PSIZE) | (1 << MINC) | (1 << DIR) | 0xF;//| (1 << TCIE);
+    DMA->CHANNEL[1].CCR |= (3 << PL) | (0 << MSIZE) | (2 << PSIZE) | (1 << MINC) | (1 << DIR) | (1 << TCIE);
 
     *NVIC_ISER0 |= (1 << 12) | (1 << 28); // enable channel 2 interrupt and tim2 global interrupt
+
+    TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1FE) |  (1<< OC1PE);
 
 
 }
 
 void sendToLed()
 {
-    TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1PE) | (1 << OC1FE); // set PWM settings
 
 	// set timing
 	TIM2->ARR = WS2818_CNT;
 
-	TIM2->CCR1 = 0x28;
-	// enable dma request on update of channel 1, disable update interrupt
-	TIM2->DIER |= (1 << UDE);
-	TIM2->DIER &= ~1;
+	// set the compare register to a low value to start with zero
+	TIM2->CCR1 = 0x0;
+
+	TIM2->CNT=0;
 
 	// enable capture / compare 1
 	TIM2->CCER |= 1;
 
-    // set timer value to generate an update dma request shortly
-    TIM2->CNT = WS2818_CNT - 1;
-
     // set number of bytes to transfer
-    DMA->CHANNEL[1].CNDTR=80*24;
+    DMA->CHANNEL[1].CNDTR=N_LAMPS*24+1;
+
+	// enable dma request on update of channel 1, disable update interrupt
+	TIM2->DIER |= (1 << UDE);
+	TIM2->DIER &= ~1;
 
     DMA->CHANNEL[1].CCR |= (1 << EN);
 
 	// enable timer
     TIM2->CR1 |= 1 << CEN;
+
+    //generate update
+    TIM2->EGR |= 1;
+
+
 
 }

@@ -24,12 +24,12 @@
 #include "systemClock.h"
 
 
-RGBStream framedata[80];
+RGBStream framedata[N_LAMPS];
 RGBStream * frame = framedata;
 uint32_t clr_cnt = 0;
 uint32_t bit_cnt = 0;
 
-uint8_t rawdata[80*24];
+uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
 
 
@@ -38,22 +38,23 @@ int main(void)
     setupClock();
 
 	initTimer();
-	frame->rgb.b=255;
-	frame->rgb.g=123;
-	frame->rgb.r=46;
-	(frame+1)->rgb.g=255;
-	(frame+2)->rgb.r=255;
-	decompressRgbArray(frame,80);
+	frame->rgb.b=0xFF;
+	frame->rgb.g=0x0;
+	frame->rgb.r=0b10101010;
+	//(frame+1)->rgb.g=255;
+	//(frame+2)->rgb.r=255;
+	decompressRgbArray(frame,N_LAMPS);
 	sendToLed();
 
 
 	//initLedPort();
 	//initBlinkTimer();
 
-
+	uint32_t dummycnt;
     /* Loop forever */
 	for(;;)
 	{
+		dummycnt++;
 		if ((TIM2->CR1 & 1) != 1) // if timer 2 is not running, i.e. data transfer is over
 		{
 			sendToLed();

@@ -17,6 +17,8 @@
 #define WS2818_SHORT_CNT F_BUS/WS2818_SHORT
 #define WS2818_LONG_CNT F_BUS/WS2818_LONG
 
+#define N_LAMPS (1)
+
 
 typedef struct
 {
