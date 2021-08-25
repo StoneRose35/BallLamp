@@ -22,8 +22,7 @@ void TIM2_IRQHandler()
 			// finished clocking of the last data bit
 			TIM2->ARR = 1979733;
 			TIM2->CCR1 = 0x0;
-			// disable capture compare
-			TIM2->CCER &= ~1;
+
 		}
 
 		TIM2->SR &= ~(0x1); // clear interrupt
@@ -31,6 +30,20 @@ void TIM2_IRQHandler()
 }
 #endif
 
+void DMA1_CH2_IRQHandler()
+{
+
+	// enable update interrupt, disable update dma request
+	TIM2->DIER |= 1;
+	TIM2->DIER &= ~(1 << UDE);
+
+	// globally clear the interrupt flags
+	DMA->IFCR = 1 << 4;
+
+	// disable dma
+    DMA->CHANNEL[1].CCR &= ~(1 << EN);
+	return;
+}
 
 void decompressRgbArray(RGBStream * frame,uint8_t length)
 {
@@ -87,20 +100,6 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	}
 }
 
-void DMA1_CH2_IRQHandler()
-{
-
-	// enable update interrupt, disable update dma request
-	TIM2->DIER |= 1;
-	TIM2->DIER &= ~(1 << UDE);
-
-	// globally clear the interrupt flags
-	DMA->IFCR = 1 << 4;
-
-	// disable dma
-    DMA->CHANNEL[1].CCR &= ~(1 << EN);
-	return;
-}
 
 void initTimer()
 {
@@ -139,11 +138,6 @@ void sendToLed()
 
 	// set the compare register to a low value to start with zero
 	TIM2->CCR1 = 0x0;
-
-	TIM2->CNT=0;
-
-	// enable capture / compare 1
-	TIM2->CCER |= 1;
 
     // set number of bytes to transfer
     DMA->CHANNEL[1].CNDTR=N_LAMPS*24+1;
