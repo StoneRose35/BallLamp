@@ -33,31 +33,89 @@ uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
 
 
+/*
+ * updates the color along a hue shift with the phase going from 0 to 1535
+ * */
+void colorUpdate(RGB * color,uint32_t phase)
+{
+	if (phase < 0x100)
+	{
+		color->r = 0xFF;
+		color->g = phase & 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x200)
+	{
+		color->r = 0x1FF - phase;
+		color->g = 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x300)
+	{
+		color->r = 0x00;
+		color->g = 0xFF;
+		color->b = phase - 0x200;
+	}
+	else if (phase < 0x400)
+	{
+		color->r = 0x00;
+		color->g = 0x3FF - phase;
+		color->b = 0xFF;
+	}
+	else if (phase < 0x500)
+	{
+		color->r = phase - 0x400;
+		color->g = 0x00;
+		color->b = 0xFF;
+	}
+	else
+	{
+		color->r = 0xFF;
+		color->g = 0x00;
+		color->b = 0x5FF - phase;
+	}
+}
+
 int main(void)
 {
+	uint32_t phasecnt = 0;
     setupClock();
 
 	initTimer();
-	frame->rgb.b=0xFF;
-	frame->rgb.g=0x0;
-	frame->rgb.r=0b10101010;
-	//(frame+1)->rgb.g=255;
-	//(frame+2)->rgb.r=255;
+	//frame->rgb.b=0xFF;
+	//frame->rgb.g=0x0;
+	//frame->rgb.r=0b10101010;
+	colorUpdate(&(frame->rgb),phasecnt);
 	decompressRgbArray(frame,N_LAMPS);
-	sendToLed();
+	//sendToLed();
 
 
 	//initLedPort();
 	//initBlinkTimer();
 
-	uint32_t dummycnt;
+	uint32_t dummycnt = 0;
+
     /* Loop forever */
 	for(;;)
 	{
-		dummycnt++;
+
 		if ((TIM2->CR1 & 1) != 1) // if timer 2 is not running, i.e. data transfer is over
 		{
 			sendToLed();
+			dummycnt++;
+			colorUpdate(&(frame->rgb),phasecnt);
+			phasecnt += PHASE_INC;
+			if (phasecnt>0x5FF)
+			{
+				phasecnt=0;
+			}
+
 		}
+		if (TIM2->ARR > WS2818_CNT && dummycnt > 0) // is in wait state after after the data transfer
+		{
+			decompressRgbArray(frame,N_LAMPS);
+			dummycnt = 0;
+		}
+
 	}
 }

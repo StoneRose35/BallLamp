@@ -21,7 +21,7 @@ void TIM2_IRQHandler()
 		{
 			// finished clocking of the last data bit
 			TIM2->ARR = 1979733;
-			TIM2->CCR1 = 0x0;
+			TIM2->CCR3 = 0x0;
 
 		}
 
@@ -103,20 +103,22 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 
 void initTimer()
 {
-	uint8_t dummy;
     RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
     RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio a and dma 1
 
-    GPIOA->MODER |= AF << PINA0POS; // alternate function in pina0
-	GPIOA->AFRL |= 1 << PINA0POS; // AF1 of pina0 is TIM2_CH1
+    GPIOA->MODER |= AF << 18; // alternate function in pina9
+	GPIOA->AFRH |= 10 << 4; //AF10 of pina9 is TIM2_CH3
+
+	GPIOA->OTYPER |= (1 << 9);
+
 
 	// enable capture / compare 1
-	TIM2->CCER |= 1;
+	TIM2->CCER |= (1 << 8); // for ccr channel 3;
 
     // DMA configuration
 
     //set peripheral register to capture/compare register 1 of timer 2
-    DMA->CHANNEL[1].CPAR = (uint32_t)&(TIM2->CCR1);
+	DMA->CHANNEL[1].CPAR = (uint32_t)&(TIM2->CCR3);
 
     // set memory address to the raw data pointer
     DMA->CHANNEL[1].CMAR = (uint32_t)rawdata_ptr;
@@ -125,7 +127,7 @@ void initTimer()
 
     *NVIC_ISER0 |= (1 << 12) | (1 << 28); // enable channel 2 interrupt and tim2 global interrupt
 
-    TIM2->CCMR1 |= (6 << OC1M) | (1 << OC1FE) |  (1<< OC1PE);
+    TIM2->CCMR2 |= (6 << OC1M) | (1 << OC1FE) |  (1 << OC1PE); // settings for CCR channel 3
 
 
 }
@@ -137,7 +139,7 @@ void sendToLed()
 	TIM2->ARR = WS2818_CNT;
 
 	// set the compare register to a low value to start with zero
-	TIM2->CCR1 = 0x0;
+	TIM2->CCR3 = 0x0;
 
     // set number of bytes to transfer
     DMA->CHANNEL[1].CNDTR=N_LAMPS*24+1;

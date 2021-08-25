@@ -124,6 +124,7 @@ typedef struct {
 #define IOPBEN (18)
 #define DMA1EN (0)
 #define PINA0POS (0)
+#define PINA9POS (9)
 #define UIE (0)
 #define CC1DE (9)
 #define UDE (8)

@@ -19,6 +19,8 @@
 
 #define N_LAMPS (1)
 
+#define PHASE_INC (12)
+
 
 typedef struct
 {
