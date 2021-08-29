@@ -45,6 +45,11 @@ void DMA1_CH2_IRQHandler()
 	return;
 }
 
+void I2C1_EV_EXTI23_IRQHandler()
+{
+
+}
+
 void decompressRgbArray(RGBStream * frame,uint8_t length)
 {
 	uint8_t cnt = 0;
@@ -100,7 +105,10 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	}
 }
 
-
+/*
+ * Initiates the GPIO, TIM2 and DMA necessary for operating the neopixel array
+ * should be called once after startup
+ */
 void initTimer()
 {
     RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
@@ -129,9 +137,12 @@ void initTimer()
 
     TIM2->CCMR2 |= (6 << OC1M) | (1 << OC1FE) |  (1 << OC1PE); // settings for CCR channel 3
 
-
 }
 
+/* non-blocking function which initiates a data transfer to the neopixel array
+ * be aware that rawdata should not be modified as long as tim2 is in neopixel clocking mode
+ * (counts up to WS2818_CNT)
+ * */
 void sendToLed()
 {
 
@@ -156,6 +167,29 @@ void sendToLed()
     //generate update
     TIM2->EGR |= 1;
 
+}
 
+void i2cInit()
+{
+	RCC->APB1ENR |= (1 << I2C1EN);
+
+	I2C1->TIMINGR = 0x00101D2D; // taken from the handy configurator: standard mode without analog filter
+
+	// enable gpio b
+	RCC->AHBENR |= (1 << IOPBEN);
+
+	// alternate function 4 for pb6 und pb7
+    GPIOB->AFRL |= (4 << 24) | (4 << 28);
+
+	// open drain from pb6 and pb7
+	GPIOB->OTYPER |= (1 << 6) | (1 << 7);
+
+	// enable i2c1 event interrupt
+	*NVIC_ISER0 |= (1 << 31);
+
+	//set address
+	I2C1->OAR1 |= (I2C_ADDRESS << 1) | (1 << OA1EN);
+
+	I2C1->CR1 |= (1 << 2) | (1 << 0); // enable i2c1
 
 }

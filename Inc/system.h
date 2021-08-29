@@ -21,6 +21,7 @@
 
 #define PHASE_INC (12)
 
+#define I2C_ADDRESS (15)
 
 typedef struct
 {

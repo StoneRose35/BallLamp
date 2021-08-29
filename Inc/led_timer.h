@@ -91,6 +91,20 @@ typedef struct {
 	volatile uint32_t WRPR;
 } FlashTypeDef;
 
+typedef struct {
+	volatile uint32_t CR1;
+	volatile uint32_t CR2;
+	volatile uint32_t OAR1;
+	volatile uint32_t OAR2;
+	volatile uint32_t TIMINGR;
+	volatile uint32_t TIMEOUTR;
+	volatile uint32_t ISR;
+	volatile uint32_t ICR;
+	volatile uint32_t PECR;
+	volatile uint32_t RXDR;
+	volatile uint32_t TXDR;
+} I2CTypeDef;
+
 // GPIO bits
 #define INPUT (0)
 #define OUTPUT (1)
@@ -110,6 +124,7 @@ typedef struct {
 #define PPRE1 (8)
 #define SWS (2)
 #define SW (0)
+#define I2C1EN (21)
 
 // Flash bits
 #define LATENCY (0)
@@ -143,6 +158,9 @@ typedef struct {
 #define TCIE (1)
 #define EN (0)
 
+// I2C bits
+#define RXIE (2)
+#define OA1EN (15)
 
 #define RCC ((RCCTypeDef*)0x40021000UL)
 #define GPIOA ((GPIOTypeDef*)0x48000000UL)
@@ -151,6 +169,7 @@ typedef struct {
 #define DMA ((DMATypeDef*)0x40020000UL)
 #define NVIC_ISER0 ((volatile uint32_t*)0xE000E100UL)
 #define FLASH ((FlashTypeDef*)0x40022000UL)
+#define I2C1 ((I2CTypeDef*)0x4000400UL)
 
 void initTimer();
 void decompressRgbArray(RGBStream * frame,uint8_t length);
