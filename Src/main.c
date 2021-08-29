@@ -22,6 +22,7 @@
 #include "system.h"
 #include "blink.h"
 #include "systemClock.h"
+#include "uart.h"
 
 
 RGBStream framedata[N_LAMPS];
@@ -82,18 +83,14 @@ int main(void)
     setupClock();
 
 	initTimer();
-	//frame->rgb.b=0xFF;
-	//frame->rgb.g=0x0;
-	//frame->rgb.r=0b10101010;
+	initUart();
+
 	colorUpdate(&(frame->rgb),phasecnt);
 	decompressRgbArray(frame,N_LAMPS);
-	//sendToLed();
 
-
-	//initLedPort();
-	//initBlinkTimer();
 
 	uint32_t dummycnt = 0;
+	printf("BallLamp v0.1 running\r\n");
 
     /* Loop forever */
 	for(;;)

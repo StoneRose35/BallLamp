@@ -168,6 +168,7 @@ typedef struct {
 #define TIM2 ((TIM23TypeDef*)0x40000000UL)
 #define DMA ((DMATypeDef*)0x40020000UL)
 #define NVIC_ISER0 ((volatile uint32_t*)0xE000E100UL)
+#define NVIC_ISER1 ((volatile uint32_t*)0xE000E104UL)
 #define FLASH ((FlashTypeDef*)0x40022000UL)
 #define I2C1 ((I2CTypeDef*)0x4000400UL)
 

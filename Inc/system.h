@@ -9,6 +9,7 @@
 #define SYSTEM_H_
 
 #define F_BUS (64000000)
+#define F_APB1 F_BUS/2
 #define WS2818_FREQ (800000) // 1/(0.4es + 0.85us)
 #define WS2818_SHORT (2500000) // 1/0.4us
 #define WS2818_LONG  (1176470)
