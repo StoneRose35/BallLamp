@@ -8,6 +8,7 @@
 #include "uart.h"
 #include "led_timer.h"
 #include "system.h"
+#include "consoleHandler.h"
 
 void USART2_EXTI26_IRQHandler()
 {
@@ -15,7 +16,16 @@ void USART2_EXTI26_IRQHandler()
 	{
 		uint8_t r_data = UART2->RDR & 0xFF;
 
+		char* consoleBfr;
+		consoleBfr = onCharacterReception(r_data);
+		printf(consoleBfr);
+
+		// TODO call console handler
+		// processes a command when \r has been received
+		// fills a command buffer otherwise
+		// removes a character on del and sends backspace until the buffer is empty
 		// simple echo
+        /*
 		if (r_data == 13) // convert \r into \r\n
 		{
 			sendChar(13);
@@ -31,6 +41,7 @@ void USART2_EXTI26_IRQHandler()
 		{
 			sendChar(r_data);
 		}
+		*/
 	}
 
 }

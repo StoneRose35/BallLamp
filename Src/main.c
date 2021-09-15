@@ -77,6 +77,13 @@ void colorUpdate(RGB * color,uint32_t phase)
 	}
 }
 
+void setColor(RGB * color,uint8_t nr)
+{
+	(frame + nr)->rgb.r = color->r;
+	(frame + nr)->rgb.g = color->g;
+	(frame + nr)->rgb.b = color->b;
+}
+
 int main(void)
 {
 	uint32_t phasecnt = 0;
@@ -98,21 +105,21 @@ int main(void)
 
 		if ((TIM2->CR1 & 1) != 1) // if timer 2 is not running, i.e. data transfer is over
 		{
-			sendToLed();
+			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
 			dummycnt++;
-			colorUpdate(&(frame->rgb),phasecnt);
-			phasecnt += PHASE_INC;
-			if (phasecnt>0x5FF)
-			{
-				phasecnt=0;
-			}
-
 		}
 		if (TIM2->ARR > WS2818_CNT && dummycnt > 0) // is in wait state after after the data transfer
 		{
 			decompressRgbArray(frame,N_LAMPS);
 			dummycnt = 0;
-		}
 
+			// this would be a "hue shift" program for the first lamp
+			//colorUpdate(&(frame->rgb),phasecnt);
+			//phasecnt += PHASE_INC;
+			//if (phasecnt>0x5FF)
+			//{
+			//	phasecnt=0;
+			//}
+		}
 	}
 }
