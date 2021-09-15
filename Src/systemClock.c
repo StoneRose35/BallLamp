@@ -5,7 +5,7 @@
  *      Author: philipp
  */
 
-#include "led_timer.h"
+#include <neopixelDriver.h>
 
 void setupClock()
 {

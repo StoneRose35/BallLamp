@@ -18,7 +18,7 @@
  */
 
 
-#include "led_timer.h"
+#include <neopixelDriver.h>
 #include "system.h"
 #include "blink.h"
 #include "systemClock.h"
@@ -87,6 +87,7 @@ void setColor(RGB * color,uint8_t nr)
 int main(void)
 {
 	uint32_t phasecnt = 0;
+	uint32_t dummy_cnt = 0;
     setupClock();
 
 	initTimer();
@@ -95,31 +96,39 @@ int main(void)
 	colorUpdate(&(frame->rgb),phasecnt);
 	decompressRgbArray(frame,N_LAMPS);
 
-
-	uint32_t dummycnt = 0;
 	printf("BallLamp v0.1 running\r\n");
 
     /* Loop forever */
 	for(;;)
 	{
 
-		if ((TIM2->CR1 & 1) != 1) // if timer 2 is not running, i.e. data transfer is over
+		if (READY_TO_SEND)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
-			dummycnt++;
+			dummy_cnt++;
 		}
-		if (TIM2->ARR > WS2818_CNT && dummycnt > 0) // is in wait state after after the data transfer
+		/*
+		 * Time slot for handling tasks
+		 */
+
+		// this would be a "hue shift" program for the first lamp
+		//colorUpdate(&(frame->rgb),phasecnt);
+		//phasecnt += PHASE_INC;
+		//if (phasecnt>0x5FF)
+		//{
+		//	phasecnt=0;
+		//}
+
+		if (WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
 		{
 			decompressRgbArray(frame,N_LAMPS);
-			dummycnt = 0;
+			dummy_cnt = 0;
 
-			// this would be a "hue shift" program for the first lamp
-			//colorUpdate(&(frame->rgb),phasecnt);
-			//phasecnt += PHASE_INC;
-			//if (phasecnt>0x5FF)
-			//{
-			//	phasecnt=0;
-			//}
+
 		}
+		//if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
+		//{
+			// potential error handling
+		//}
 	}
 }

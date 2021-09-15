@@ -175,10 +175,22 @@ typedef struct {
 void initTimer();
 void decompressRgbArray(RGBStream * frame,uint8_t length);
 void sendToLed();
+uint8_t getSendState();
 
 extern RGBStream * frame;
 extern uint32_t clr_cnt;
 extern uint32_t bit_cnt;
 extern uint8_t * rawdata_ptr;
+
+// if timer 2 is not running, i.e. data transfer is over
+#define READY_TO_SEND (TIM2->CR1 & 1) != 1
+// data has been sent, now just waiting for the remaining time to elapse
+#define WAIT_STATE TIM2->ARR > WS2818_CNT
+
+#define SEND_STATE_INITIAL 0
+#define SEND_STATE_RTS 1
+#define SEND_STATE_SENDING 2
+#define SEND_STATE_SENT 3
+#define SEND_STATE_BUFFER_UNDERRUN 4
 
 #endif /* LED_TIMER_H_ */

@@ -4,7 +4,8 @@
  *  Created on: Jul 27, 2021
  *      Author: philipp
  */
-#include "led_timer.h"
+#include "neopixelDriver.h"
+volatile uint8_t sendState=SEND_STATE_INITIAL;
 
 #ifndef BLINK
 void TIM2_IRQHandler()
@@ -16,13 +17,17 @@ void TIM2_IRQHandler()
 		{
 			// waited the remaining time of 1/30s
 			TIM2->CR1 &= ~(1);
+			if (sendState != SEND_STATE_RTS)
+			{
+				sendState = SEND_STATE_BUFFER_UNDERRUN;
+			}
 		}
 		else
 		{
 			// finished clocking of the last data bit
 			TIM2->ARR = 1979733;
 			TIM2->CCR3 = 0x0;
-
+            sendState = SEND_STATE_SENT;
 		}
 
 		TIM2->SR &= ~(0x1); // clear interrupt
@@ -103,6 +108,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 			rdata_cnt++;
 		}
 	}
+	sendState = SEND_STATE_RTS;
 }
 
 /*
@@ -146,6 +152,7 @@ void initTimer()
 void sendToLed()
 {
 
+	sendState = SEND_STATE_SENDING;
 	// set timing
 	TIM2->ARR = WS2818_CNT;
 
@@ -167,6 +174,11 @@ void sendToLed()
     //generate update
     TIM2->EGR |= 1;
 
+}
+
+uint8_t getSendState()
+{
+	return sendState;
 }
 
 void i2cInit()
