@@ -10,15 +10,22 @@
 #include "system.h"
 #include "consoleHandler.h"
 
+volatile char inputBuffer[8];
+volatile uint8_t inputBufferCnt=0;
+extern uint32_t task;
+
 void USART2_EXTI26_IRQHandler()
 {
 	if ((UART2->ISR & (1 << RXNE)) == (1 << RXNE)) // reception case
 	{
-		uint8_t r_data = UART2->RDR & 0xFF;
+		//uint8_t r_data = UART2->RDR & 0xFF;
 
-		char* consoleBfr;
-		consoleBfr = onCharacterReception(r_data);
-		printf(consoleBfr);
+		inputBuffer[inputBufferCnt++]=UART2->RDR & 0xFF;
+		inputBufferCnt &= 0x7;
+		task |= (1 << TASK_CONSOLE);
+		//char* consoleBfr;
+		//consoleBfr = onCharacterReception(r_data);
+		//printf(consoleBfr);
 
 		// simple echo
         /*

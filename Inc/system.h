@@ -18,11 +18,13 @@
 #define WS2818_SHORT_CNT F_BUS/WS2818_SHORT
 #define WS2818_LONG_CNT F_BUS/WS2818_LONG
 
-#define N_LAMPS (1)
+#define N_LAMPS (20)
 
 #define PHASE_INC (12)
 
 #define I2C_ADDRESS (15)
+
+#define TASK_CONSOLE 1
 
 typedef struct
 {

@@ -8,8 +8,8 @@
 #ifndef CONSOLEHANDLER_H_
 #define CONSOLEHANDLER_H_
 
-#define COMMAND_BUFFER_SIZE 256
-#define OUT_BUFFER_SIZE 64
+#define COMMAND_BUFFER_SIZE 128
+#define OUT_BUFFER_SIZE 256
 
 char* onCharacterReception(uint8_t);
 void clearCommandBuffer();

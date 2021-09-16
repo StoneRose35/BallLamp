@@ -23,6 +23,7 @@
 #include "blink.h"
 #include "systemClock.h"
 #include "uart.h"
+#include "consoleHandler.h"
 
 
 RGBStream framedata[N_LAMPS];
@@ -33,6 +34,10 @@ uint32_t bit_cnt = 0;
 uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
 
+volatile uint32_t task;
+
+extern volatile uint8_t inputBuffer[8];
+extern volatile uint8_t inputBufferCnt;
 
 /*
  * updates the color along a hue shift with the phase going from 0 to 1535
@@ -106,6 +111,18 @@ int main(void)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
 			dummy_cnt++;
+		}
+
+		if ((task & (1 << TASK_CONSOLE))==(1 << TASK_CONSOLE))
+		{
+			while(inputBufferCnt > 0)
+			{
+				char* consoleBfr;
+				consoleBfr = onCharacterReception(inputBuffer[inputBufferCnt-1]);
+				printf(consoleBfr);
+				inputBufferCnt--;
+			}
+			task &= ~(1 << TASK_CONSOLE);
 		}
 		/*
 		 * Time slot for handling tasks

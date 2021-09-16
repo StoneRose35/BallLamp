@@ -5,7 +5,7 @@
 uint8_t commandBuffer[COMMAND_BUFFER_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
 char cmdBfr[3];
-uint8_t cbfCnt;
+volatile uint8_t cbfCnt;
 uint8_t cursor;
 uint8_t mode = 0; // 1 for handling command code
 
@@ -15,7 +15,7 @@ const char * cmd_arrow_right = "[C";
 
 char* onCharacterReception(uint8_t c)
 {
-	uint8_t c1;
+	uint8_t c1=0;
 	uint8_t obCnt=0;
 
     clearOutBuffer();
@@ -37,7 +37,7 @@ char* onCharacterReception(uint8_t c)
 
 
 
-	else if (c == 0x7F && cbfCnt>0 && mode == 0) // convert DEL to backspace
+	else if (c == 0x7F && cbfCnt>0 && mode == 0 && cursor > 0) // convert DEL to backspace
 	{
         if (cursor < cbfCnt)
         {
@@ -116,7 +116,7 @@ char* onCharacterReception(uint8_t c)
 			}
 		}
 	}
-	else
+	else if (c < 127)
 	{
 		if (cursor < cbfCnt)
 		{
