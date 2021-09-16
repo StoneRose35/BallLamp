@@ -92,7 +92,6 @@ void setColor(RGB * color,uint8_t nr)
 int main(void)
 {
 	uint32_t phasecnt = 0;
-	uint32_t dummy_cnt = 0;
     setupClock();
 
 	initTimer();
@@ -107,10 +106,9 @@ int main(void)
 	for(;;)
 	{
 
-		if (READY_TO_SEND)
+		if (getSendState()==SEND_STATE_RTS)//(READY_TO_SEND)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
-			dummy_cnt++;
 		}
 
 		if ((task & (1 << TASK_CONSOLE))==(1 << TASK_CONSOLE))
@@ -136,16 +134,13 @@ int main(void)
 		//	phasecnt=0;
 		//}
 
-		if (WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
+		if (getSendState()==SEND_STATE_SENT)//(WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
 		{
 			decompressRgbArray(frame,N_LAMPS);
-			dummy_cnt = 0;
-
-
 		}
-		//if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
-		//{
+		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
+		{
 			// potential error handling
-		//}
+		}
 	}
 }

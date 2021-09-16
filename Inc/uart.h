@@ -34,7 +34,7 @@ typedef struct
 #define UART2 ((UartTypeDef*)0x40004400UL)
 
 void initUart();
-void printf(char*);
+void printf(const char*);
 void sendChar(uint8_t);
 
 

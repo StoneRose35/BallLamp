@@ -56,7 +56,7 @@ void sendChar(uint8_t c)
 	UART2->TDR = c;
 }
 
-void printf(char* data)
+void printf(const char* data)
 {
 	uint32_t cnt = 0;
 	uint8_t cur_data;

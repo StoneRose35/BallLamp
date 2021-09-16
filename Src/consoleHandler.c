@@ -1,13 +1,14 @@
 #include "types.h"
 #include "consoleHandler.h"
 #include <string.h>
+#include "taskManager.h"
 
 uint8_t commandBuffer[COMMAND_BUFFER_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
 char cmdBfr[3];
 volatile uint8_t cbfCnt;
 uint8_t cursor;
-uint8_t mode = 0; // 1 for handling command code
+uint8_t mode = 0; // >0 for handling command code
 
 const char * consolePrefix = "lamp-os>";
 const char * cmd_arrow_left = "[D";
@@ -30,16 +31,19 @@ char* onCharacterReception(uint8_t c)
 			c1++;
 			obCnt++;
 		}
+
+		handleCommand((const char*)commandBuffer);
+
 		clearCommandBuffer();
 		cursor = 0;
-		// TODO interpret what's inside commandBuffer;
+
 	}
 
 
 
-	else if (c == 0x7F && cbfCnt>0 && mode == 0 && cursor > 0) // convert DEL to backspace
+	else if (c == 0x7F && cbfCnt>0 && mode == 0 && cursor > 0) // DEL/backspace
 	{
-        if (cursor < cbfCnt)
+        if (cursor < cbfCnt) // within the command
         {
         	uint8_t swap, backcnt=0;
         	swap=commandBuffer[cursor];
@@ -68,7 +72,7 @@ char* onCharacterReception(uint8_t c)
         	cbfCnt--;
         	cursor--;
         }
-        else
+        else // at the right end (default after typing)
         {
         	outBfr[obCnt++] = 0x8;
         	outBfr[obCnt++] = 0x20;
@@ -77,21 +81,19 @@ char* onCharacterReception(uint8_t c)
         	cursor--;
         }
 	}
-	else if (c < 32)
+	else if (c < 32) // control character received
 	{
 		mode = 1;
 		cmdBfr[0]=0;
 		cmdBfr[1]=0;
 		cmdBfr[2]=0;
 	}
-	else if (mode==1)
+	else if (mode==1) // first describing character after the control character
 	{
-		// command mode, so far only arrow left and arrow right is supported
-
 		cmdBfr[mode-1] = c;
 		mode++;
 	}
-	else if (mode==2)
+	else if (mode==2) 		// command mode, so far only arrow left and arrow right is supported
 	{
 		cmdBfr[mode-1] = c;
 		mode = 0;
@@ -116,9 +118,9 @@ char* onCharacterReception(uint8_t c)
 			}
 		}
 	}
-	else if (c < 127)
+	else if (c < 127) // "normal" (non-control) character nor del or special characters entered
 	{
-		if (cursor < cbfCnt)
+		if (cursor < cbfCnt) // within the command
 		{
 			char swap, swap2, backcnt=0;
 			swap = commandBuffer[cursor];
