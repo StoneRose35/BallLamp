@@ -21,10 +21,4 @@ void handleBlue(uint8_t);
 void handleGreen(uint8_t);
 void handleHelp(uint8_t);
 
-uint8_t startsWith(const char*,const char*);
-void toChar(uint8_t, char*);
-uint8_t toInt(char *);
-void getBracketContent(const char*,char*);
-
-
 #endif /* TASKMANAGER_H_ */
