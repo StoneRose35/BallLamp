@@ -18,33 +18,9 @@ void USART2_EXTI26_IRQHandler()
 {
 	if ((UART2->ISR & (1 << RXNE)) == (1 << RXNE)) // reception case
 	{
-		//uint8_t r_data = UART2->RDR & 0xFF;
-
 		inputBuffer[inputBufferCnt++]=UART2->RDR & 0xFF;
 		inputBufferCnt &= 0x7;
 		task |= (1 << TASK_CONSOLE);
-		//char* consoleBfr;
-		//consoleBfr = onCharacterReception(r_data);
-		//printf(consoleBfr);
-
-		// simple echo
-        /*
-		if (r_data == 13) // convert \r into \r\n
-		{
-			sendChar(13);
-			sendChar(10);
-		}
-		else if (r_data == 0x7F) // convert DEL to backspace
-		{
-			sendChar(0x8);
-			sendChar(0x20);
-			sendChar(0x8);
-		}
-		else
-		{
-			sendChar(r_data);
-		}
-		*/
 	}
 
 }

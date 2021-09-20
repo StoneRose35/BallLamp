@@ -97,7 +97,6 @@ int main(void)
 	initTimer();
 	initUart();
 
-	colorUpdate(&(frame->rgb),phasecnt);
 	decompressRgbArray(frame,N_LAMPS);
 
 	printf("BallLamp v0.1 running\r\n");
@@ -134,13 +133,15 @@ int main(void)
 		//	phasecnt=0;
 		//}
 
-		if (getSendState()==SEND_STATE_SENT)//(WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
-		{
-			decompressRgbArray(frame,N_LAMPS);
-		}
 		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
 		{
 			// potential error handling
 		}
+
+		if (getSendState()==SEND_STATE_SENT || getSendState()==SEND_STATE_BUFFER_UNDERRUN)//(WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
+		{
+			decompressRgbArray(frame,N_LAMPS);
+		}
+
 	}
 }
