@@ -68,7 +68,7 @@ void printf(const char* data)
 		if (outputBufferReadCnt==(OUTPUT_BUFFER_SIZE-1))
 		{
 			uint8_t sc_res = sendCharAsync();
-			while (sc_res > 0)
+			while (sc_res == 0)
 			{
 				sc_res = sendCharAsync();
 			}

@@ -12,6 +12,7 @@ void toChar(uint8_t, char*);
 uint8_t startsWith(const char*,const char*);
 uint8_t toInt(char*);
 void getBracketContent(const char*,char*);
+void split(const char* input,const char sep,char*out);
 
 
 #endif /* STRINGFUNCTIONS_H_ */

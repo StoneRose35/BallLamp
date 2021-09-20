@@ -95,3 +95,28 @@ void getBracketContent(const char* input,char * out)
 		out = 0;
 	}
 }
+
+
+void  split(const char* input,const char sep,char*out)
+{
+	uint8_t cc=0,split_cnt = 0,string_cnt = 0;
+	char cur = *(input + cc);
+	while(cur != 0)
+	{
+		if (cur == sep)
+		{
+			*(out + split_cnt*4 + string_cnt) = 0;
+			string_cnt=0;
+			split_cnt++;
+		}
+		else
+		{
+			*(out + split_cnt*4 + string_cnt) = cur;
+			string_cnt++;
+		}
+		cc++;
+		cur = *(input + cc);
+	}
+}
+
+
