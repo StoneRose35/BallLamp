@@ -33,9 +33,13 @@ typedef struct
 #define UART1 ((UartTypeDef*)0x40013800UL)
 #define UART2 ((UartTypeDef*)0x40004400UL)
 
+#define INPUT_BUFFER_SIZE 8
+#define OUTPUT_BUFFER_SIZE 256
+
 void initUart();
 void printf(const char*);
 void sendChar(uint8_t);
+uint8_t sendCharAsync();
 
 
 #endif /* UART_H_ */

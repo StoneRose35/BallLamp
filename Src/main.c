@@ -91,7 +91,7 @@ void setColor(RGB * color,uint8_t nr)
 
 int main(void)
 {
-	uint32_t phasecnt = 0;
+	//uint32_t phasecnt = 0;
     setupClock();
 
 	initTimer();
@@ -142,6 +142,8 @@ int main(void)
 		{
 			decompressRgbArray(frame,N_LAMPS);
 		}
+
+		sendCharAsync();
 
 	}
 }

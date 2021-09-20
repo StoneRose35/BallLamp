@@ -33,7 +33,10 @@ void handleCommand(const char * cmd)
 				if (functions[cnt] != 0)
 				{
 					getBracketContent(cmd,nrbfr);
-					(*functions[cnt])(toInt(nrbfr));
+					if (nrbfr != 0)
+					{
+						(*functions[cnt])(toInt(nrbfr));
+					}
 				}
 				else
 				{

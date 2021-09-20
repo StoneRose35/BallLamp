@@ -10,7 +10,10 @@
 #include "system.h"
 #include "consoleHandler.h"
 
-volatile char inputBuffer[8];
+volatile char inputBuffer[INPUT_BUFFER_SIZE];
+volatile char outputBuffer[OUTPUT_BUFFER_SIZE];
+volatile uint32_t outputBufferReadCnt=0x0;
+volatile uint32_t outputBufferWriteCnt=0x0;
 volatile uint8_t inputBufferCnt=0;
 extern uint32_t task;
 
@@ -19,7 +22,7 @@ void USART2_EXTI26_IRQHandler()
 	if ((UART2->ISR & (1 << RXNE)) == (1 << RXNE)) // reception case
 	{
 		inputBuffer[inputBufferCnt++]=UART2->RDR & 0xFF;
-		inputBufferCnt &= 0x7;
+		inputBufferCnt &= (INPUT_BUFFER_SIZE-1);
 		task |= (1 << TASK_CONSOLE);
 	}
 
@@ -32,6 +35,25 @@ void sendChar(uint8_t c)
 	UART2->TDR = c;
 }
 
+uint8_t sendCharAsync()
+{
+	if (outputBufferWriteCnt < outputBufferReadCnt && ((UART2->ISR & (1 << TC)) == (1 << TC)))
+	{
+		UART2->TDR = *(outputBuffer+outputBufferWriteCnt);
+		outputBufferWriteCnt++;
+	}
+	if (outputBufferWriteCnt == outputBufferReadCnt)
+	{
+		outputBufferWriteCnt=0;
+		outputBufferReadCnt=0;
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 void printf(const char* data)
 {
 	uint32_t cnt = 0;
@@ -39,7 +61,18 @@ void printf(const char* data)
 	cur_data = *(data + cnt);
 	while (cur_data != 0)
 	{
-		sendChar(cur_data);
+		*(outputBuffer+outputBufferReadCnt) = *(data + cnt);
+		outputBufferReadCnt++;
+		outputBufferReadCnt &= (OUTPUT_BUFFER_SIZE-1);
+
+		if (outputBufferReadCnt==(OUTPUT_BUFFER_SIZE-1))
+		{
+			uint8_t sc_res = sendCharAsync();
+			while (sc_res > 0)
+			{
+				sc_res = sendCharAsync();
+			}
+		}
 		cnt++;
 		cur_data = *(data + cnt);
 	}
