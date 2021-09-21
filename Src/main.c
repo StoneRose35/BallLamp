@@ -82,16 +82,9 @@ void colorUpdate(RGB * color,uint32_t phase)
 	}
 }
 
-void setColor(RGB * color,uint8_t nr)
-{
-	(frame + nr)->rgb.r = color->r;
-	(frame + nr)->rgb.g = color->g;
-	(frame + nr)->rgb.b = color->b;
-}
 
 int main(void)
 {
-	//uint32_t phasecnt = 0;
     setupClock();
 
 	initTimer();

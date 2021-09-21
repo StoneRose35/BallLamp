@@ -6,6 +6,7 @@
  */
 
 #include "types.h"
+#include "system.h"
 
 #ifndef TASKMANAGER_H_
 #define TASKMANAGER_H_
@@ -15,11 +16,6 @@
 #define TASK_STATE_RUNNING 1
 #define TASK_STATE_PAUSED 2
 
-typedef struct {
-	void(*updateFunction)(void*);
-	uint8_t state;
-	uint8_t lamp_nr;
-} TaskType;
 
 void handleCommand(const char*);
 
