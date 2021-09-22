@@ -24,15 +24,18 @@
 #include "systemClock.h"
 #include "uart.h"
 #include "consoleHandler.h"
+#include "colorInterpolator.h"
 
 
-RGBStream framedata[N_LAMPS];
-RGBStream * frame = framedata;
+RGBStream lampsdata[N_LAMPS];
+RGBStream * lamps = lampsdata;
 uint32_t clr_cnt = 0;
 uint32_t bit_cnt = 0;
 
 uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
+
+TaskType interpolators[N_LAMPS];
 
 volatile uint32_t task;
 
@@ -85,12 +88,51 @@ void colorUpdate(RGB * color,uint32_t phase)
 
 int main(void)
 {
+	uint8_t tasksDone = 1;
     setupClock();
 
 	initTimer();
 	initUart();
 
-	decompressRgbArray(frame,N_LAMPS);
+	printf("initializing color interpolators");
+	/*
+	for(uint8_t c=0;c<N_LAMPS;c++)
+	{
+		initTask(interpolators+c,0);
+	}
+*/
+
+	// test hack
+	initTask(interpolators+10,4);
+	(interpolators+10)->lamp_nr=10;
+	setColor(interpolators+10,0,0,0,0);
+	setColor(interpolators+10,0,255,0,1);
+	setColor(interpolators+10,0,45,130,2);
+	setColor(interpolators+10,200,200,200,3);
+	(interpolators+10)->state |= (1 << 2);
+	setFrames((interpolators+10),13,0);
+	setFrames((interpolators+10),5,1);
+	setFrames((interpolators+10),12,2);
+	setFrames((interpolators+10),27,3);
+	(interpolators+10)->state |= (1 << 0);
+	(interpolators+10)->steps[0].interpolation=1;
+	(interpolators+10)->steps[1].interpolation=1;
+	(interpolators+10)->steps[2].interpolation=1;
+	(interpolators+10)->steps[3].interpolation=1;
+
+	initTask(interpolators,2);
+	interpolators->lamp_nr=1;
+	setColor(interpolators,0,0,0,0);
+	setColor(interpolators,240,0,0,1);
+	setFrames(interpolators,5,0);
+	setFrames(interpolators,5,1);
+	interpolators->state |= (1 << 2);
+	interpolators->state |= (1 << 0);
+
+
+	//decompressRgbArray(frame,N_LAMPS);
+	setSendState(SEND_STATE_RTS);
+
 
 	printf("BallLamp v0.1 running\r\n");
 
@@ -101,6 +143,7 @@ int main(void)
 		if (getSendState()==SEND_STATE_RTS)//(READY_TO_SEND)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
+			tasksDone = 0;
 		}
 
 		if ((task & (1 << TASK_CONSOLE))==(1 << TASK_CONSOLE))
@@ -108,7 +151,7 @@ int main(void)
 			while(inputBufferCnt > 0)
 			{
 				char* consoleBfr;
-				consoleBfr = onCharacterReception(inputBuffer[inputBufferCnt-1]);
+				consoleBfr = onCharacterReception(inputBuffer[inputBufferCnt-1],lamps);
 				printf(consoleBfr);
 				inputBufferCnt--;
 			}
@@ -118,22 +161,25 @@ int main(void)
 		 * Time slot for handling tasks
 		 */
 
-		// this would be a "hue shift" program for the first lamp
-		//colorUpdate(&(frame->rgb),phasecnt);
-		//phasecnt += PHASE_INC;
-		//if (phasecnt>0x5FF)
-		//{
-		//	phasecnt=0;
-		//}
 
 		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
 		{
 			// potential error handling
+			printf("BufferUnderrun!!\r\n");
 		}
 
 		if (getSendState()==SEND_STATE_SENT || getSendState()==SEND_STATE_BUFFER_UNDERRUN)//(WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
 		{
-			decompressRgbArray(frame,N_LAMPS);
+
+			for(uint8_t c=0;c<N_LAMPS;c++)
+			{
+				if (((interpolators+c)->state & 0x3) != 0)
+				{
+					updateTask(interpolators+c,lamps);
+				}
+			}
+
+			decompressRgbArray(lamps,N_LAMPS);
 		}
 
 		sendCharAsync();

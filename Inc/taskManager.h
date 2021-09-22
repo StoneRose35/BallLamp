@@ -17,15 +17,15 @@
 #define TASK_STATE_PAUSED 2
 
 
-void handleCommand(const char*);
+void handleCommand(const char*,RGBStream*);
 
-void handleOff(uint8_t);
-void handleWhite(uint8_t);
-void handleRed(uint8_t);
-void handleBlue(uint8_t);
-void handleGreen(uint8_t);
-void handleHelp(uint8_t);
-void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t);
+void handleOff(uint8_t,RGBStream*);
+void handleWhite(uint8_t,RGBStream*);
+void handleRed(uint8_t,RGBStream*);
+void handleBlue(uint8_t,RGBStream*);
+void handleGreen(uint8_t,RGBStream*);
+void handleHelp(uint8_t,RGBStream*);
+void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t,RGBStream*);
 
 
 #endif /* TASKMANAGER_H_ */

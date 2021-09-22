@@ -176,8 +176,8 @@ void initTimer();
 void decompressRgbArray(RGBStream * frame,uint8_t length);
 void sendToLed();
 uint8_t getSendState();
+void setSendState(uint8_t s);
 
-extern RGBStream * frame;
 extern uint32_t clr_cnt;
 extern uint32_t bit_cnt;
 extern uint8_t * rawdata_ptr;
@@ -188,6 +188,7 @@ extern uint8_t * rawdata_ptr;
 #define WAIT_STATE TIM2->ARR > WS2818_CNT
 
 #define SEND_STATE_INITIAL 0
+#define SEND_STATE_DATA_READY 5
 #define SEND_STATE_RTS 1
 #define SEND_STATE_SENDING 2
 #define SEND_STATE_SENT 3

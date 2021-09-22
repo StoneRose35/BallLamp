@@ -14,13 +14,12 @@
 
 
 
-extern RGBStream * frame;
 const char * colorCommands[N_COMMANDS] = {"OFF","WHITE","RED","BLUE","GREEN","--help"};
-const void(*colorCommandFunctions[])(uint8_t) ={handleOff, handleWhite, handleRed, handleBlue, handleGreen, handleHelp};
+const void(*colorCommandFunctions[])(uint8_t,RGBStream*) ={handleOff, handleWhite, handleRed, handleBlue, handleGreen, handleHelp};
 const char * rgbCommand = "RGB";
 
 
-void handleCommand(const char * cmd)
+void handleCommand(const char * cmd,RGBStream * lamps)
 {
 	uint8_t cmdFound = 0;
 	char nrbfr[16];
@@ -36,7 +35,7 @@ void handleCommand(const char * cmd)
 					getBracketContent(cmd,nrbfr);
 					if (nrbfr != 0)
 					{
-						(*colorCommandFunctions[cnt])(toInt(nrbfr));
+						(*colorCommandFunctions[cnt])(toInt(nrbfr),lamps);
 					}
 				}
 				else
@@ -57,58 +56,58 @@ void handleCommand(const char * cmd)
 				r = toInt(subColors);
 				g = toInt(subColors+4);
 				b = toInt(subColors+8);
-				handleRgb(r,g,b,toInt(subColors+12));
+				handleRgb(r,g,b,toInt(subColors+12),lamps);
 				cmdFound = 1;
 			}
 		}
 		if (cmdFound == 0)
 		{
 			printf("\r\nUnrecognizedCommandException");
-			handleHelp(0);
+			handleHelp(0,0);
 		}
 	}
 
 }
 
-void handleOff(uint8_t nr)
+void handleOff(uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=0;
-	(frame+nr)->rgb.b=0;
-	(frame+nr)->rgb.g=0;
+	(lamps+nr)->rgb.r=0;
+	(lamps+nr)->rgb.b=0;
+	(lamps+nr)->rgb.g=0;
 }
 
-void handleWhite(uint8_t nr)
+void handleWhite(uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=0xFF;
-	(frame+nr)->rgb.b=0xFF;
-	(frame+nr)->rgb.g=0xFF;
+	(lamps+nr)->rgb.r=0xFF;
+	(lamps+nr)->rgb.b=0xFF;
+	(lamps+nr)->rgb.g=0xFF;
 }
 
-void handleRed(uint8_t nr)
+void handleRed(uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=0xFF;
-	(frame+nr)->rgb.b=0x00;
-	(frame+nr)->rgb.g=0x00;
+	(lamps+nr)->rgb.r=0xFF;
+	(lamps+nr)->rgb.b=0x00;
+	(lamps+nr)->rgb.g=0x00;
 }
 
-void handleGreen(uint8_t nr)
+void handleGreen(uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=0x00;
-	(frame+nr)->rgb.b=0x00;
-	(frame+nr)->rgb.g=0xFF;
+	(lamps+nr)->rgb.r=0x00;
+	(lamps+nr)->rgb.b=0x00;
+	(lamps+nr)->rgb.g=0xFF;
 }
 
-void handleBlue(uint8_t nr)
+void handleBlue(uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=0x00;
-	(frame+nr)->rgb.b=0xFF;
-	(frame+nr)->rgb.g=0x00;
+	(lamps+nr)->rgb.r=0x00;
+	(lamps+nr)->rgb.b=0xFF;
+	(lamps+nr)->rgb.g=0x00;
 }
-void handleHelp(uint8_t nr)
+void handleHelp(uint8_t nr,RGBStream * lamps)
 {
 	char nrbfr[4];
 	printf("\r\nSupported Color commands are\r\n");
-	for(uint8_t c;c<N_COMMANDS;c++)
+	for(uint8_t c=0;c<N_COMMANDS;c++)
 	{
 		printf(" * ");
 		printf(colorCommands[c]);
@@ -122,11 +121,11 @@ void handleHelp(uint8_t nr)
 	printf("example: RED(13) switches led 13 to red while leaving all others\r\n");
 }
 
-void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr)
+void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr,RGBStream * lamps)
 {
-	(frame+nr)->rgb.r=r;
-	(frame+nr)->rgb.b=b;
-	(frame+nr)->rgb.g=g;
+	(lamps+nr)->rgb.r=r;
+	(lamps+nr)->rgb.b=b;
+	(lamps+nr)->rgb.g=g;
 }
 
 

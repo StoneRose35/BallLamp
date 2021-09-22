@@ -2,6 +2,7 @@
 #include "consoleHandler.h"
 #include <string.h>
 #include "taskManager.h"
+#include "system.h"
 
 uint8_t commandBuffer[COMMAND_BUFFER_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
@@ -14,7 +15,7 @@ const char * consolePrefix = "lamp-os>";
 const char * cmd_arrow_left = "[D";
 const char * cmd_arrow_right = "[C";
 
-char* onCharacterReception(uint8_t c)
+char* onCharacterReception(uint8_t c,RGBStream * lamps)
 {
 	uint8_t c1=0;
 	uint8_t obCnt=0;
@@ -32,7 +33,7 @@ char* onCharacterReception(uint8_t c)
 			obCnt++;
 		}
 
-		handleCommand((const char*)commandBuffer);
+		handleCommand((const char*)commandBuffer,lamps);
 
 		clearCommandBuffer();
 		cursor = 0;

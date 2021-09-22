@@ -11,7 +11,7 @@
 #include "system.h"
 
 
-void init(Task t,uint8_t nsteps)
+void initTask(Task t,uint8_t nsteps)
 {
 	t->lamp_nr=0;
 	t->Nsteps=nsteps;
@@ -52,6 +52,12 @@ void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
 		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
 	}
+	else if (idx == t->Nsteps-1 && (t->state & (1 << 2))== (1 << 2))
+	{
+		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+	}
 }
 
 void setFrames(Task t,uint32_t nframes,uint8_t idx)
@@ -63,7 +69,12 @@ void setFrames(Task t,uint32_t nframes,uint8_t idx)
 		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
 	}
-
+	else if (idx == t->Nsteps-1 && (t->state & (1 << 2))== (1 << 2))
+	{
+		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+	}
 
 }
 
@@ -74,9 +85,9 @@ void setReady(Task t)
 	t->state=2;
 }
 
-void update(Task t,RGBStream * lampdata)
+void updateTask(Task t,RGBStream * lampdata)
 {
-	if (t->state ==1) // running
+	if ((t->state & 0x3) ==2) // running
 	{
 		if (t->stepProgressionCnt == t->steps[t->stepCnt].frames)
 		{
@@ -84,45 +95,45 @@ void update(Task t,RGBStream * lampdata)
 			t->stepProgressionCnt = 0;
 			if(t->stepCnt==t->Nsteps)
 			{
-				if((t->state & 2) == 2)
+				if((t->state & (1 << 2)) == (1 << 2))
 				{
 					t->stepCnt = 0;
 				}
 				else
 				{
 					t->stepCnt--;
-					t->state = 0;
+					t->state &= ~(3 << 0);
 				}
 			}
-			t->steps[t->stepCnt].r_cur = t->steps[t->stepCnt].r << 8;
-			t->steps[t->stepCnt].g_cur = t->steps[t->stepCnt].g << 8;
-			t->steps[t->stepCnt].b_cur = t->steps[t->stepCnt].b << 8;
+			t->r_cur = t->steps[t->stepCnt].r << 8;
+			t->g_cur = t->steps[t->stepCnt].g << 8;
+			t->b_cur = t->steps[t->stepCnt].b << 8;
 		}
 		else
 		{
 
 			if (t->steps[t->stepCnt].interpolation == 1)
 			{
-				t->steps[t->stepCnt].r_cur += t->steps[t->stepCnt].deltar;
-				t->steps[t->stepCnt].g_cur += t->steps[t->stepCnt].deltag;
-				t->steps[t->stepCnt].b_cur += t->steps[t->stepCnt].deltab;
+				t->r_cur += t->steps[t->stepCnt].deltar;
+				t->g_cur += t->steps[t->stepCnt].deltag;
+				t->b_cur += t->steps[t->stepCnt].deltab;
 			}
 		}
-		lampdata[t->lamp_nr].rgb.r = t->steps[t->stepCnt].r_cur >> 8;
-		lampdata[t->lamp_nr].rgb.g = t->steps[t->stepCnt].g_cur >> 8;
-		lampdata[t->lamp_nr].rgb.b = t->steps[t->stepCnt].b_cur >> 8;
+		lampdata[t->lamp_nr].rgb.r = t->r_cur >> 8;
+		lampdata[t->lamp_nr].rgb.g = t->g_cur >> 8;
+		lampdata[t->lamp_nr].rgb.b = t->b_cur >> 8;
 		t->stepProgressionCnt++;
 	}
-	else if (t->state == 2) // starting
+	else if ((t->state & 0x3) == 1) // starting
 	{
-		t->state = 1;
-		t->steps[t->stepCnt].r_cur = t->steps[t->stepCnt].r << 8;
-		t->steps[t->stepCnt].g_cur = t->steps[t->stepCnt].g << 8;
-		t->steps[t->stepCnt].b_cur = t->steps[t->stepCnt].b << 8;
+		t->state += 1;
+		t->r_cur = t->steps[t->stepCnt].r << 8;
+		t->g_cur = t->steps[t->stepCnt].g << 8;
+		t->b_cur = t->steps[t->stepCnt].b << 8;
 
-		lampdata[t->lamp_nr].rgb.r = t->steps[t->stepCnt].r_cur >> 8;
-		lampdata[t->lamp_nr].rgb.g = t->steps[t->stepCnt].g_cur >> 8;
-		lampdata[t->lamp_nr].rgb.b = t->steps[t->stepCnt].b_cur >> 8;
+		lampdata[t->lamp_nr].rgb.r = t->r_cur >> 8;
+		lampdata[t->lamp_nr].rgb.g = t->g_cur >> 8;
+		lampdata[t->lamp_nr].rgb.b = t->b_cur >> 8;
 		//t->stepProgressionCnt++;
 
 	}

@@ -17,9 +17,13 @@ void TIM2_IRQHandler()
 		{
 			// waited the remaining time of 1/30s
 			TIM2->CR1 &= ~(1);
-			if (sendState != SEND_STATE_RTS)
+			if (sendState != SEND_STATE_DATA_READY)
 			{
 				sendState = SEND_STATE_BUFFER_UNDERRUN;
+			}
+			else
+			{
+				sendState = SEND_STATE_RTS;
 			}
 		}
 		else
@@ -108,7 +112,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 			rdata_cnt++;
 		}
 	}
-	sendState = SEND_STATE_RTS;
+	sendState = SEND_STATE_DATA_READY;
 }
 
 /*
@@ -179,6 +183,11 @@ void sendToLed()
 uint8_t getSendState()
 {
 	return sendState;
+}
+
+void setSendState(uint8_t s)
+{
+	sendState = s;
 }
 
 void i2cInit()
