@@ -4,16 +4,19 @@
 #include "taskManager.h"
 #include "system.h"
 
-uint8_t commandBuffer[COMMAND_BUFFER_SIZE];
+uint8_t commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
 char cmdBfr[3];
-volatile uint8_t cbfCnt;
+volatile uint8_t cbfCnt = 0;
+volatile uint8_t cbfIdx = 0;
 uint8_t cursor;
 uint8_t mode = 0; // >0 for handling command code
 
 const char * consolePrefix = "lamp-os>";
 const char * cmd_arrow_left = "[D";
 const char * cmd_arrow_right = "[C";
+const char * cmd_arrow_up = "[A";
+const char * cmd_arrow_down = "[B";
 
 char* onCharacterReception(uint8_t c,RGBStream * lamps)
 {
@@ -32,10 +35,22 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 			c1++;
 			obCnt++;
 		}
+		if (cbfIdx > 0)
+		{
+		// copy command into the lowest entry
+			copyCommand(cbfIdx,0);
 
+		// set cbfIdx to 0
+		}
+		cbfIdx=0;
 		handleCommand((const char*)commandBuffer,lamps);
 
-		clearCommandBuffer();
+		// push command into history
+		for(uint8_t c=COMMAND_HISTORY_SIZE-1;c>0;c--)
+		{
+			copyCommand(c-1,c);
+		}
+		clearCommandBuffer(cbfIdx);
 		cursor = 0;
 
 	}
@@ -47,19 +62,19 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
         if (cursor < cbfCnt) // within the command
         {
         	uint8_t swap, backcnt=0;
-        	swap=commandBuffer[cursor];
+        	swap=commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor];
 			outBfr[obCnt++] = 27;
 			outBfr[obCnt++] = 91;
 			outBfr[obCnt++] = 68;
         	while (swap != 0)
         	{
-        		commandBuffer[cursor-1] = swap;
+        		commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor-1] = swap;
         		outBfr[obCnt++] = swap;
         		cursor++;
         		backcnt++;
-        		swap=commandBuffer[cursor];
+        		swap=commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor];
         	}
-        	commandBuffer[cursor-1]=0;
+        	commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor-1]=0;
         	outBfr[obCnt++]=' ';
         	cursor++;
         	backcnt++;
@@ -78,7 +93,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
         	outBfr[obCnt++] = 0x8;
         	outBfr[obCnt++] = 0x20;
         	outBfr[obCnt++] = 0x8;
-        	commandBuffer[cbfCnt--] = 0;
+        	commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt--] = 0;
         	cursor--;
         }
 	}
@@ -118,19 +133,63 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 				outBfr[obCnt++] = 67;
 			}
 		}
+		if (strcmp(cmdBfr,cmd_arrow_up)==0)
+		{
+			// remove old command
+			while (cbfCnt>0)
+			{
+	        	outBfr[obCnt++] = 0x8;
+	        	outBfr[obCnt++] = 0x20;
+	        	outBfr[obCnt++] = 0x8;
+	        	cbfCnt--;
+			}
+			if (cbfIdx < COMMAND_HISTORY_SIZE-1)
+			{
+				cbfIdx++;
+				cbfCnt=0;
+				cursor=0;
+				while (commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt] != 0)
+				{
+					outBfr[obCnt++] = commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt++];
+					cursor++;
+				}
+			}
+		}
+		if (strcmp(cmdBfr,cmd_arrow_down)==0)
+		{
+			// remove old command
+			while (cbfCnt>0)
+			{
+	        	outBfr[obCnt++] = 0x8;
+	        	outBfr[obCnt++] = 0x20;
+	        	outBfr[obCnt++] = 0x8;
+	        	cbfCnt--;
+			}
+			if (cbfIdx >0)
+			{
+				cbfIdx--;
+				cbfCnt=0;
+				cursor=0;
+				while (commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt] != 0)
+				{
+					outBfr[obCnt++] = commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt++];
+					cursor++;
+				}
+			}
+		}
 	}
 	else if (c < 127) // "normal" (non-control) character nor del or special characters entered
 	{
 		if (cursor < cbfCnt) // within the command
 		{
 			char swap, swap2, backcnt=0;
-			swap = commandBuffer[cursor];
-			commandBuffer[cursor++]=c;
+			swap = commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor];
+			commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor++]=c;
 			outBfr[obCnt++]=c;
 			while (swap != 0)
 			{
-				swap2 = commandBuffer[cursor];
-				commandBuffer[cursor++]= swap;
+				swap2 = commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor];
+				commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cursor++]= swap;
 				outBfr[obCnt++]=swap;
 				swap=swap2;
 				backcnt++;
@@ -146,7 +205,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 		}
 		else
 		{
-			commandBuffer[cbfCnt++] = c;
+			commandBuffer[cbfIdx*COMMAND_BUFFER_SIZE + cbfCnt++] = c;
 			outBfr[obCnt++] = c;
 			cursor++;
 		}
@@ -156,11 +215,11 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 }
 
 
-void clearCommandBuffer()
+void clearCommandBuffer(uint8_t idx)
 {
 	for(uint16_t cnt=0; cnt<COMMAND_BUFFER_SIZE; cnt++)
 	{
-		commandBuffer[cnt] = 0;
+		commandBuffer[idx*COMMAND_BUFFER_SIZE + cnt] = 0;
 	}
 	cbfCnt=0;
 }
@@ -173,6 +232,12 @@ void clearOutBuffer()
 	}
 }
 
-
+void copyCommand(uint8_t idxSrc,uint8_t idxTarget)
+{
+	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
+	{
+		*(commandBuffer + idxTarget*COMMAND_BUFFER_SIZE + c) = *(commandBuffer + idxSrc*COMMAND_BUFFER_SIZE + c);
+	}
+}
 
 

@@ -1,3 +1,4 @@
+#ifdef STM32
 /**
  ******************************************************************************
  * @file           : main.c
@@ -20,7 +21,6 @@
 
 #include <neopixelDriver.h>
 #include "system.h"
-#include "blink.h"
 #include "systemClock.h"
 #include "uart.h"
 #include "consoleHandler.h"
@@ -89,8 +89,6 @@ void colorUpdate(RGB * color,uint32_t phase)
 
 int main(void)
 {
-	char nrbfr[16];
-
 	uint8_t tasksDone = 1;
     setupClock();
 
@@ -98,18 +96,11 @@ int main(void)
 	initUart();
 
 	printf("initializing color interpolators\r\n");
-	/*
-	for(uint8_t c=0;c<N_LAMPS;c++)
+	for (uint8_t c=0;c<N_LAMPS;c++)
 	{
 		initTask(interpolators+c,0);
 	}
-*/
 
-	printf("interpolators size is: ");
-	uint32_t iSize = sizeof(interpolators);
-	UInt32ToChar(iSize,nrbfr);
-	printf(nrbfr);
-	printf("\r\n");
 
 
 	// test hack
@@ -199,3 +190,4 @@ int main(void)
 
 	}
 }
+#endif

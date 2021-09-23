@@ -7,7 +7,11 @@
 
 #include "taskManager.h"
 #include "neopixelDriver.h"
+#ifdef STM32
 #include "uart.h"
+#else
+#include <stdio.h>
+#endif
 #include "stringFunctions.h"
 #include <string.h>
 #include <stdlib.h>

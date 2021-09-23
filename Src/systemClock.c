@@ -4,6 +4,7 @@
  *  Created on: 21.08.2021
  *      Author: philipp
  */
+#ifdef STM32
 
 #include <neopixelDriver.h>
 
@@ -38,3 +39,5 @@ void setupClock()
 	{}
 
 }
+
+#endif

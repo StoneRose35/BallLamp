@@ -5,6 +5,8 @@
  *      Author: philipp
  */
 
+#ifdef STM32
+
 #include <neopixelDriver.h>
 #include "uart.h"
 #include "system.h"
@@ -101,3 +103,5 @@ void initUart()
 
 	UART2->CR1 |= 1;  //uart enable
 }
+
+#endif

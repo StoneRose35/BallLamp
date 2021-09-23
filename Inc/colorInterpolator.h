@@ -5,11 +5,14 @@
  *      Author: philipp
  */
 
-#include "types.h"
-#include "system.h"
+
+
 
 #ifndef COLORINTERPOLATOR_H_
 #define COLORINTERPOLATOR_H_
+
+#include "types.h"
+#include "system.h"
 
 typedef struct {
 	uint8_t r;

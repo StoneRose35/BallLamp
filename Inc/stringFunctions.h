@@ -8,6 +8,10 @@
 #ifndef STRINGFUNCTIONS_H_
 #define STRINGFUNCTIONS_H_
 
+#ifndef STM32
+#include <stdint.h>
+#endif
+
 void UInt8ToChar(uint8_t, char*);
 void UInt16ToChar(uint16_t, char*);
 void UInt32ToChar(uint32_t, char*);

@@ -2,3 +2,5 @@
 /Release/*
 /Debug/
 /Release/
+/Test/
+/Stm32Debug/

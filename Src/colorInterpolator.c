@@ -5,11 +5,14 @@
  *      Author: philipp
  */
 
-
-#include "types.h"
-#include "colorInterpolator.h"
-#include "system.h"
 #include <stdlib.h>
+#ifdef STM32
+#include "types.h"
+#include "system.h"
+#endif
+#include "colorInterpolator.h"
+
+
 
 void initTask(Task t,uint8_t nsteps)
 {
@@ -18,8 +21,15 @@ void initTask(Task t,uint8_t nsteps)
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
 	t->state=0;
-	void* csArray = malloc(nsteps*sizeof(ColorStepType));
-	t->steps = (ColorStepType*)csArray;
+	if (nsteps > 0)
+	{
+		void* csArray = malloc(nsteps*sizeof(ColorStepType));
+		t->steps = (ColorStepType*)csArray;
+	}
+	else
+	{
+		t->steps = 0;
+	}
 	for(uint8_t c=0;c<nsteps;c++)
 	{
 		t->steps[c].r=0;
@@ -87,7 +97,7 @@ void setReady(Task t)
 
 void updateTask(Task t,RGBStream * lampdata)
 {
-	if ((t->state & 0x3) ==2) // running
+	if ((t->state & 0x3) ==2 && t->steps != 0) // running
 	{
 		if (t->stepProgressionCnt == t->steps[t->stepCnt].frames)
 		{

@@ -4,6 +4,8 @@
  *  Created on: Jul 27, 2021
  *      Author: philipp
  */
+#ifdef STM32
+
 #include "types.h"
 #include "system.h"
 
@@ -195,3 +197,5 @@ extern uint8_t * rawdata_ptr;
 #define SEND_STATE_BUFFER_UNDERRUN 4
 
 #endif /* LED_TIMER_H_ */
+
+#endif

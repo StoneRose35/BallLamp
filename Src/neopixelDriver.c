@@ -4,6 +4,8 @@
  *  Created on: Jul 27, 2021
  *      Author: philipp
  */
+#ifdef STM32
+
 #include "neopixelDriver.h"
 volatile uint8_t sendState=SEND_STATE_INITIAL;
 
@@ -214,3 +216,5 @@ void i2cInit()
 	I2C1->CR1 |= (1 << 2) | (1 << 0); // enable i2c1
 
 }
+
+#endif

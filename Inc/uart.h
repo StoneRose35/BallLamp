@@ -4,6 +4,7 @@
  *  Created on: 29.08.2021
  *      Author: philipp
  */
+#ifdef STM32
 
 #ifndef UART_H_
 #define UART_H_
@@ -43,3 +44,5 @@ uint8_t sendCharAsync();
 
 
 #endif /* UART_H_ */
+
+#endif

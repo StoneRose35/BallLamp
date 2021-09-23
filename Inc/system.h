@@ -30,6 +30,10 @@
 
 #define TASK_CONSOLE 1
 
+#ifndef STM32
+#include <stdint.h>
+#endif
+
 typedef struct
 {
 	uint8_t g;
