@@ -5,6 +5,7 @@
 #include "system.h"
 
 uint8_t commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
+uint8_t commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
 char cmdBfr[3];
 volatile uint8_t cbfCnt = 0;
@@ -35,22 +36,29 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 			c1++;
 			obCnt++;
 		}
-		if (cbfIdx > 0)
-		{
-		// copy command into the lowest entry
-			copyCommand(cbfIdx,0);
 
-		// set cbfIdx to 0
-		}
-		cbfIdx=0;
-		handleCommand((const char*)commandBuffer,lamps);
+
+		// copy the possibly edited command into the first position of the shadow command buffer
+		copyCommandBetweenArrays(cbfIdx,0,commandBuffer,commandBufferShadow);
 
 		// push command into history
 		for(uint8_t c=COMMAND_HISTORY_SIZE-1;c>0;c--)
 		{
-			copyCommand(c-1,c);
+			copyCommand(c-1,c,commandBufferShadow);
 		}
-		clearCommandBuffer(cbfIdx);
+
+		cbfIdx=0;
+
+		handleCommand((const char*)commandBuffer,lamps);
+
+		clearCommandBuffer(cbfIdx,commandBufferShadow);
+
+		// copy shadow into edit buffer
+		for (uint16_t cc=0;cc<COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE;cc++)
+		{
+			*(commandBuffer+cc) = *(commandBufferShadow+cc);
+		}
+
 		cursor = 0;
 
 	}
@@ -109,7 +117,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 		cmdBfr[mode-1] = c;
 		mode++;
 	}
-	else if (mode==2) 		// command mode, so far only arrow left and arrow right is supported
+	else if (mode==2) 		// command mode, arrows behave rougly the same as in bash
 	{
 		cmdBfr[mode-1] = c;
 		mode = 0;
@@ -215,11 +223,11 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 }
 
 
-void clearCommandBuffer(uint8_t idx)
+void clearCommandBuffer(uint8_t idx,uint8_t* cmdBfr)
 {
 	for(uint16_t cnt=0; cnt<COMMAND_BUFFER_SIZE; cnt++)
 	{
-		commandBuffer[idx*COMMAND_BUFFER_SIZE + cnt] = 0;
+		*(cmdBfr + idx*COMMAND_BUFFER_SIZE + cnt) = 0;
 	}
 	cbfCnt=0;
 }
@@ -232,12 +240,19 @@ void clearOutBuffer()
 	}
 }
 
-void copyCommand(uint8_t idxSrc,uint8_t idxTarget)
+void copyCommand(uint8_t idxSrc,uint8_t idxTarget,uint8_t* cmdBfr)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
 	{
-		*(commandBuffer + idxTarget*COMMAND_BUFFER_SIZE + c) = *(commandBuffer + idxSrc*COMMAND_BUFFER_SIZE + c);
+		*(cmdBfr + idxTarget*COMMAND_BUFFER_SIZE + c) = *(cmdBfr + idxSrc*COMMAND_BUFFER_SIZE + c);
 	}
 }
 
+void copyCommandBetweenArrays(uint8_t idxSrc,uint8_t idxTarget,uint8_t* cmdBfrSrc,uint8_t* cmdBfrTarget)
+{
+	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
+	{
+		*(cmdBfrTarget + idxTarget*COMMAND_BUFFER_SIZE + c) = *(cmdBfrSrc + idxSrc*COMMAND_BUFFER_SIZE + c);
+	}
+}
 
