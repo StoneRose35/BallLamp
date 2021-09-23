@@ -2,7 +2,7 @@
 #include "types.h"
 #include "stringFunctions.h"
 
-void toChar(uint8_t nr, char * out)
+void UInt8ToChar(uint8_t nr, char * out)
 {
 	uint8_t pos=100;
 	uint8_t cntr=0,charpos=0;
@@ -31,6 +31,67 @@ void toChar(uint8_t nr, char * out)
 	}
 	out[charpos]=0;
 }
+
+void UInt16ToChar(uint16_t nr, char * out)
+{
+	uint16_t pos=10000;
+	uint16_t cntr=0,charpos=0;
+	uint16_t firstDigit = 0;
+	if (nr==0)
+	{
+		out[charpos++]=0x30;
+	}
+	else
+	{
+		while (pos > 0)
+		{
+			cntr=0;
+			while (nr >= pos)
+			{
+				nr -= pos;
+				cntr++;
+			}
+			if (cntr > 0 || firstDigit > 0)
+			{
+				out[charpos++] = cntr + 0x30;
+				firstDigit = 1;
+			}
+			pos /= 10;
+		}
+	}
+	out[charpos]=0;
+}
+
+void UInt32ToChar(uint32_t nr, char * out)
+{
+	uint32_t pos=1000000000;
+	uint32_t cntr=0,charpos=0;
+	uint32_t firstDigit = 0;
+	if (nr==0)
+	{
+		out[charpos++]=0x30;
+	}
+	else
+	{
+		while (pos > 0)
+		{
+			cntr=0;
+			while (nr >= pos)
+			{
+				nr -= pos;
+				cntr++;
+			}
+			if (cntr > 0 || firstDigit > 0)
+			{
+				out[charpos++] = cntr + 0x30;
+				firstDigit = 1;
+			}
+			pos /= 10;
+		}
+	}
+	out[charpos]=0;
+}
+
 
 uint8_t startsWith(const char* ptrn,const char* target)
 {

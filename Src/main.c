@@ -25,6 +25,7 @@
 #include "uart.h"
 #include "consoleHandler.h"
 #include "colorInterpolator.h"
+#include "stringFunctions.h"
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -88,19 +89,28 @@ void colorUpdate(RGB * color,uint32_t phase)
 
 int main(void)
 {
+	char nrbfr[16];
+
 	uint8_t tasksDone = 1;
     setupClock();
 
 	initTimer();
 	initUart();
 
-	printf("initializing color interpolators");
+	printf("initializing color interpolators\r\n");
 	/*
 	for(uint8_t c=0;c<N_LAMPS;c++)
 	{
 		initTask(interpolators+c,0);
 	}
 */
+
+	printf("interpolators size is: ");
+	uint32_t iSize = sizeof(interpolators);
+	UInt32ToChar(iSize,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+
 
 	// test hack
 	initTask(interpolators+10,4);
@@ -160,17 +170,8 @@ int main(void)
 		/*
 		 * Time slot for handling tasks
 		 */
-
-
-		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
+		if (tasksDone == 0)
 		{
-			// potential error handling
-			printf("BufferUnderrun!!\r\n");
-		}
-
-		if (getSendState()==SEND_STATE_SENT || getSendState()==SEND_STATE_BUFFER_UNDERRUN)//(WAIT_STATE && dummy_cnt > 0) // is in wait state after after the data transfer
-		{
-
 			for(uint8_t c=0;c<N_LAMPS;c++)
 			{
 				if (((interpolators+c)->state & 0x3) != 0)
@@ -178,7 +179,19 @@ int main(void)
 					updateTask(interpolators+c,lamps);
 				}
 			}
+			tasksDone=1;
+		}
 
+		// if the tasks are finished after the fps time has elapsed the next frame doesn't show
+		// the correct data due to a buffer underrun
+		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
+		{
+			// potential error handling
+			printf("BufferUnderrun!!\r\n");
+		}
+
+		if (getSendState()==SEND_STATE_SENT || getSendState()==SEND_STATE_BUFFER_UNDERRUN)// is in wait state after after the data transfer
+		{
 			decompressRgbArray(lamps,N_LAMPS);
 		}
 

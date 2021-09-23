@@ -27,9 +27,8 @@ typedef ColorStepType *ColorStep;
 
 typedef struct {
 	ColorStepType * steps;
-	uint8_t Nsteps;
-
 	uint32_t stepProgressionCnt;
+	uint8_t Nsteps;
 	uint8_t stepCnt;
 	uint8_t lamp_nr;
 	uint8_t state; // bits 0-1: 0 stopped, 1 starting, 2 running, bit2: repeating if set

@@ -29,7 +29,7 @@ void TIM2_IRQHandler()
 		else
 		{
 			// finished clocking of the last data bit
-			TIM2->ARR = 1979733;
+			TIM2->ARR = REMAINING_WAITTIME; //1979733;
 			TIM2->CCR3 = 0x0;
             sendState = SEND_STATE_SENT;
 		}

@@ -115,7 +115,7 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	}
 	printf(" * RGB(<red>,<green>,<blue>,<LedNumber>)\r\n");
 	printf("LedNumber is from 0 to ");
-	toChar(N_LAMPS,nrbfr);
+	UInt8ToChar(N_LAMPS,nrbfr);
 	printf(nrbfr);
 	printf("\r\n<r>, <g> and <b> range from 0 to 255\r\n");
 	printf("example: RED(13) switches led 13 to red while leaving all others\r\n");

@@ -8,6 +8,9 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
+#define N_LAMPS (20)
+#define FRAMERATE (30) // frames or lamp images
+
 #define F_BUS (64000000)
 #define F_APB1 F_BUS/2
 #define WS2818_FREQ (800000) // 1/(0.4es + 0.85us)
@@ -17,8 +20,9 @@
 #define WS2818_CNT F_BUS/WS2818_FREQ
 #define WS2818_SHORT_CNT F_BUS/WS2818_SHORT
 #define WS2818_LONG_CNT F_BUS/WS2818_LONG
+#define REMAINING_WAITTIME F_BUS/FRAMERATE-F_BUS/WS2818_FREQ*24*N_LAMPS
 
-#define N_LAMPS (20)
+
 
 #define PHASE_INC (12)
 

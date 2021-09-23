@@ -9,7 +9,7 @@
 #include "types.h"
 #include "colorInterpolator.h"
 #include "system.h"
-
+#include <stdlib.h>
 
 void initTask(Task t,uint8_t nsteps)
 {
@@ -18,7 +18,7 @@ void initTask(Task t,uint8_t nsteps)
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
 	t->state=0;
-	void* csArray[nsteps*sizeof(ColorStepType)];
+	void* csArray = malloc(nsteps*sizeof(ColorStepType));
 	t->steps = (ColorStepType*)csArray;
 	for(uint8_t c=0;c<nsteps;c++)
 	{
