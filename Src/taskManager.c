@@ -59,7 +59,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 				getBracketContent(cmd,nrbfr);
 
 				//split(nrbfr,',',subColors);
-				clr = strtok(cmd,comma);
+				clr = strtok(nrbfr,comma);
 				r = toInt(clr);
 				clr = strtok(0,comma);
 				g = toInt(clr);

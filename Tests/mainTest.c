@@ -3,7 +3,8 @@
 #include "taskManager.h"
 #include "system.h"
 
-int main(int argc,char** argv)
+
+void consoleHandlerHistoryCheck()
 {
 	int state = 0;
 	RGBStream lamps[N_LAMPS];
@@ -30,6 +31,15 @@ int main(int argc,char** argv)
 	state = 4;
 	handleHelp(0,0);
 	printf("done");
-	return 0;
 }
+
+int main(int argc,char** argv)
+{
+	RGBStream lamps[N_LAMPS];
+	char command[32] = "RGB(23,34,45,1)";
+	handleCommand(command,lamps);
+}
+
+
+
 
