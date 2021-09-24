@@ -17,7 +17,7 @@
 #define TASK_STATE_PAUSED 2
 
 
-void handleCommand(const char*,RGBStream*);
+void handleCommand(char*,RGBStream*);
 
 void handleOff(uint8_t,RGBStream*);
 void handleWhite(uint8_t,RGBStream*);

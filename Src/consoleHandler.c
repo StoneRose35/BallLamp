@@ -4,8 +4,8 @@
 #include "taskManager.h"
 #include "system.h"
 
-uint8_t commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
-uint8_t commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
+char commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
+char commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
 char outBfr[OUT_BUFFER_SIZE];
 char cmdBfr[3];
 volatile uint8_t cbfCnt = 0;
@@ -49,7 +49,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 
 		cbfIdx=0;
 
-		handleCommand((const char*)commandBuffer,lamps);
+		handleCommand(commandBuffer,lamps);
 
 		clearCommandBuffer(cbfIdx,commandBufferShadow);
 
@@ -223,7 +223,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 }
 
 
-void clearCommandBuffer(uint8_t idx,uint8_t* cmdBfr)
+void clearCommandBuffer(uint8_t idx,char* cmdBfr)
 {
 	for(uint16_t cnt=0; cnt<COMMAND_BUFFER_SIZE; cnt++)
 	{
@@ -240,7 +240,7 @@ void clearOutBuffer()
 	}
 }
 
-void copyCommand(uint8_t idxSrc,uint8_t idxTarget,uint8_t* cmdBfr)
+void copyCommand(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfr)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
 	{
@@ -248,7 +248,7 @@ void copyCommand(uint8_t idxSrc,uint8_t idxTarget,uint8_t* cmdBfr)
 	}
 }
 
-void copyCommandBetweenArrays(uint8_t idxSrc,uint8_t idxTarget,uint8_t* cmdBfrSrc,uint8_t* cmdBfrTarget)
+void copyCommandBetweenArrays(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfrSrc,char* cmdBfrTarget)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
 	{

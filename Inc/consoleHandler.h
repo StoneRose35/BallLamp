@@ -14,9 +14,9 @@
 #define OUT_BUFFER_SIZE 256
 
 char* onCharacterReception(uint8_t,RGBStream * lamps);
-void clearCommandBuffer(uint8_t,uint8_t*);
+void clearCommandBuffer(uint8_t,char*);
 void clearOutBuffer();
-void copyCommand(uint8_t,uint8_t,uint8_t*); // copies a command from index src to index target
-void copyCommandBetweenArrays(uint8_t,uint8_t,uint8_t*,uint8_t*);
+void copyCommand(uint8_t,uint8_t,char*); // copies a command from index src to index target
+void copyCommandBetweenArrays(uint8_t,uint8_t,char*,char*);
 
 #endif /* CONSOLEHANDLER_H_ */

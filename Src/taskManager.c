@@ -23,7 +23,7 @@ const void(*colorCommandFunctions[])(uint8_t,RGBStream*) ={handleOff, handleWhit
 const char * rgbCommand = "RGB";
 
 
-void handleCommand(const char * cmd,RGBStream * lamps)
+void handleCommand(char * cmd,RGBStream * lamps)
 {
 	uint8_t cmdFound = 0;
 	char nrbfr[16];
@@ -52,15 +52,22 @@ void handleCommand(const char * cmd,RGBStream * lamps)
 		{
 			if (startsWith(cmd,rgbCommand)>0)
 			{
-				char subColors[4*4];
+				char * clr;
+				const char comma[2]=",";
+				uint8_t r,g,b,lampnr;
 
 				getBracketContent(cmd,nrbfr);
-				split(nrbfr,',',subColors);
-				uint8_t r,g,b;
-				r = toInt(subColors);
-				g = toInt(subColors+4);
-				b = toInt(subColors+8);
-				handleRgb(r,g,b,toInt(subColors+12),lamps);
+
+				//split(nrbfr,',',subColors);
+				clr = strtok(cmd,comma);
+				r = toInt(clr);
+				clr = strtok(0,comma);
+				g = toInt(clr);
+				clr = strtok(0,comma);
+				b = toInt(clr);
+				clr = strtok(0,comma);
+				lampnr = toInt(clr);
+				handleRgb(r,g,b,lampnr,lamps);
 				cmdFound = 1;
 			}
 		}
