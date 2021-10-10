@@ -7,6 +7,7 @@
 
 #include "taskManager.h"
 #include "neopixelDriver.h"
+#include "system.h"
 #ifdef STM32
 #include "uart.h"
 #else
@@ -17,9 +18,63 @@
 #include <stdlib.h>
 
 
+const char * colorCommands[N_COMMANDS] = {
+		"BACKGROUND",
+		"FOREGROUND",
+		"RED",
+		"GREEN",
+		"DARKBLUE",
+		"LIGHTBLUE",
+		"MAGENTA",
+		"YELLOW",
+		"ORANGE",
+		"PURPLE",
+		"YELLOWGREEN",
+		"MEDIUMBLUE",
+		"DARKYELLOW",
+		"AQUA",
+		"DARKPURPLE",
+		"GRAY",
+		"help"};
 
-const char * colorCommands[N_COMMANDS] = {"OFF","WHITE","RED","BLUE","GREEN","--help"};
-const void(*colorCommandFunctions[])(uint8_t,RGBStream*) ={handleOff, handleWhite, handleRed, handleBlue, handleGreen, handleHelp};
+RGB colors[] = {
+		{.r=0,.g=0,.b=0},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255},
+		{.r=255,.g=255,.b=255}
+};
+
+
+const void(*colorCommandFunctions[])(uint8_t,RGBStream*) ={
+		handleBackground,
+		handleForground,
+		handleRed,
+		handleGreen,
+		handleDarkblue,
+		handleLightblue,
+		handleMagenta,
+		handleYellow,
+		handleOrange,
+		handlePurple,
+		handleYellowgreen,
+		handleMediumblue,
+		handleDarkyellow,
+		handleAqua,
+		handleDarkpurple,
+		handleGray,
+		handleHelp};
 const char * rgbCommand = "RGB";
 
 
@@ -80,40 +135,86 @@ void handleCommand(char * cmd,RGBStream * lamps)
 
 }
 
-void handleOff(uint8_t nr,RGBStream * lamps)
+void handleBackground(uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=0;
-	(lamps+nr)->rgb.b=0;
-	(lamps+nr)->rgb.g=0;
+	handleRgb(0,0,0,nr,lamps);
 }
 
-void handleWhite(uint8_t nr,RGBStream * lamps)
+void handleForground(uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=0xFF;
-	(lamps+nr)->rgb.b=0xFF;
-	(lamps+nr)->rgb.g=0xFF;
+	handleRgb(255,255,255,nr,lamps);
 }
 
 void handleRed(uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=0xFF;
-	(lamps+nr)->rgb.b=0x00;
-	(lamps+nr)->rgb.g=0x00;
+	handleRgb(250,60,60,nr,lamps);
 }
 
 void handleGreen(uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=0x00;
-	(lamps+nr)->rgb.b=0x00;
-	(lamps+nr)->rgb.g=0xFF;
+	handleRgb(0,220,0,nr,lamps);
 }
 
-void handleBlue(uint8_t nr,RGBStream * lamps)
+void handleDarkblue(uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=0x00;
-	(lamps+nr)->rgb.b=0xFF;
-	(lamps+nr)->rgb.g=0x00;
+	handleRgb(30,60,255,nr,lamps);
 }
+
+void handleLightblue(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(0,200,200,nr,lamps);
+}
+
+void handleMagenta(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(240,0,130,nr,lamps);
+}
+
+void handleYellow(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(230,220,50,nr,lamps);
+}
+
+void handleOrange(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(230,130,40,nr,lamps);
+}
+
+void handlePurple(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(160,0,200,nr,lamps);
+}
+
+void handleYellowgreen(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(160,230,50,nr,lamps);
+}
+
+void handleMediumblue(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(0,160,255,nr,lamps);
+}
+
+void handleDarkyellow(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(0,160,255,nr,lamps);
+}
+
+void handleAqua(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(0,210,140,nr,lamps);
+}
+
+void handleDarkpurple(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(130,0,220,nr,lamps);
+}
+
+void handleGray(uint8_t nr,RGBStream * lamps)
+{
+	handleRgb(170,170,170,nr,lamps);
+}
+
 void handleHelp(uint8_t nr,RGBStream * lamps)
 {
 	char nrbfr[4];
