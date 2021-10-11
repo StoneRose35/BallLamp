@@ -49,7 +49,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 
 		cbfIdx=0;
 
-		handleCommand(commandBuffer,lamps);
+		handleCommand(commandBufferShadow,lamps);
 
 		clearCommandBuffer(cbfIdx,commandBufferShadow);
 

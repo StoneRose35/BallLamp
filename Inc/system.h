@@ -32,6 +32,8 @@
 
 #ifndef STM32
 #include <stdint.h>
+#else
+#include "types.h"
 #endif
 
 typedef struct

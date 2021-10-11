@@ -14,6 +14,7 @@
 #include <stdio.h>
 #endif
 #include "stringFunctions.h"
+#include "intFunctions.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -38,50 +39,36 @@ const char * colorCommands[N_COMMANDS] = {
 		"help"};
 
 RGB colors[] = {
-		{.r=0,.g=0,.b=0},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255},
-		{.r=255,.g=255,.b=255}
+		{.r=0,.g=0,.b=0}, // background
+		{.r=255,.g=255,.b=255}, // foreground
+		{.r=250,.g=60,.b=60}, // 2 red
+		{.r=0,.g=220,.b=0}, // 3 green
+
+		{.r=30,.g=60,.b=255}, // 4 dark bue
+		{.r=0,.g=200,.b=200}, // 5 light blue
+		{.r=240,.g=0,.b=130}, // 6 magenta
+		{.r=230,.g=220,.b=50}, // 7 yellow
+
+		{.r=240,.g=130,.b=40}, // 8 orange
+		{.r=160,.g=0,.b=200}, // 9 purple
+		{.r=160,.g=230,.b=50}, // 10 yellow/green
+		{.r=0,.g=160,.b=255}, // 11 medium blue
+
+		{.r=230,.g=175,.b=45}, // 12 dark yellow
+		{.r=0,.g=210,.b=140}, // 13 aqua
+		{.r=130,.g=0,.b=220}, // 14 dark purple
+		{.r=170,.g=170,.b=170} // 15 gray
 };
 
-
-const void(*colorCommandFunctions[])(uint8_t,RGBStream*) ={
-		handleBackground,
-		handleForground,
-		handleRed,
-		handleGreen,
-		handleDarkblue,
-		handleLightblue,
-		handleMagenta,
-		handleYellow,
-		handleOrange,
-		handlePurple,
-		handleYellowgreen,
-		handleMediumblue,
-		handleDarkyellow,
-		handleAqua,
-		handleDarkpurple,
-		handleGray,
-		handleHelp};
 const char * rgbCommand = "RGB";
 
 
 void handleCommand(char * cmd,RGBStream * lamps)
 {
 	uint8_t cmdFound = 0;
-	char nrbfr[16];
+	char bracketContent[32];
+	uint8_t * lampnrs;
+	uint8_t nLamps;
 	if (*cmd != 0)
 	{
 		for(uint8_t cnt=0;cnt<N_COMMANDS;cnt++)
@@ -89,17 +76,11 @@ void handleCommand(char * cmd,RGBStream * lamps)
 			if (startsWith(cmd,colorCommands[cnt])>0)
 			{
 				cmdFound=1;
-				if (colorCommandFunctions[cnt] != 0)
+				getBracketContent(cmd,bracketContent);
+				nLamps = expandLampDescription(bracketContent,&lampnrs);
+				for (uint8_t c=0;c<nLamps;c++)
 				{
-					getBracketContent(cmd,nrbfr);
-					if (nrbfr != 0)
-					{
-						(*colorCommandFunctions[cnt])(toInt(nrbfr),lamps);
-					}
-				}
-				else
-				{
-					printf("\r\nNotImplementedException");
+					handleRgbStruct(*(colors+cnt),*(lampnrs+c),lamps);
 				}
 			}
 		}
@@ -109,20 +90,25 @@ void handleCommand(char * cmd,RGBStream * lamps)
 			{
 				char * clr;
 				const char comma[2]=",";
-				uint8_t r,g,b,lampnr;
+				uint8_t r,g,b;
 
-				getBracketContent(cmd,nrbfr);
+				getBracketContent(cmd,bracketContent);
 
-				//split(nrbfr,',',subColors);
-				clr = strtok(nrbfr,comma);
+				clr = strtok(bracketContent,comma);
 				r = toInt(clr);
 				clr = strtok(0,comma);
 				g = toInt(clr);
 				clr = strtok(0,comma);
 				b = toInt(clr);
-				clr = strtok(0,comma);
-				lampnr = toInt(clr);
-				handleRgb(r,g,b,lampnr,lamps);
+				clr = strtok(0,"");
+				uint8_t * lampnrs;
+
+				nLamps = expandLampDescription(clr,&lampnrs);
+				for (uint8_t c=0;c<nLamps;c++)
+				{
+					handleRgb(r,g,b,*(lampnrs+c),lamps);
+				}
+
 				cmdFound = 1;
 			}
 		}
@@ -135,85 +121,6 @@ void handleCommand(char * cmd,RGBStream * lamps)
 
 }
 
-void handleBackground(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,0,0,nr,lamps);
-}
-
-void handleForground(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(255,255,255,nr,lamps);
-}
-
-void handleRed(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(250,60,60,nr,lamps);
-}
-
-void handleGreen(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,220,0,nr,lamps);
-}
-
-void handleDarkblue(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(30,60,255,nr,lamps);
-}
-
-void handleLightblue(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,200,200,nr,lamps);
-}
-
-void handleMagenta(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(240,0,130,nr,lamps);
-}
-
-void handleYellow(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(230,220,50,nr,lamps);
-}
-
-void handleOrange(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(230,130,40,nr,lamps);
-}
-
-void handlePurple(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(160,0,200,nr,lamps);
-}
-
-void handleYellowgreen(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(160,230,50,nr,lamps);
-}
-
-void handleMediumblue(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,160,255,nr,lamps);
-}
-
-void handleDarkyellow(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,160,255,nr,lamps);
-}
-
-void handleAqua(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(0,210,140,nr,lamps);
-}
-
-void handleDarkpurple(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(130,0,220,nr,lamps);
-}
-
-void handleGray(uint8_t nr,RGBStream * lamps)
-{
-	handleRgb(170,170,170,nr,lamps);
-}
 
 void handleHelp(uint8_t nr,RGBStream * lamps)
 {
@@ -223,14 +130,61 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	{
 		printf(" * ");
 		printf(colorCommands[c]);
-		printf("(<LedNumber>)\r\n");
+		printf("(<LedNumbers>)\r\n");
 	}
-	printf(" * RGB(<red>,<green>,<blue>,<LedNumber>)\r\n");
-	printf("LedNumber is from 0 to ");
+	printf(" * RGB(<red>,<green>,<blue>,<LedNumbers>)\r\n");
+	printf("LedNumbers can be gives as any comma-separated list of lamp or ranges of lamps\r\n");
+	printf("a range of lamps is defined as <lower>-<upper>, example: '3-6' would be\r\n");
+	printf("equal to writing 3,4,5,6\r\n");
 	UInt8ToChar(N_LAMPS,nrbfr);
 	printf(nrbfr);
 	printf("\r\n<r>, <g> and <b> range from 0 to 255\r\n");
 	printf("example: RED(13) switches led 13 to red while leaving all others\r\n");
+}
+
+uint8_t expandLampDescription(char * description,uint8_t ** res)
+{
+	char * arrayElement;
+	stripWhitespaces(description);
+	arrayElement = strtok(description,",");
+	uint8_t * rangePtr;
+	uint8_t rlength=0;
+	uint8_t nlamps=0;
+	uint8_t swapval;
+	uint8_t lampsnrs[N_LAMPS];
+	void* isInArray;
+	while (arrayElement != NULL)
+	{
+		rlength = expandRange(arrayElement,&rangePtr);
+		// insert into array
+		for(uint8_t c=0;c<rlength;c++)
+		{
+			isInArray = bsearch((void*)(rangePtr+c),lampsnrs,nlamps,sizeof(uint8_t),compareUint8);
+			if (isInArray==NULL)
+			{
+				lampsnrs[nlamps++]=rangePtr[c];
+				for(uint8_t c2=nlamps-1;c2>0;c2--)
+				{
+					if(lampsnrs[c2-1] > lampsnrs[c2])
+					{
+						swapval = lampsnrs[c2-1];
+						lampsnrs[c2-1] = lampsnrs[c2];
+						lampsnrs[c2] = swapval;
+					}
+				}
+			}
+		}
+		arrayElement = strtok(NULL,",");
+	}
+	*res=lampsnrs;
+	return nlamps;
+}
+
+void handleRgbStruct(RGB clr,uint8_t nr,RGBStream * lamps)
+{
+	(lamps+nr)->rgb.r=clr.r;
+	(lamps+nr)->rgb.b=clr.b;
+	(lamps+nr)->rgb.g=clr.g;
 }
 
 void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr,RGBStream * lamps)

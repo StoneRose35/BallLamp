@@ -2,7 +2,7 @@
 #include "consoleHandler.h"
 #include "taskManager.h"
 #include "system.h"
-
+#include "stringFunctions.h"
 
 void consoleHandlerHistoryCheck()
 {
@@ -18,14 +18,19 @@ void consoleHandlerHistoryCheck()
 	onCharacterReception((uint8_t)')',lamps);
 	onCharacterReception((uint8_t)'\r',lamps);
 
+	// simulate up arrow
 	onCharacterReception((uint8_t)'\e',lamps);
 	onCharacterReception((uint8_t)'[',lamps);
 	onCharacterReception((uint8_t)'A',lamps);
 
+	// delete three characters
 	onCharacterReception(127,lamps);
 	onCharacterReception(127,lamps);
 	onCharacterReception(127,lamps);
+
+	// write a "1", text should now be BLUE1
 	onCharacterReception((uint8_t)'1',lamps);
+
 
 	onCharacterReception((uint8_t)'\r',lamps);
 
@@ -33,11 +38,76 @@ void consoleHandlerHistoryCheck()
 	printf("done");
 }
 
-int main(int argc,char** argv)
+void testExpandRange()
+{
+	uint8_t * resultdata;
+	uint8_t len;
+	char rangedef[16]="3-7";
+
+	len=expandRange(rangedef,&resultdata);
+	if (resultdata[0] - 3 != 0)
+	{
+		printf("test failed");
+	}
+	if (resultdata[4] - 7 != 0)
+	{
+		printf("test failed");
+	}
+	if(len!=5)
+	{
+		printf("test failed, length should be 5");
+	}
+}
+
+void testExpandDescription()
+{
+	char descr[16]="4";
+	uint8_t len;
+	uint8_t * lampnrarray;
+	len = expandLampDescription(descr,&lampnrarray);
+	if(len != 1)
+	{
+		printf("test failed, length should be 1");
+	}
+
+	char descr2[] = "4,2,2,7";
+	len = expandLampDescription(descr2,&lampnrarray);
+	if(len != 3)
+	{
+		printf("test failed, length should be 3");
+	}
+	if (lampnrarray[0]!= 2)
+	{
+		printf("test failed, first element should be 2");
+	}
+
+	char descr3[] = "4,2,7, 3 - 6";
+	len = expandLampDescription(descr3,&lampnrarray);
+	if(len != 6)
+	{
+		printf("test failed, length should be 6");
+	}
+}
+
+
+void testRgbCommand()
 {
 	RGBStream lamps[N_LAMPS];
 	char command[32] = "RGB(23,34,45,1)";
 	handleCommand(command,lamps);
+	if (lamps[1].rgb.r != 23 || lamps[1].rgb.g != 34 || lamps[1].rgb.b != 45)
+	{
+		printf("test failed: color set for lamp 1 is incorrect");
+	}
+}
+
+int main(int argc,char** argv)
+{
+	//consoleHandlerHistoryCheck();
+	//testExpandRange();
+	//testExpandDescription();
+	testRgbCommand();
+
 }
 
 

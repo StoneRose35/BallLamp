@@ -19,27 +19,15 @@
 
 void handleCommand(char*,RGBStream*);
 
-
-void handleBackground(uint8_t,RGBStream*);
-void handleForground(uint8_t,RGBStream*);
-void handleRed(uint8_t,RGBStream*);
-void handleGreen(uint8_t,RGBStream*);
-void handleDarkblue(uint8_t,RGBStream*);
-void handleLightblue(uint8_t,RGBStream*);
-void handleMagenta(uint8_t,RGBStream*);
-void handleYellow(uint8_t,RGBStream*);
-void handleOrange(uint8_t,RGBStream*);
-void handlePurple(uint8_t,RGBStream*);
-void handleYellowgreen(uint8_t,RGBStream*);
-void handleMediumblue(uint8_t,RGBStream*);
-void handleDarkyellow(uint8_t,RGBStream*);
-void handleAqua(uint8_t,RGBStream*);
-void handleDarkpurple(uint8_t,RGBStream*);
-void handleGray(uint8_t,RGBStream*);
-
 void handleHelp(uint8_t,RGBStream*);
 
 void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t,RGBStream*);
+void handleRgbStruct(RGB,uint8_t,RGBStream*);
+
+/*
+ * expands a string list of lamp number into a array of unique lamp numbers
+ * */
+uint8_t expandLampDescription(char *,uint8_t**);
 
 
 #endif /* TASKMANAGER_H_ */

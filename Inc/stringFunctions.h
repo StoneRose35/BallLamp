@@ -18,6 +18,14 @@ void UInt32ToChar(uint32_t, char*);
 uint8_t startsWith(const char*,const char*);
 uint8_t toInt(char*);
 void getBracketContent(const char*,char*);
+void stripWhitespaces(char *);
+
+/*
+ * converts a string denoting an integer range as <lower>-<higher>, ex 12-17
+ * into an array, ex 12, 13, 14, 15, 16, 17, returns the array length, first argument is the input string,
+ * second argument is the pointer to the result array
+ * */
+uint8_t expandRange(char *,uint8_t**);
 
 
 #endif /* STRINGFUNCTIONS_H_ */
