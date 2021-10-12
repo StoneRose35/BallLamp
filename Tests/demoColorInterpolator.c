@@ -43,5 +43,10 @@ void demoColorInterpolator()
 			}
 		}
 	}
+
+	for(uint8_t c=0;c<N_TASKS;c++)
+	{
+		resetTask(tasks+c);
+	}
 	printf("finished");
 }

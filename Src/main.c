@@ -26,6 +26,7 @@
 #include "consoleHandler.h"
 #include "colorInterpolator.h"
 #include "stringFunctions.h"
+#include "taskManager.h"
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -104,6 +105,7 @@ int main(void)
 
 
 	// test hack
+	/*
 	initTask(interpolators+10,4);
 	(interpolators+10)->lamp_nr=10;
 	setColor(interpolators+10,0,0,0,0);
@@ -129,7 +131,7 @@ int main(void)
 	setFrames(interpolators,5,1);
 	interpolators->state |= (1 << 2);
 	interpolators->state |= (1 << 0);
-
+    */
 
 	//decompressRgbArray(frame,N_LAMPS);
 	setSendState(SEND_STATE_RTS);
@@ -165,7 +167,7 @@ int main(void)
 		{
 			for(uint8_t c=0;c<N_LAMPS;c++)
 			{
-				if (((interpolators+c)->state & 0x3) != 0)
+				if (((interpolators+c)->state & 0x3) != TASK_STATE_STOPPED)
 				{
 					updateTask(interpolators+c,lamps);
 				}

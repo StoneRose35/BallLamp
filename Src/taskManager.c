@@ -35,8 +35,7 @@ const char * colorCommands[N_COMMANDS] = {
 		"DARKYELLOW",
 		"AQUA",
 		"DARKPURPLE",
-		"GRAY",
-		"help"};
+		"GRAY"};
 
 RGB colors[] = {
 		{.r=0,.g=0,.b=0}, // background
@@ -114,6 +113,14 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		}
 		if (cmdFound == 0)
 		{
+			if(startsWith(cmd,"help")>0)
+			{
+				handleHelp(0,0);
+				cmdFound = 1;
+			}
+		}
+		if (cmdFound == 0)
+		{
 			printf("\r\nUnrecognizedCommandException");
 			handleHelp(0,0);
 		}
@@ -174,6 +181,7 @@ uint8_t expandLampDescription(char * description,uint8_t ** res)
 				}
 			}
 		}
+		free(rangePtr);
 		arrayElement = strtok(NULL,",");
 	}
 	*res=lampsnrs;

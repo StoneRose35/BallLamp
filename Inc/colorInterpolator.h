@@ -14,6 +14,11 @@
 #include "types.h"
 #include "system.h"
 
+#define STATE_STOPPED 0
+#define STATE_STARTING 1
+#define STATE_RUNNING 2
+#define STATE_REPEATING 2
+
 typedef struct {
 	uint8_t r;
 	uint8_t g;
@@ -45,6 +50,7 @@ typedef TaskType *Task;
 
 
 void initTask(Task t,uint8_t nsteps);
+void resetTask(Task t);
 void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx);
 void setFrames(Task t,uint32_t nframes,uint8_t idx);
 void setReady(Task t);

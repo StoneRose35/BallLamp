@@ -43,6 +43,16 @@ void initTask(Task t,uint8_t nsteps)
 	}
 }
 
+void resetTask(Task t)
+{
+	t->lamp_nr=0;
+	t->Nsteps=0;
+	t->stepCnt=0;
+	t->stepProgressionCnt=0;
+	t->state=0;
+	free(t->steps);
+}
+
 void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
 {
 	t->steps[idx].r = r;
@@ -62,7 +72,7 @@ void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
 		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
 	}
-	else if (idx == t->Nsteps-1 && (t->state & (1 << 2))== (1 << 2))
+	else if (idx == t->Nsteps-1 && (t->state & (1 << STATE_REPEATING))== (1 << STATE_REPEATING))
 	{
 		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
@@ -79,7 +89,7 @@ void setFrames(Task t,uint32_t nframes,uint8_t idx)
 		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
 	}
-	else if (idx == t->Nsteps-1 && (t->state & (1 << 2))== (1 << 2))
+	else if (idx == t->Nsteps-1 && (t->state & (1 << STATE_REPEATING))== (1 << STATE_REPEATING))
 	{
 		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
 		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
@@ -92,12 +102,12 @@ void setReady(Task t)
 {
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
-	t->state=2;
+	t->state=STATE_STARTING;
 }
 
 void updateTask(Task t,RGBStream * lampdata)
 {
-	if ((t->state & 0x3) ==2 && t->steps != 0) // running
+	if ((t->state & 0x3) == STATE_RUNNING && t->steps != 0) // running
 	{
 		if (t->stepProgressionCnt == t->steps[t->stepCnt].frames)
 		{
@@ -105,12 +115,13 @@ void updateTask(Task t,RGBStream * lampdata)
 			t->stepProgressionCnt = 0;
 			if(t->stepCnt==t->Nsteps)
 			{
-				if((t->state & (1 << 2)) == (1 << 2))
+				if((t->state & (1 << STATE_REPEATING)) == (1 << STATE_REPEATING))
 				{
 					t->stepCnt = 0;
 				}
 				else
 				{
+					// stop the task
 					t->stepCnt--;
 					t->state &= ~(3 << 0);
 				}
@@ -134,9 +145,9 @@ void updateTask(Task t,RGBStream * lampdata)
 		lampdata[t->lamp_nr].rgb.b = t->b_cur >> 8;
 		t->stepProgressionCnt++;
 	}
-	else if ((t->state & 0x3) == 1) // starting
+	else if ((t->state & 0x3) == STATE_STARTING)
 	{
-		t->state += 1;
+		t->state = STATE_RUNNING;
 		t->r_cur = t->steps[t->stepCnt].r << 8;
 		t->g_cur = t->steps[t->stepCnt].g << 8;
 		t->b_cur = t->steps[t->stepCnt].b << 8;

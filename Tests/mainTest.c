@@ -3,6 +3,7 @@
 #include "taskManager.h"
 #include "system.h"
 #include "stringFunctions.h"
+#include "demoColorInterpolator.h"
 
 void consoleHandlerHistoryCheck()
 {
@@ -104,10 +105,10 @@ void testRgbCommand()
 int main(int argc,char** argv)
 {
 	//consoleHandlerHistoryCheck();
-	//testExpandRange();
-	//testExpandDescription();
+	testExpandRange();
+	testExpandDescription();
 	testRgbCommand();
-
+	demoColorInterpolator();
 }
 
 
