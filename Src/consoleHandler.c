@@ -65,7 +65,7 @@ char* onCharacterReception(uint8_t c,RGBStream * lamps)
 
 
 
-	else if (c == 0x7F && cbfCnt>0 && mode == 0 && cursor > 0) // DEL/backspace
+	else if ((c == 0x7F || c == 0x8) && cbfCnt>0 && mode == 0 && cursor > 0) // DEL/backspace
 	{
         if (cursor < cbfCnt) // within the command
         {
