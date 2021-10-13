@@ -7,33 +7,34 @@
 
 void consoleHandlerHistoryCheck()
 {
+	ConsoleType c1;
 
 	RGBStream lamps[N_LAMPS];
 
-	onCharacterReception((uint8_t)'B',lamps);
-	onCharacterReception((uint8_t)'L',lamps);
-	onCharacterReception((uint8_t)'U',lamps);
-	onCharacterReception((uint8_t)'E',lamps);
-	onCharacterReception((uint8_t)'(',lamps);
-	onCharacterReception((uint8_t)'0',lamps);
-	onCharacterReception((uint8_t)')',lamps);
-	onCharacterReception((uint8_t)'\r',lamps);
+	onCharacterReception(&c1,(uint8_t)'B',lamps);
+	onCharacterReception(&c1,(uint8_t)'L',lamps);
+	onCharacterReception(&c1,(uint8_t)'U',lamps);
+	onCharacterReception(&c1,(uint8_t)'E',lamps);
+	onCharacterReception(&c1,(uint8_t)'(',lamps);
+	onCharacterReception(&c1,(uint8_t)'0',lamps);
+	onCharacterReception(&c1,(uint8_t)')',lamps);
+	onCharacterReception(&c1,(uint8_t)'\r',lamps);
 
 	// simulate up arrow
-	onCharacterReception((uint8_t)'\e',lamps);
-	onCharacterReception((uint8_t)'[',lamps);
-	onCharacterReception((uint8_t)'A',lamps);
+	onCharacterReception(&c1,(uint8_t)'\e',lamps);
+	onCharacterReception(&c1,(uint8_t)'[',lamps);
+	onCharacterReception(&c1,(uint8_t)'A',lamps);
 
 	// delete three characters
-	onCharacterReception(127,lamps);
-	onCharacterReception(127,lamps);
-	onCharacterReception(127,lamps);
+	onCharacterReception(&c1,127,lamps);
+	onCharacterReception(&c1,127,lamps);
+	onCharacterReception(&c1,127,lamps);
 
 	// write a "1", text should now be BLUE1
-	onCharacterReception((uint8_t)'1',lamps);
+	onCharacterReception(&c1,(uint8_t)'1',lamps);
 
 
-	onCharacterReception((uint8_t)'\r',lamps);
+	onCharacterReception(&c1,(uint8_t)'\r',lamps);
 
 	handleHelp(0,0);
 	printf("done");

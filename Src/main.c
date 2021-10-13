@@ -91,6 +91,7 @@ void colorUpdate(RGB * color,uint32_t phase)
 int main(void)
 {
 	uint8_t tasksDone = 1;
+	ConsoleType usbConsole;
     setupClock();
 
 	initTimer();
@@ -154,7 +155,7 @@ int main(void)
 			while(inputBufferCnt > 0)
 			{
 				char* consoleBfr;
-				consoleBfr = onCharacterReception(inputBuffer[inputBufferCnt-1],lamps);
+				consoleBfr = onCharacterReception(&usbConsole,inputBuffer[inputBufferCnt-1],lamps);
 				printf(consoleBfr);
 				inputBufferCnt--;
 			}
