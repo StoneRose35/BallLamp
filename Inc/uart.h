@@ -11,7 +11,7 @@
 
 #include "types.h"
 
-#define BAUD_RATE 9600
+#define BAUD_RATE 57600
 typedef struct
 {
 	reg CR1;
