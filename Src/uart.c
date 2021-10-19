@@ -85,8 +85,8 @@ void initUart()
 	// GPIO Settings
 	RCC->AHBENR |= (1 << IOPAEN);
 	GPIOA->MODER |= (AF << 4) | (AF << 30); // alternate function for pa2 and pa15
-	GPIOA->AFRL |= (7 << 8); // PA2: UART2.TX
-	GPIOA->AFRH |= (7 << 28); //PA15: UART2.RX
+	GPIOA->AFRL |= (7 << 2*4); // PA2: UART2.TX
+	GPIOA->AFRH |= (7 << 7*4); //PA15: UART2.RX
 
 
 	// enable uart2 in rcc
