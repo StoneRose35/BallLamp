@@ -11,7 +11,9 @@
 
 #include "types.h"
 
-#define BAUD_RATE 57600
+#define BAUD_RATE_USB 57600
+#define BAUD_RATE_BT 9600
+
 typedef struct
 {
 	reg CR1;
@@ -27,6 +29,20 @@ typedef struct
 	reg TDR;
 } UartTypeDef;
 
+#define INPUT_BUFFER_SIZE 8
+#define OUTPUT_BUFFER_SIZE 256
+
+typedef struct
+{
+	char inputBuffer[INPUT_BUFFER_SIZE];
+	char outputBuffer[OUTPUT_BUFFER_SIZE];
+	uint32_t outputBufferReadCnt;
+	uint32_t outputBufferWriteCnt;
+	uint8_t inputBufferCnt;
+} CommBufferType;
+
+typedef CommBufferType* CommBuffer;
+
 #define TXE (7)
 #define TC (6)
 #define RXNE (5)
@@ -34,13 +50,14 @@ typedef struct
 #define UART1 ((UartTypeDef*)0x40013800UL)
 #define UART2 ((UartTypeDef*)0x40004400UL)
 
-#define INPUT_BUFFER_SIZE 8
-#define OUTPUT_BUFFER_SIZE 256
 
 void initUart();
 void printf(const char*);
-void sendChar(uint8_t);
-uint8_t sendCharAsync();
+
+uint8_t sendCharAsyncUsb();
+uint8_t sendCharAsyncBt();
+
+void initBTUart();
 
 
 #endif /* UART_H_ */

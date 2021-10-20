@@ -40,9 +40,13 @@ uint8_t* rawdata_ptr = rawdata;
 TaskType interpolators[N_LAMPS];
 
 volatile uint32_t task;
+volatile uint8_t context;
 
-extern volatile uint8_t inputBuffer[8];
-extern volatile uint8_t inputBufferCnt;
+//extern volatile uint8_t inputBuffer[8];
+//extern volatile uint8_t inputBufferCnt;
+
+extern CommBufferType usbCommBuffer;
+extern CommBufferType btCommBuffer;
 
 /*
  * updates the color along a hue shift with the phase going from 0 to 1535
@@ -92,10 +96,14 @@ int main(void)
 {
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
+	ConsoleType btConsole;
     setupClock();
 
 	initTimer();
 	initUart();
+	initBTUart();
+
+	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 
 	printf("initializing color interpolators\r\n");
 	for (uint8_t c=0;c<N_LAMPS;c++)
@@ -150,16 +158,32 @@ int main(void)
 			tasksDone = 0;
 		}
 
-		if ((task & (1 << TASK_CONSOLE))==(1 << TASK_CONSOLE))
+		if ((task & (1 << TASK_USB_CONSOLE))==(1 << TASK_USB_CONSOLE))
 		{
-			while(inputBufferCnt > 0)
+			context = (1 << CONTEXT_USB);
+			while(usbCommBuffer.inputBufferCnt > 0)
 			{
 				char* consoleBfr;
-				consoleBfr = onCharacterReception(&usbConsole,inputBuffer[inputBufferCnt-1],lamps);
+
+				consoleBfr = onCharacterReception(&usbConsole,usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt-1],lamps);
 				printf(consoleBfr);
-				inputBufferCnt--;
+				usbCommBuffer.inputBufferCnt--;
 			}
-			task &= ~(1 << TASK_CONSOLE);
+			task &= ~(1 << TASK_USB_CONSOLE);
+		}
+
+		if ((task & (1 << TASK_BT_CONSOLE))==(1 << TASK_BT_CONSOLE))
+		{
+			context = (1 << CONTEXT_BT);
+			while(btCommBuffer.inputBufferCnt > 0)
+			{
+				char* consoleBfr;
+
+				consoleBfr = onCharacterReception(&btConsole,btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt-1],lamps);
+				printf(consoleBfr);
+				btCommBuffer.inputBufferCnt--;
+			}
+			task &= ~(1 << TASK_BT_CONSOLE);
 		}
 		/*
 		 * Time slot for handling tasks
@@ -181,6 +205,7 @@ int main(void)
 		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
 		{
 			// potential error handling
+			context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 			printf("BufferUnderrun!!\r\n");
 		}
 
@@ -189,7 +214,8 @@ int main(void)
 			decompressRgbArray(lamps,N_LAMPS);
 		}
 
-		sendCharAsync();
+		sendCharAsyncUsb();
+		sendCharAsyncBt();
 
 	}
 }

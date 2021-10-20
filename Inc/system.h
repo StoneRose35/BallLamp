@@ -28,7 +28,11 @@
 
 #define I2C_ADDRESS (15)
 
-#define TASK_CONSOLE 1
+#define TASK_USB_CONSOLE 0
+#define TASK_BT_CONSOLE 1
+
+#define CONTEXT_USB 0
+#define CONTEXT_BT 1
 
 #ifndef STM32
 #include <stdint.h>
