@@ -18,14 +18,15 @@ typedef struct {
 	char commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
 	char outBfr[OUT_BUFFER_SIZE];
 	char cmdBfr[3];
-	volatile uint8_t cbfCnt;
-	volatile uint8_t cbfIdx;
+	uint8_t cbfCnt;
+	uint8_t cbfIdx;
 	uint8_t cursor;
 	uint8_t mode;
 } ConsoleType;
 
 typedef ConsoleType* Console;
 
+void initConsole(Console);
 char* onCharacterReception(Console,uint8_t,RGBStream * lamps);
 void clearCommandBuffer(Console,uint8_t,char*);
 void clearOutBuffer(Console);

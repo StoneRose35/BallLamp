@@ -15,6 +15,28 @@ uint8_t cursor;
 uint8_t mode = 0; // >0 for handling command code
 */
 
+void initConsole(Console console)
+{
+	uint16_t cnt;
+
+	for (cnt=0;cnt<COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE;cnt++)
+	{
+		console->commandBuffer[cnt]=0;
+		console->commandBufferShadow[cnt]=0;
+	}
+	for (cnt=0;cnt<OUT_BUFFER_SIZE;cnt++)
+	{
+		console->outBfr[cnt]=0;
+	}
+	console->cmdBfr[0]=0;
+	console->cmdBfr[1]=0;
+	console->cmdBfr[2]=0;
+	console->cbfCnt=0;
+	console->cbfIdx=0;
+	console->cursor=0;
+	console->mode=0;
+}
+
 const char * consolePrefix = "lamp-os>";
 const char * cmd_arrow_left = "[D";
 const char * cmd_arrow_right = "[C";

@@ -12,13 +12,6 @@
 #include "system.h"
 #include "consoleHandler.h"
 
-/*
-volatile char inputBuffer[INPUT_BUFFER_SIZE];
-volatile char outputBuffer[OUTPUT_BUFFER_SIZE];
-volatile uint32_t outputBufferReadCnt=0x0;
-volatile uint32_t outputBufferWriteCnt=0x0;
-volatile uint8_t inputBufferCnt=0;
-*/
 
 extern uint32_t task;
 extern uint8_t context; // used by printf to decide where a certain information should be output
@@ -106,10 +99,8 @@ void printf(const char* data)
 					sc_res = sendCharAsyncUsb();
 				}
 			}
-			cnt++;
-			cur_data = *(data + cnt);
+
 		}
-		cnt=0;
 		if ((context & (1 << CONTEXT_BT)) == (1 << CONTEXT_BT))
 		{
 			*(btCommBuffer.outputBuffer+btCommBuffer.outputBufferReadCnt) = *(data + cnt);
@@ -124,9 +115,9 @@ void printf(const char* data)
 					sc_res = sendCharAsyncBt();
 				}
 			}
-			cnt++;
-			cur_data = *(data + cnt);
 		}
+		cnt++;
+		cur_data = *(data + cnt);
 	}
 }
 
@@ -165,9 +156,9 @@ void initBTUart()
 {
 	// GPIO Settings
 	RCC->AHBENR |= (1 << IOPBEN);
-	GPIOB->MODER |= (AF << 6*2) | (AF << 7*2); // alternate function for pa2 and pa15
+	GPIOB->MODER |= (AF << 6*2) | (AF << 7*2); // alternate function for pb6 and pb7
 	GPIOB->AFRL |= (7 << 6*4) | (7 << 7*4); // PB6: UART2.TX, PB7: UART2.RX
-
+	GPIOB->PUPDR |= (1 << 7*2); // enable pullup on receiver side
 
 	// enable uart1 in rcc
 	RCC->APB2ENR |= (1 << 14);

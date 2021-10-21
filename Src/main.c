@@ -99,6 +99,9 @@ int main(void)
 	ConsoleType btConsole;
     setupClock();
 
+    initConsole(&usbConsole);
+    initConsole(&btConsole);
+
 	initTimer();
 	initUart();
 	initBTUart();
