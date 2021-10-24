@@ -25,6 +25,7 @@
 #include "uart.h"
 #include "consoleHandler.h"
 #include "colorInterpolator.h"
+#include "interpolators.h"
 #include "stringFunctions.h"
 #include "taskManager.h"
 
@@ -37,13 +38,12 @@ uint32_t bit_cnt = 0;
 uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
 
-TaskType interpolators[N_LAMPS];
+TaskType interpolatorsArray[N_LAMPS];
+TasksType interpolators;
+
 
 volatile uint32_t task;
 volatile uint8_t context;
-
-//extern volatile uint8_t inputBuffer[8];
-//extern volatile uint8_t inputBufferCnt;
 
 extern CommBufferType usbCommBuffer;
 extern CommBufferType btCommBuffer;
@@ -107,45 +107,26 @@ int main(void)
 	initBTUart();
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
-
 	printf("initializing color interpolators\r\n");
-	for (uint8_t c=0;c<N_LAMPS;c++)
-	{
-		initTask(interpolators+c,0);
-	}
+
+	interpolators.taskArray=(TaskType*)interpolatorsArray;
+	interpolators.taskArrayLength=N_LAMPS;
+	initInterpolators(&interpolators);
 
 
+	setLampInterpolator(&interpolators,10,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 10,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 10,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 10,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 10,3);
 
+	setLampInterpolator(&interpolators,1,2,MODE_REPEATING); // lamp 1, 2 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,50,INTERPOLATION_CONSTANT, 1,0);
+	setColorFramesInterpolation(&interpolators, 240,0,0, 50,INTERPOLATION_CONSTANT, 1,1);
 	// test hack
-	/*
-	initTask(interpolators+10,4);
-	(interpolators+10)->lamp_nr=10;
-	setColor(interpolators+10,0,0,0,0);
-	setColor(interpolators+10,0,255,0,1);
-	setColor(interpolators+10,0,45,130,2);
-	setColor(interpolators+10,200,200,200,3);
-	(interpolators+10)->state |= (1 << 2);
-	setFrames((interpolators+10),13,0);
-	setFrames((interpolators+10),5,1);
-	setFrames((interpolators+10),12,2);
-	setFrames((interpolators+10),27,3);
-	(interpolators+10)->state |= (1 << 0);
-	(interpolators+10)->steps[0].interpolation=1;
-	(interpolators+10)->steps[1].interpolation=1;
-	(interpolators+10)->steps[2].interpolation=1;
-	(interpolators+10)->steps[3].interpolation=1;
 
-	initTask(interpolators,2);
-	interpolators->lamp_nr=1;
-	setColor(interpolators,0,0,0,0);
-	setColor(interpolators,240,0,0,1);
-	setFrames(interpolators,5,0);
-	setFrames(interpolators,5,1);
-	interpolators->state |= (1 << 2);
-	interpolators->state |= (1 << 0);
-    */
+	startInterpolators(&interpolators);
 
-	//decompressRgbArray(frame,N_LAMPS);
 	setSendState(SEND_STATE_RTS);
 
 
@@ -193,11 +174,11 @@ int main(void)
 		 */
 		if (tasksDone == 0)
 		{
-			for(uint8_t c=0;c<N_LAMPS;c++)
+			for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
 			{
-				if (((interpolators+c)->state & 0x3) != TASK_STATE_STOPPED)
+				if ((interpolators.taskArray[c].state & 0x3) != TASK_STATE_STOPPED)
 				{
-					updateTask(interpolators+c,lamps);
+					updateTask(&interpolators.taskArray[c],lamps);
 				}
 			}
 			tasksDone=1;

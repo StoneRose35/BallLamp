@@ -18,13 +18,14 @@ void TIM2_IRQHandler()
 		if (TIM2->ARR > WS2818_CNT)
 		{
 			// waited the remaining time of 1/30s
-			TIM2->CR1 &= ~(1);
+
 			if (sendState != SEND_STATE_DATA_READY)
 			{
 				sendState = SEND_STATE_BUFFER_UNDERRUN;
 			}
 			else
 			{
+				TIM2->CR1 &= ~(1);
 				sendState = SEND_STATE_RTS;
 			}
 		}

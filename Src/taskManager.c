@@ -15,6 +15,7 @@
 #endif
 #include "stringFunctions.h"
 #include "intFunctions.h"
+#include "interpolators.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -60,7 +61,11 @@ RGB colors[] = {
 };
 
 const char * rgbCommand = "RGB";
+const char * stopCommand = "STOP";
+const char * startCommand = "START";
+const char * listCommand = "LIST";
 
+extern TasksType interpolators;
 
 void handleCommand(char * cmd,RGBStream * lamps)
 {
@@ -113,6 +118,23 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		}
 		if (cmdFound == 0)
 		{
+			if (startsWith(cmd,startCommand)>0)
+			{
+				startInterpolators(&interpolators);
+				cmdFound = 1;
+			}
+		}
+		if (cmdFound == 0)
+		{
+			if (startsWith(cmd,stopCommand)>0)
+			{
+				stopInterpolators(&interpolators);
+				cmdFound = 1;
+			}
+
+		}
+		if (cmdFound == 0)
+		{
 			if(startsWith(cmd,"help")>0)
 			{
 				handleHelp(0,0);
@@ -147,6 +169,8 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	printf(nrbfr);
 	printf("\r\n<r>, <g> and <b> range from 0 to 255\r\n");
 	printf("example: RED(13) switches led 13 to red while leaving all others\r\n");
+	printf(" * START: starts all interpolators\r\n");
+	printf(" * STOP: stops all interpolators\r\n");
 }
 
 uint8_t expandLampDescription(char * description,uint8_t ** res)

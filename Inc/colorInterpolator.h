@@ -18,6 +18,10 @@
 #define STATE_STARTING 1
 #define STATE_RUNNING 2
 #define STATE_REPEATING 2
+#define INTERPOLATION_CONSTANT 0
+#define INTERPOLATION_LINEAR 1
+#define MODE_ONE_SHOT 0
+#define MODE_REPEATING 1
 
 typedef struct {
 	uint8_t r;
@@ -48,12 +52,56 @@ typedef struct {
 typedef TaskType *Task;
 
 
+/**
+ * initializes a Task, reserves space for the given number of steps
+ */
+void initTask(Task t,uint8_t nsteps,uint8_t lampnr);
 
-void initTask(Task t,uint8_t nsteps);
-void resetTask(Task t);
+/**
+ * resets the conters to zeros, frees the space of the steps array
+ * has to be called prior th defining a new task at a certain position in the tasks array
+ */
+void destroyTask(Task t);
+
+/**
+ * sets the color present at the beginning of the step, this colors is either faded to the next step's color
+ * if interpolation is linear or kept until the next step
+ */
 void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx);
-void setFrames(Task t,uint32_t nframes,uint8_t idx);
-void setReady(Task t);
+
+/**
+ * sets the number of frames a given steps should last, 30 frames is 1s
+ */
+void setFrames(Task t,int16_t nframes,uint8_t idx);
+
+/**
+ * make the interpolator run on the next task loop iteration
+ */
+void start(Task t);
+
+/**
+ * stops the interpolator, the counters are reset
+ */
+void stop(Task t);
+
+/**
+ * pauses the interpolator, the counters are not reset
+ */
+void pause(Task t);
+
+/**
+ * resumes the interpolator, essentially restarts it without resetting the counters
+ */
+void resume(Task t);
+
+/**
+ * sets the lamp which is affected by the interpolator
+ */
+void setLampNr(Task,uint8_t);
+
+/**
+ * called by the system at each frame timedelta interrupt to update the current color of the lamp controlled by the interpolator
+ */
 void updateTask(Task t,RGBStream * lampdata);
 
 

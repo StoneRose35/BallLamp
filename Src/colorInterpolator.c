@@ -14,9 +14,9 @@
 
 
 
-void initTask(Task t,uint8_t nsteps)
+void initTask(Task t,uint8_t nsteps,uint8_t lampnr)
 {
-	t->lamp_nr=0;
+	t->lamp_nr=lampnr;
 	t->Nsteps=nsteps;
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
@@ -43,14 +43,15 @@ void initTask(Task t,uint8_t nsteps)
 	}
 }
 
-void resetTask(Task t)
+void destroyTask(Task t)
 {
-	t->lamp_nr=0;
+	t->lamp_nr=255;
 	t->Nsteps=0;
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
 	t->state=0;
 	free(t->steps);
+	t->steps=0;
 }
 
 void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
@@ -80,7 +81,7 @@ void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
 	}
 }
 
-void setFrames(Task t,uint32_t nframes,uint8_t idx)
+void setFrames(Task t,int16_t nframes,uint8_t idx)
 {
 	t->steps[idx].frames = nframes;
 	if (idx < t->Nsteps-1)
@@ -98,11 +99,36 @@ void setFrames(Task t,uint32_t nframes,uint8_t idx)
 
 }
 
-void setReady(Task t)
+void start(Task t)
 {
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
-	t->state=STATE_STARTING;
+	t->state &= ~STATE_RUNNING;
+	t->state |= STATE_STARTING;
+
+}
+
+void stop(Task t)
+{
+	t->stepCnt=0;
+	t->stepProgressionCnt=0;
+	t->state &= ~(STATE_STARTING | STATE_RUNNING);
+}
+
+void pause(Task t)
+{
+	t->state &= ~(STATE_STARTING | STATE_RUNNING);
+}
+
+void resume(Task t)
+{
+	t->state &= ~STATE_STARTING;
+	t->state |= STATE_RUNNING;
+}
+
+void setLampNr(Task t, uint8_t nr)
+{
+	t->lamp_nr=nr;
 }
 
 void updateTask(Task t,RGBStream * lampdata)
@@ -147,7 +173,8 @@ void updateTask(Task t,RGBStream * lampdata)
 	}
 	else if ((t->state & 0x3) == STATE_STARTING)
 	{
-		t->state = STATE_RUNNING;
+		t->state &= ~0x3;
+		t->state |= STATE_RUNNING;
 		t->r_cur = t->steps[t->stepCnt].r << 8;
 		t->g_cur = t->steps[t->stepCnt].g << 8;
 		t->b_cur = t->steps[t->stepCnt].b << 8;
