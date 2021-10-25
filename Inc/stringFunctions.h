@@ -15,6 +15,8 @@
 void UInt8ToChar(uint8_t, char*);
 void UInt16ToChar(uint16_t, char*);
 void UInt32ToChar(uint32_t, char*);
+void toPercentChar(float,char*);
+
 uint8_t startsWith(const char*,const char*);
 uint8_t toUInt8(char*);
 int16_t toInt16(char*);

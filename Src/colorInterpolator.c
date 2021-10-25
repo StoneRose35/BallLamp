@@ -50,7 +50,10 @@ void destroyTask(Task t)
 	t->stepCnt=0;
 	t->stepProgressionCnt=0;
 	t->state=0;
-	free(t->steps);
+	if(t->steps != 0)
+	{
+		free(t->steps);
+	}
 	t->steps=0;
 }
 
@@ -185,5 +188,29 @@ void updateTask(Task t,RGBStream * lampdata)
 		//t->stepProgressionCnt++;
 
 	}
-
 }
+
+float getProgression(Task t)
+{
+	uint32_t totalFrames=0,passedFrames=0;
+	for (uint8_t c=0;c< t->Nsteps;c++)
+	{
+		totalFrames += t->steps[c].frames;
+		if (c < t->stepCnt)
+		{
+			passedFrames += t->steps[c].frames;
+		}
+		else if (c == t->stepCnt)
+		{
+			passedFrames += t->stepProgressionCnt;
+		}
+	}
+	return (float)passedFrames/(float)totalFrames;
+}
+
+uint32_t getSize(Task t)
+{
+	return sizeof(TaskType) + t->Nsteps*sizeof(ColorStepType);
+}
+
+

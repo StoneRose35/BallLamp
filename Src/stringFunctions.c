@@ -4,6 +4,29 @@
 #include <string.h>
 #include <stdlib.h>
 
+
+void toPercentChar(float percentVal,char * out)
+{
+	uint32_t ival = (uint32_t)(percentVal*100000.0);
+	UInt32ToChar(ival,out);
+	//re-insert comma
+	uint8_t str_len = 0;
+	char swap, swap2;
+	while (*(out+str_len) != 0)
+	{
+		str_len++;
+	}
+	swap = out[str_len-3];
+	out[str_len-3] = '.';
+	for(uint8_t c=str_len-2;c<str_len+1;c++)
+	{
+		swap2 = out[c];
+		out[c] = swap;
+		swap = swap2;
+	}
+	out[str_len+2] = 0;
+}
+
 void UInt8ToChar(uint8_t nr, char * out)
 {
 	uint8_t pos=100;

@@ -16,6 +16,7 @@
 #include "stringFunctions.h"
 #include "intFunctions.h"
 #include "interpolators.h"
+#include "taskManagerUtils.h"
 #include <string.h>
 #include <stdlib.h>
 
@@ -91,17 +92,9 @@ void handleCommand(char * cmd,RGBStream * lamps)
 					nLamps = expandLampDescription(bracketContent,&lampnrs);
 					for (uint8_t c=0;c<nLamps;c++)
 					{
-						if (*(lampnrs+c) < N_LAMPS)
+						if (checkLampRange(*(lampnrs+c),&has_errors) == 1)
 						{
 							handleRgbStruct(*(colors+cnt),*(lampnrs+c),lamps);
-						}
-						else
-						{
-							printf("ERROR: Lamp nr ");
-							UInt8ToChar(*(lampnrs+c),nrbfr);
-							printf(nrbfr);
-							printf(" out of range\n\n");
-							has_errors = 1;
 						}
 					}
 				}
@@ -118,37 +111,16 @@ void handleCommand(char * cmd,RGBStream * lamps)
 				char * clr;
 				const char comma[2]=",";
 				uint8_t r,g,b;
-
+				has_errors = 0;
 				getBracketContent(cmd,bracketContent);
 				if (bracketContent != 0)
 				{
 					clr = strtok(bracketContent,comma);
-					if (clr != 0)
-					{
-						r = toUInt8(clr);
-					}
-					else
-					{
-						has_errors = 1;
-					}
+					r = tryToUInt8(clr,&has_errors);
 					clr = strtok(0,comma);
-					if (clr != 0)
-					{
-						g = toUInt8(clr);
-					}
-					else
-					{
-						has_errors = 1;
-					}
+					g = tryToUInt8(clr,&has_errors);
 					clr = strtok(0,comma);
-					if (clr != 0)
-					{
-						b = toUInt8(clr);
-					}
-					else
-					{
-						has_errors = 1;
-					}
+					b = tryToUInt8(clr,&has_errors);
 					if (has_errors == 1)
 					{
 						printf("ERROR: invalid number of arguments\r\n");
@@ -160,16 +132,9 @@ void handleCommand(char * cmd,RGBStream * lamps)
 						nLamps = expandLampDescription(clr,&lampnrs);
 						for (uint8_t c=0;c<nLamps;c++)
 						{
-							if (*(lampnrs+c) < N_LAMPS)
+							if (checkLampRange(*(lampnrs+c),&has_errors)==1)
 							{
 								handleRgb(r,g,b,*(lampnrs+c),lamps);
-							}
-							else
-							{
-								printf("ERROR: Lamp nr ");
-								UInt8ToChar(*(lampnrs+c),nrbfr);
-								printf(nrbfr);
-								printf(" out of range\n\n");
 							}
 						}
 					}
@@ -190,6 +155,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		{
 			if (startsWith(cmd,startCommand)>0)
 			{
+				has_errors = 0;
 				startInterpolators(&interpolators);
 				cmdFound = 1;
 			}
@@ -198,6 +164,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		{
 			if (startsWith(cmd,stopCommand)>0)
 			{
+				has_errors = 0;
 				stopInterpolators(&interpolators);
 				cmdFound = 1;
 			}
@@ -207,6 +174,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		{
 			if(startsWith(cmd,"HELP")>0)
 			{
+				has_errors = 0;
 				handleHelp(0,0);
 				cmdFound = 1;
 			}
@@ -224,45 +192,15 @@ void handleCommand(char * cmd,RGBStream * lamps)
 				if (bracketContent != 0)
 				{
 					var = strtok(bracketContent,",");
-					if (var != 0)
+					lampnr = tryToUInt8(var,&has_errors);
+					if (has_errors == 0)
 					{
-						lampnr = toUInt8(var);
-						if (lampnr >= N_LAMPS)
-						{
-							printf("ERROR: Lamp range is from 0 to ");
-							UInt8ToChar(N_LAMPS, nrbfr);
-							printf(nrbfr);
-							printf("\r\n");
-							has_errors = 1;
-						}
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
+						checkLampRange(lampnr,&has_errors);
 					}
 					var = strtok(0,",");
-					if (var != 0)
-					{
-						nsteps = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
-
+					nsteps = tryToUInt8(var,&has_errors);
 					var = strtok(0,",");
-					if ( var != 0)
-					{
-						repeating = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
-
+					repeating = tryToUInt8(var,&has_errors);
 					if (repeating > 1)
 					{
 						printf("ERROR: repeating has to be either 0 or 1\r\n");
@@ -273,6 +211,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 						printf("ERROR: a repeating color sequence with only one color\r\n");
 						printf("       is meaningless, use RGB for setting a constant color\r\n");
 						printf("       or set <repeating> to 0\r\n");
+						has_errors = 1;
 					}
 					if (has_errors == 0)
 					{
@@ -308,88 +247,27 @@ void handleCommand(char * cmd,RGBStream * lamps)
 				if (bracketContent != 0)
 				{
 					var = strtok(bracketContent,",");
-					if (var != 0)
-					{
-						r = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					r = tryToUInt8(var,&has_errors);
 					var = strtok(0,",");
-					if (var != 0)
-					{
-						g = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					g = tryToUInt8(var,&has_errors);
 					var = strtok(0,",");
-					if( var != 0)
-					{
-						b = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					b = tryToUInt8(var,&has_errors);
 					var = strtok(0,",");
-					if (var != 0)
-					{
-						frames = toInt16(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					frames = tryToInt16(var,&has_errors);
 					var = strtok(0,",");
-					if (var != 0)
+					interpolation = tryToUInt8(var,&has_errors);
+
+					if (interpolation > 1)
 					{
-						interpolation = toUInt8(var);
-						if (interpolation > 1)
-						{
-							printf("ERROR: interpolation must be either 0 for constant or 1 for linear\r\n");
-							has_errors = 1;
-						}
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
+						printf("ERROR: interpolation must be either 0 for constant or 1 for linear\r\n");
 						has_errors = 1;
 					}
+
 					var = strtok(0,",");
-					if (var != 0)
-					{
-						lampnr = toUInt8(var);
-						if (lampnr >= N_LAMPS)
-						{
-							printf("ERROR: Lamp range is from 0 to ");
-							UInt8ToChar(N_LAMPS, nrbfr);
-							printf(nrbfr);
-							printf("\r\n");
-							has_errors = 1;
-						}
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					lampnr = tryToUInt8(var,&has_errors);
+					checkLampRange(lampnr,&has_errors);
 					var = strtok(0,",");
-					if (var != 0)
-					{
-						step = toUInt8(var);
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-						has_errors = 1;
-					}
+					step = tryToUInt8(var,&has_errors);
 
 					if (has_errors == 0)
 					{
@@ -411,11 +289,88 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		}
 		if (cmdFound == 0)
 		{
+			if(startsWith(cmd,"DESCI")>0)
+			{
+				describeInterpolators();
+				cmdFound = 1;
+			}
+		}
+		if (cmdFound == 0)
+		{
+			if(startsWith(cmd,"DESTROY"))
+			{
+				has_errors = 0;
+				uint8_t lampnr;
+				uint8_t lampidx;
+				getBracketContent(cmd,bracketContent);
+				if (bracketContent != 0)
+				{
+					lampnr = tryToUInt8(bracketContent,&has_errors);
+					if (checkLampRange(lampnr,&has_errors) != 0)
+					{
+						lampidx = getLampIndex(&interpolators,lampnr);
+						if (lampidx != 0xFF)
+						{
+							destroyTask(interpolators.taskArray+lampidx);
+						}
+						else
+						{
+							printf("ERROR: no interpolator found to destroy\r\n");
+						}
+					}
+				}
+				cmdFound = 1;
+			}
+		}
+		if (cmdFound == 0)
+		{
 			printf("\r\nUnrecognizedCommandException");
 			handleHelp(0,0);
 		}
 	}
 
+}
+
+void describeInterpolators()
+{
+	char nrbfr[8];
+	for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
+	{
+		if (interpolators.taskArray[c].steps != 0)
+		{
+			printf("Color-Sequence ");
+			UInt8ToChar(c,nrbfr);
+			printf(nrbfr);
+			printf("\r\n");
+			printf("   Steps: ");
+			UInt8ToChar(interpolators.taskArray[c].Nsteps,nrbfr);
+			printf(nrbfr);
+			printf(", Lamp: ");
+			UInt8ToChar(interpolators.taskArray[c].lamp_nr,nrbfr);
+			printf(nrbfr);
+			if((interpolators.taskArray[c].state & 0x4) == 0x4)
+			{
+				printf("\r\n   Mode: repeating");
+			}
+			else
+			{
+				printf("\r\n   Mode: one-shot");
+			}
+			printf(", State: ");
+			if((interpolators.taskArray[c].state & 0x2) == 0x2)
+			{
+				printf("running");
+			}
+			else
+			{
+				printf("stopped/starting");
+			}
+			printf(", Progression: ");
+			toPercentChar(getProgression(interpolators.taskArray+c),nrbfr);
+			printf(nrbfr);
+			printf("%\r\n\r\n");
+		}
+	}
 }
 
 

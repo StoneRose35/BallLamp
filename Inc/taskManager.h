@@ -24,6 +24,8 @@ void handleHelp(uint8_t,RGBStream*);
 void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t,RGBStream*);
 void handleRgbStruct(RGB,uint8_t,RGBStream*);
 
+void describeInterpolators();
+
 /*
  * expands a string list of lamp number into a array of unique lamp numbers
  * */

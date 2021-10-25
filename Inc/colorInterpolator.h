@@ -105,4 +105,15 @@ void setLampNr(Task,uint8_t);
 void updateTask(Task t,RGBStream * lampdata);
 
 
+/**
+ * gets the current Task Progression as a number from 0 to 1
+ */
+float getProgression(Task t);
+
+/**
+ * returns the size in bytes
+ */
+uint32_t getSize(Task t);
+
+
 #endif /* COLORINTERPOLATOR_H_ */

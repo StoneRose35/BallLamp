@@ -143,6 +143,23 @@ void testConvertInts()
 
 }
 
+void testPercentToChar()
+{
+	char nrbfr[8];
+	float a=0.784528;
+
+	toPercentChar(a,nrbfr);
+	if (!(nrbfr[0] == '7' &&
+			nrbfr[1] == '8' &&
+			nrbfr[2] == '.' &&
+			nrbfr[3] == '4' &&
+			nrbfr[4] == '5' &&
+			nrbfr[5] == '2' ))
+	{
+		printf("test failed, returned string is not 78.452\n");
+	}
+}
+
 int main(int argc,char** argv)
 {
 	interpolators.taskArray=(TaskType*)interpolatorsArray;
@@ -155,6 +172,7 @@ int main(int argc,char** argv)
 	testRgbCommand();
 	demoColorInterpolator();
 	testConvertInts();
+	testPercentToChar();
 }
 
 

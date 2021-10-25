@@ -21,6 +21,7 @@ typedef struct {
 typedef TasksType* Tasks;
 
 void initInterpolators(Tasks tasks);
+uint8_t getLampIndex(Tasks,uint8_t);
 uint8_t setLampInterpolator(Tasks tasks,uint8_t,uint8_t,uint8_t);
 uint8_t setColorFramesInterpolation(Tasks, uint8_t,uint8_t,uint8_t,int16_t, uint8_t,uint8_t, uint8_t);
 uint8_t startInterpolators(Tasks tasks);
