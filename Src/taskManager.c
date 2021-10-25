@@ -291,6 +291,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 		{
 			if(startsWith(cmd,"DESCI")>0)
 			{
+				has_errors = 0;
 				describeInterpolators();
 				cmdFound = 1;
 			}
@@ -398,6 +399,7 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	printf("   <interpolation> is 0 for constant, 1 for linear interpolation to the next value\r\n");
 	printf("   <lampnr> is the lamp nr,<step> is the step to define\r\n");
 	printf("   make sure to call INTERP prior to defining individual steps\r\n");
+	printf(" * DESCI: returns a description of all initialized interpolators\r\n");
 	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr\r\n");
 	printf("   does nothing if the interpolator is not initialized\r\n");
 
