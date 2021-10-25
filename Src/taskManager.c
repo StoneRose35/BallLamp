@@ -393,6 +393,13 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	printf(" * STOP: stops all interpolators\r\n");
 	printf(" * INTERP(<lamp_nr>,<nSteps>,<repeating>): defines an interpolator/color sequence for Lamp <lampnr>\r\n");
 	printf("   with <nSteps> steps, loops if <repeating> is 1, executes as one-shot if 0 \r\n");
+	printf(" * ISTEP(<r>,<g>,<b>,<frames>,<interpolation>,<lampnr>,<step>)\r\n");
+	printf("   with <r>, <g>, <b> being the colors, <frames> the number of frames the step should last\r\n");
+	printf("   <interpolation> is 0 for constant, 1 for linear interpolation to the next value\r\n");
+	printf("   <lampnr> is the lamp nr,<step> is the step to define\r\n");
+	printf("   make sure to call INTERP prior to defining individual steps\r\n");
+	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr\r\n");
+	printf("   does nothing if the interpolator is not initialized\r\n");
 
 }
 
