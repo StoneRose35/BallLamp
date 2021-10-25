@@ -44,10 +44,9 @@ uint8_t setLampInterpolator(Tasks tasks,uint8_t lampNr,uint8_t nsteps,uint8_t re
 			initTask(&tasks->taskArray[c],nsteps,lampNr);
 			tasks->taskArray[c].state &= ~0x4;
 			tasks->taskArray[c].state |= repeating << 2;
-			tasks->taskArray[c].state |= STATE_STARTING;
 			taskCreated=1;
 		}
-		else if ((tasks->taskArray[c].state & 0x3) == STATE_STOPPED && firstFreeIndex == 0xFF)
+		else if (tasks->taskArray[c].steps != 0 && firstFreeIndex == 0xFF)
 		{
 			firstFreeIndex=c;
 		}

@@ -4,6 +4,12 @@
 #include "system.h"
 #include "stringFunctions.h"
 #include "demoColorInterpolator.h"
+#include "colorInterpolator.h"
+#include "interpolators.h"
+
+
+TaskType interpolatorsArray[N_LAMPS];
+TasksType interpolators;
 
 void consoleHandlerHistoryCheck()
 {
@@ -105,6 +111,10 @@ void testRgbCommand()
 
 int main(int argc,char** argv)
 {
+	interpolators.taskArray=(TaskType*)interpolatorsArray;
+	interpolators.taskArrayLength=N_LAMPS;
+	initInterpolators(&interpolators);
+
 	//consoleHandlerHistoryCheck();
 	testExpandRange();
 	testExpandDescription();
