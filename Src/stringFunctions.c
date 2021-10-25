@@ -109,7 +109,7 @@ uint8_t startsWith(const char* ptrn,const char* target)
 	return isEqual;
 }
 
-uint8_t toInt(char * chr)
+uint8_t toUInt8(char * chr)
 {
 	uint8_t res=0;
 	uint8_t cnt=0;
@@ -118,6 +118,29 @@ uint8_t toInt(char * chr)
 		res *= 10;
 		res += (chr[cnt] - 0x30);
 		cnt++;
+	}
+	return res;
+}
+
+int16_t toInt16(char * chr)
+{
+	int16_t res=0;
+	int16_t cnt=0;
+	uint8_t hasMinus = 0;
+	if(chr[cnt] == '-')
+	{
+		hasMinus = 1;
+		cnt++;
+	}
+	while (chr[cnt]!=0)
+	{
+		res *= 10;
+		res += (chr[cnt] - 0x30);
+		cnt++;
+	}
+	if (hasMinus == 1)
+	{
+		res = -res;
 	}
 	return res;
 }
@@ -195,7 +218,7 @@ uint8_t expandRange(char * stringinput,uint8_t ** result)
 	}
 	nr[c1]=0;
 
-	lowerBound = toInt(nr);
+	lowerBound = toUInt8(nr);
 	if(stringinput[c]!=0)
 	{
 		c++;
@@ -205,7 +228,7 @@ uint8_t expandRange(char * stringinput,uint8_t ** result)
 			nr[c1++]=stringinput[c++];
 		}
 		nr[c1]=0;
-		upperBound=toInt(nr);
+		upperBound=toUInt8(nr);
 	} else
 	{
 		upperBound=lowerBound;

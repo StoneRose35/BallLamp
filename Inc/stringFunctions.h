@@ -16,7 +16,8 @@ void UInt8ToChar(uint8_t, char*);
 void UInt16ToChar(uint16_t, char*);
 void UInt32ToChar(uint32_t, char*);
 uint8_t startsWith(const char*,const char*);
-uint8_t toInt(char*);
+uint8_t toUInt8(char*);
+int16_t toInt16(char*);
 void getBracketContent(const char*,char*);
 void stripWhitespaces(char *);
 

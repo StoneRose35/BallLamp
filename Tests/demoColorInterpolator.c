@@ -48,5 +48,5 @@ void demoColorInterpolator()
 	{
 		stop(tasks+c);
 	}
-	printf("finished");
+	printf("finished\n");
 }

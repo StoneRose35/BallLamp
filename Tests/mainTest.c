@@ -15,12 +15,13 @@ void consoleHandlerHistoryCheck()
 {
 	ConsoleType c1;
 
+	initConsole(&c1);
 	RGBStream lamps[N_LAMPS];
 
-	onCharacterReception(&c1,(uint8_t)'B',lamps);
-	onCharacterReception(&c1,(uint8_t)'L',lamps);
+	onCharacterReception(&c1,(uint8_t)'A',lamps);
+	onCharacterReception(&c1,(uint8_t)'Q',lamps);
 	onCharacterReception(&c1,(uint8_t)'U',lamps);
-	onCharacterReception(&c1,(uint8_t)'E',lamps);
+	onCharacterReception(&c1,(uint8_t)'A',lamps);
 	onCharacterReception(&c1,(uint8_t)'(',lamps);
 	onCharacterReception(&c1,(uint8_t)'0',lamps);
 	onCharacterReception(&c1,(uint8_t)')',lamps);
@@ -31,19 +32,28 @@ void consoleHandlerHistoryCheck()
 	onCharacterReception(&c1,(uint8_t)'[',lamps);
 	onCharacterReception(&c1,(uint8_t)'A',lamps);
 
-	// delete three characters
-	onCharacterReception(&c1,127,lamps);
+	// delete two characters
 	onCharacterReception(&c1,127,lamps);
 	onCharacterReception(&c1,127,lamps);
 
-	// write a "1", text should now be BLUE1
+	// write a "1)", text should now be AQUA(1)
 	onCharacterReception(&c1,(uint8_t)'1',lamps);
+	onCharacterReception(&c1,(uint8_t)')',lamps);
 
 
 	onCharacterReception(&c1,(uint8_t)'\r',lamps);
 
-	handleHelp(0,0);
-	printf("done");
+	if (!(lamps->rgb.r == 0 && lamps->rgb.g == 210 && lamps->rgb.b == 140))
+	{
+		printf("test failed, color of first lamp is wrong\n");
+	}
+
+	if (!((lamps+1)->rgb.r == 0 && (lamps+1)->rgb.g == 210 && (lamps+1)->rgb.b == 140))
+	{
+		printf("test failed, color of second lamp is wrong\n");
+	}
+
+
 }
 
 void testExpandRange()
@@ -55,15 +65,15 @@ void testExpandRange()
 	len=expandRange(rangedef,&resultdata);
 	if (resultdata[0] - 3 != 0)
 	{
-		printf("test failed");
+		printf("test failed\n");
 	}
 	if (resultdata[4] - 7 != 0)
 	{
-		printf("test failed");
+		printf("test failed\n");
 	}
 	if(len!=5)
 	{
-		printf("test failed, length should be 5");
+		printf("test failed, length should be 5\n");
 	}
 }
 
@@ -75,25 +85,25 @@ void testExpandDescription()
 	len = expandLampDescription(descr,&lampnrarray);
 	if(len != 1)
 	{
-		printf("test failed, length should be 1");
+		printf("test failed, length should be 1\n");
 	}
 
 	char descr2[] = "4,2,2,7";
 	len = expandLampDescription(descr2,&lampnrarray);
 	if(len != 3)
 	{
-		printf("test failed, length should be 3");
+		printf("test failed, length should be 3\n");
 	}
 	if (lampnrarray[0]!= 2)
 	{
-		printf("test failed, first element should be 2");
+		printf("test failed, first element should be 2\n");
 	}
 
 	char descr3[] = "4,2,7, 3 - 6";
 	len = expandLampDescription(descr3,&lampnrarray);
 	if(len != 6)
 	{
-		printf("test failed, length should be 6");
+		printf("test failed, length should be 6\n");
 	}
 }
 
@@ -105,8 +115,32 @@ void testRgbCommand()
 	handleCommand(command,lamps);
 	if (lamps[1].rgb.r != 23 || lamps[1].rgb.g != 34 || lamps[1].rgb.b != 45)
 	{
-		printf("test failed: color set for lamp 1 is incorrect");
+		printf("test failed: color set for lamp 1 is incorrect\n");
 	}
+}
+
+void testConvertInts()
+{
+	uint8_t v1;
+	int16_t v2;
+	v1 = toUInt8("56");
+	if (v1 != 56)
+	{
+		printf("test failed: should return 56\n");
+	}
+
+	v2 = toInt16("-134");
+	if (v2 != -134)
+	{
+		printf("test failed: should return -134\n");
+	}
+
+	v2 = toInt16("13443");
+	if (v2 != 13443)
+	{
+		printf("test failed: should return 13443\n");
+	}
+
 }
 
 int main(int argc,char** argv)
@@ -115,11 +149,12 @@ int main(int argc,char** argv)
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
 
-	//consoleHandlerHistoryCheck();
+	consoleHandlerHistoryCheck();
 	testExpandRange();
 	testExpandDescription();
 	testRgbCommand();
 	demoColorInterpolator();
+	testConvertInts();
 }
 
 
