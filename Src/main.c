@@ -21,6 +21,7 @@
 
 #include <neopixelDriver.h>
 #include "system.h"
+#include "core.h"
 #include "systemClock.h"
 #include "uart.h"
 #include "consoleHandler.h"
@@ -97,6 +98,7 @@ int main(void)
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
+	enableFpu();
     setupClock();
 
     initConsole(&usbConsole);

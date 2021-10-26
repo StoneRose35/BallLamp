@@ -24,7 +24,7 @@ void toPercentChar(float percentVal,char * out)
 		out[c] = swap;
 		swap = swap2;
 	}
-	out[str_len+2] = 0;
+	out[str_len+1] = 0;
 }
 
 void UInt8ToChar(uint8_t nr, char * out)

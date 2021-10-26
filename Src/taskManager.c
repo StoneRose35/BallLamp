@@ -80,6 +80,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 	uint8_t has_errors = 0;
 	if (*cmd != 0)
 	{
+		printf("\r\n");
 		for(uint8_t cnt=0;cnt<N_COMMANDS;cnt++)
 		{
 			if (startsWith(cmd,colorCommands[cnt])>0)
@@ -285,6 +286,7 @@ void handleCommand(char * cmd,RGBStream * lamps)
 				{
 					printf("ERROR: no content within brackets \"()\" found\r\n");
 				}
+				cmdFound=1;
 			}
 		}
 		if (cmdFound == 0)
@@ -377,7 +379,7 @@ void describeInterpolators()
 
 void handleHelp(uint8_t nr,RGBStream * lamps)
 {
-	printf("\r\nSupported Color commands are\r\n");
+	printf("Supported Color commands are\r\n");
 	for(uint8_t c=0;c<N_COMMANDS;c++)
 	{
 		printf(" * ");
