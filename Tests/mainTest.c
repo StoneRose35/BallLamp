@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "consoleHandler.h"
 #include "taskManager.h"
+#include "taskManagerUtils.h"
 #include "system.h"
 #include "stringFunctions.h"
 #include "demoColorInterpolator.h"
@@ -11,12 +12,14 @@
 TaskType interpolatorsArray[N_LAMPS];
 TasksType interpolators;
 
+RGBStream lampsarray[N_LAMPS];
+RGBStream * lamps=lampsarray;
+
 void consoleHandlerHistoryCheck()
 {
 	ConsoleType c1;
 
 	initConsole(&c1);
-	RGBStream lamps[N_LAMPS];
 
 	onCharacterReception(&c1,(uint8_t)'A',lamps);
 	onCharacterReception(&c1,(uint8_t)'Q',lamps);
@@ -110,9 +113,8 @@ void testExpandDescription()
 
 void testRgbCommand()
 {
-	RGBStream lamps[N_LAMPS];
 	char command[32] = "RGB(23,34,45,1)";
-	handleCommand(command,lamps);
+	handleCommand(command);
 	if (lamps[1].rgb.r != 23 || lamps[1].rgb.g != 34 || lamps[1].rgb.b != 45)
 	{
 		printf("test failed: color set for lamp 1 is incorrect\n");
@@ -173,6 +175,7 @@ int main(int argc,char** argv)
 	demoColorInterpolator();
 	testConvertInts();
 	testPercentToChar();
+	return 0;
 }
 
 

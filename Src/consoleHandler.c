@@ -4,16 +4,6 @@
 #include "taskManager.h"
 #include "system.h"
 
-/*
-char commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
-char commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
-char outBfr[OUT_BUFFER_SIZE];
-char cmdBfr[3];
-volatile uint8_t cbfCnt = 0;
-volatile uint8_t cbfIdx = 0;
-uint8_t cursor;
-uint8_t mode = 0; // >0 for handling command code
-*/
 
 void initConsole(Console console)
 {
@@ -73,7 +63,7 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
 
 		console->cbfIdx=0;
 
-		handleCommand(console->commandBufferShadow,lamps);
+		handleCommand(console->commandBufferShadow);
 
 		clearCommandBuffer(console,console->cbfIdx,console->commandBufferShadow);
 

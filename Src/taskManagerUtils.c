@@ -7,6 +7,9 @@
 
 
 #include "taskManagerUtils.h"
+#include "intFunctions.h"
+#include <string.h>
+#include <stdlib.h>
 #ifndef STM32
 #include <stdio.h>
 #else
@@ -58,3 +61,57 @@ uint8_t checkLampRange(uint8_t lampnr,uint8_t* has_errors_ptr)
 		return 0;
 	}
 }
+
+uint8_t expandLampDescription(char * description,uint8_t ** res)
+{
+	char * arrayElement;
+	stripWhitespaces(description);
+	arrayElement = strtok(description,",");
+	uint8_t * rangePtr;
+	uint8_t rlength=0;
+	uint8_t nlamps=0;
+	uint8_t swapval;
+	uint8_t lampsnrs[N_LAMPS];
+	void* isInArray;
+	while (arrayElement != NULL)
+	{
+		rlength = expandRange(arrayElement,&rangePtr);
+		// insert into array
+		for(uint8_t c=0;c<rlength;c++)
+		{
+			isInArray = bsearch((void*)(rangePtr+c),lampsnrs,nlamps,sizeof(uint8_t),compareUint8);
+			if (isInArray==NULL)
+			{
+				lampsnrs[nlamps++]=rangePtr[c];
+				for(uint8_t c2=nlamps-1;c2>0;c2--)
+				{
+					if(lampsnrs[c2-1] > lampsnrs[c2])
+					{
+						swapval = lampsnrs[c2-1];
+						lampsnrs[c2-1] = lampsnrs[c2];
+						lampsnrs[c2] = swapval;
+					}
+				}
+			}
+		}
+		free(rangePtr);
+		arrayElement = strtok(NULL,",");
+	}
+	*res=lampsnrs;
+	return nlamps;
+}
+
+void handleRgbStruct(RGB clr,uint8_t nr,RGBStream * lamps)
+{
+	(lamps+nr)->rgb.r=clr.r;
+	(lamps+nr)->rgb.b=clr.b;
+	(lamps+nr)->rgb.g=clr.g;
+}
+
+void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr,RGBStream * lamps)
+{
+	(lamps+nr)->rgb.r=r;
+	(lamps+nr)->rgb.b=b;
+	(lamps+nr)->rgb.g=g;
+}
+

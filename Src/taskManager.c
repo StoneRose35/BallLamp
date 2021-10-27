@@ -14,30 +14,11 @@
 #include <stdio.h>
 #endif
 #include "stringFunctions.h"
-#include "intFunctions.h"
 #include "interpolators.h"
 #include "taskManagerUtils.h"
 #include <string.h>
 #include <stdlib.h>
 
-
-const char * colorCommands[N_COMMANDS] = {
-		"BACKGROUND",
-		"FOREGROUND",
-		"RED",
-		"GREEN",
-		"DARKBLUE",
-		"LIGHTBLUE",
-		"MAGENTA",
-		"YELLOW",
-		"ORANGE",
-		"PURPLE",
-		"YELLOWGREEN",
-		"MEDIUMBLUE",
-		"DARKYELLOW",
-		"AQUA",
-		"DARKPURPLE",
-		"GRAY"};
 
 RGB colors[] = {
 		{.r=0,.g=0,.b=0}, // background
@@ -61,326 +42,124 @@ RGB colors[] = {
 		{.r=170,.g=170,.b=170} // 15 gray
 };
 
-const char * rgbCommand = "RGB";
-const char * stopCommand = "STOP";
-const char * startCommand = "START";
-const char * listCommand = "LIST";
+const char * colorCommands[N_COLOR_COMMANDS] = {
+		"BACKGROUND",
+		"FOREGROUND",
+		"RED",
+		"GREEN",
+		"DARKBLUE",
+		"LIGHTBLUE",
+		"MAGENTA",
+		"YELLOW",
+		"ORANGE",
+		"PURPLE",
+		"YELLOWGREEN",
+		"MEDIUMBLUE",
+		"DARKYELLOW",
+		"AQUA",
+		"DARKPURPLE",
+		"GRAY"};
 
-extern TasksType interpolators;
-
-
-void handleCommand(char * cmd,RGBStream * lamps)
+void colorCommand(char * cmd,void * context)
 {
-	uint8_t cmdFound = 0;
+	char bracketContent[32];
+	uint8_t nLamps;
+	uint8_t * lampnrs;
+	uint8_t has_errors = 0;
+
+	uint8_t cnt=0,idx=0xFF;
+	RGBStream* lamps =(RGBStream*)context;
+
+	for (cnt=0;cnt<N_COLOR_COMMANDS;cnt++)
+	{
+		if (startsWith(cmd,colorCommands[cnt]) > 0)
+		{
+			idx = cnt;
+		}
+	}
+	getBracketContent(cmd,bracketContent);
+	if (bracketContent != 0 && idx != 0xFF)
+	{
+		nLamps = expandLampDescription(bracketContent,&lampnrs);
+		for (uint8_t c=0;c<nLamps;c++)
+		{
+			if (checkLampRange(*(lampnrs+c),&has_errors) == 1)
+			{
+				handleRgbStruct(*(colors+idx),*(lampnrs+c),lamps);
+			}
+		}
+	}
+	else
+	{
+		printf("ERROR: no content within brackets \"()\" found\r\n");
+	}
+}
+
+void rgbCommand(char* cmd,void* context)
+{
+	char * clr;
+	const char comma[2]=",";
+	uint8_t r,g,b;
+	uint8_t has_errors = 0;
 	char bracketContent[32];
 	uint8_t * lampnrs;
 	uint8_t nLamps;
-	char nrbfr[4];
-	uint8_t retval;
-	uint8_t has_errors = 0;
-	if (*cmd != 0)
+	RGBStream* lamps =(RGBStream*)context;
+	getBracketContent(cmd,bracketContent);
+	if (bracketContent != 0)
 	{
-		printf("\r\n");
-		for(uint8_t cnt=0;cnt<N_COMMANDS;cnt++)
+		clr = strtok(bracketContent,comma);
+		r = tryToUInt8(clr,&has_errors);
+		clr = strtok(0,comma);
+		g = tryToUInt8(clr,&has_errors);
+		clr = strtok(0,comma);
+		b = tryToUInt8(clr,&has_errors);
+		if (has_errors == 1)
 		{
-			if (startsWith(cmd,colorCommands[cnt])>0)
-			{
-				has_errors = 0;
-				cmdFound=1;
-				getBracketContent(cmd,bracketContent);
-				if (bracketContent != 0)
-				{
-					nLamps = expandLampDescription(bracketContent,&lampnrs);
-					for (uint8_t c=0;c<nLamps;c++)
-					{
-						if (checkLampRange(*(lampnrs+c),&has_errors) == 1)
-						{
-							handleRgbStruct(*(colors+cnt),*(lampnrs+c),lamps);
-						}
-					}
-				}
-				else
-				{
-					printf("ERROR: no content within brackets \"()\" found\r\n");
-				}
-			}
+			printf("ERROR: invalid number of arguments\r\n");
 		}
-		if (cmdFound == 0)
-		{
-			if (startsWith(cmd,rgbCommand)>0)
-			{
-				char * clr;
-				const char comma[2]=",";
-				uint8_t r,g,b;
-				has_errors = 0;
-				getBracketContent(cmd,bracketContent);
-				if (bracketContent != 0)
-				{
-					clr = strtok(bracketContent,comma);
-					r = tryToUInt8(clr,&has_errors);
-					clr = strtok(0,comma);
-					g = tryToUInt8(clr,&has_errors);
-					clr = strtok(0,comma);
-					b = tryToUInt8(clr,&has_errors);
-					if (has_errors == 1)
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-					}
-					clr = strtok(0,"");
-					uint8_t * lampnrs;
-					if (clr != 0 && has_errors == 0)
-					{
-						nLamps = expandLampDescription(clr,&lampnrs);
-						for (uint8_t c=0;c<nLamps;c++)
-						{
-							if (checkLampRange(*(lampnrs+c),&has_errors)==1)
-							{
-								handleRgb(r,g,b,*(lampnrs+c),lamps);
-							}
-						}
-					}
-					else
-					{
-						printf("ERROR: invalid number of arguments\r\n");
-					}
-				}
-				else
-				{
-					printf("ERROR: no content within brackets \"()\" found\r\n");
-				}
+		clr = strtok(0,"");
 
-				cmdFound = 1;
-			}
-		}
-		if (cmdFound == 0)
+		if (clr != 0 && has_errors == 0)
 		{
-			if (startsWith(cmd,startCommand)>0)
+			nLamps = expandLampDescription(clr,&lampnrs);
+			for (uint8_t c=0;c<nLamps;c++)
 			{
-				has_errors = 0;
-				startInterpolators(&interpolators);
-				cmdFound = 1;
-			}
-		}
-		if (cmdFound == 0)
-		{
-			if (startsWith(cmd,stopCommand)>0)
-			{
-				has_errors = 0;
-				stopInterpolators(&interpolators);
-				cmdFound = 1;
-			}
-
-		}
-		if (cmdFound == 0)
-		{
-			if(startsWith(cmd,"HELP")>0)
-			{
-				has_errors = 0;
-				handleHelp(0,0);
-				cmdFound = 1;
-			}
-		}
-		if (cmdFound == 0)
-		{
-			if(startsWith(cmd,"INTERP") > 0)
-			{
-				has_errors = 0;
-				char * var;
-                uint8_t lampnr;
-                uint8_t nsteps;
-                uint8_t repeating;
-				getBracketContent(cmd,bracketContent);
-				if (bracketContent != 0)
+				if (checkLampRange(*(lampnrs+c),&has_errors)==1)
 				{
-					var = strtok(bracketContent,",");
-					lampnr = tryToUInt8(var,&has_errors);
-					if (has_errors == 0)
-					{
-						checkLampRange(lampnr,&has_errors);
-					}
-					var = strtok(0,",");
-					nsteps = tryToUInt8(var,&has_errors);
-					var = strtok(0,",");
-					repeating = tryToUInt8(var,&has_errors);
-					if (repeating > 1)
-					{
-						printf("ERROR: repeating has to be either 0 or 1\r\n");
-						has_errors = 1;
-					}
-					if (repeating == 1 && nsteps == 1)
-					{
-						printf("ERROR: a repeating color sequence with only one color\r\n");
-						printf("       is meaningless, use RGB for setting a constant color\r\n");
-						printf("       or set <repeating> to 0\r\n");
-						has_errors = 1;
-					}
-					if (has_errors == 0)
-					{
-						retval = setLampInterpolator(&interpolators,lampnr,nsteps,repeating);
-						if (retval != 0)
-						{
-							printf("ERROR: returned error code ");
-							UInt8ToChar(retval, nrbfr);
-							printf(nrbfr);
-							printf(" from setLampInterpolator\r\n");
-						}
-					}
+					handleRgb(r,g,b,*(lampnrs+c),lamps);
 				}
-				else
-				{
-					printf("ERROR: no content within brackets \"()\" found\r\n");
-				}
-				cmdFound = 1;
 			}
 		}
-		if (cmdFound == 0)
+		else
 		{
-			if(startsWith(cmd,"ISTEP") > 0)
-			{
-				char * var;
-				uint8_t r,g,b;
-				int16_t frames;
-				uint8_t interpolation;
-				uint8_t lampnr;
-				uint8_t step;
-				has_errors = 0;
-				getBracketContent(cmd,bracketContent);
-				if (bracketContent != 0)
-				{
-					var = strtok(bracketContent,",");
-					r = tryToUInt8(var,&has_errors);
-					var = strtok(0,",");
-					g = tryToUInt8(var,&has_errors);
-					var = strtok(0,",");
-					b = tryToUInt8(var,&has_errors);
-					var = strtok(0,",");
-					frames = tryToInt16(var,&has_errors);
-					var = strtok(0,",");
-					interpolation = tryToUInt8(var,&has_errors);
-
-					if (interpolation > 1)
-					{
-						printf("ERROR: interpolation must be either 0 for constant or 1 for linear\r\n");
-						has_errors = 1;
-					}
-
-					var = strtok(0,",");
-					lampnr = tryToUInt8(var,&has_errors);
-					checkLampRange(lampnr,&has_errors);
-					var = strtok(0,",");
-					step = tryToUInt8(var,&has_errors);
-
-					if (has_errors == 0)
-					{
-						retval = setColorFramesInterpolation(&interpolators,r,g,b,frames,interpolation,lampnr,step);
-						if (retval != 0)
-						{
-							printf("ERROR: returned error code ");
-							UInt8ToChar(retval, nrbfr);
-							printf(nrbfr);
-							printf(" from setColorFramesInterpolation\r\n");
-						}
-					}
-				}
-				else
-				{
-					printf("ERROR: no content within brackets \"()\" found\r\n");
-				}
-				cmdFound=1;
-			}
-		}
-		if (cmdFound == 0)
-		{
-			if(startsWith(cmd,"DESCI")>0)
-			{
-				has_errors = 0;
-				describeInterpolators();
-				cmdFound = 1;
-			}
-		}
-		if (cmdFound == 0)
-		{
-			if(startsWith(cmd,"DESTROY"))
-			{
-				has_errors = 0;
-				uint8_t lampnr;
-				uint8_t lampidx;
-				getBracketContent(cmd,bracketContent);
-				if (bracketContent != 0)
-				{
-					lampnr = tryToUInt8(bracketContent,&has_errors);
-					if (checkLampRange(lampnr,&has_errors) != 0)
-					{
-						lampidx = getLampIndex(&interpolators,lampnr);
-						if (lampidx != 0xFF)
-						{
-							destroyTask(interpolators.taskArray+lampidx);
-						}
-						else
-						{
-							printf("ERROR: no interpolator found to destroy\r\n");
-						}
-					}
-				}
-				cmdFound = 1;
-			}
-		}
-		if (cmdFound == 0)
-		{
-			printf("\r\nUnrecognizedCommandException");
-			handleHelp(0,0);
+			printf("ERROR: invalid number of arguments\r\n");
 		}
 	}
-
+	else
+	{
+		printf("ERROR: no content within brackets \"()\" found\r\n");
+	}
 }
 
-void describeInterpolators()
+
+
+void startCommand(char * cmd,void* context)
 {
-	char nrbfr[8];
-	for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
-	{
-		if (interpolators.taskArray[c].steps != 0)
-		{
-			printf("Color-Sequence ");
-			UInt8ToChar(c,nrbfr);
-			printf(nrbfr);
-			printf("\r\n");
-			printf("   Steps: ");
-			UInt8ToChar(interpolators.taskArray[c].Nsteps,nrbfr);
-			printf(nrbfr);
-			printf(", Lamp: ");
-			UInt8ToChar(interpolators.taskArray[c].lamp_nr,nrbfr);
-			printf(nrbfr);
-			if((interpolators.taskArray[c].state & 0x4) == 0x4)
-			{
-				printf("\r\n   Mode: repeating");
-			}
-			else
-			{
-				printf("\r\n   Mode: one-shot");
-			}
-			printf(", State: ");
-			if((interpolators.taskArray[c].state & 0x2) == 0x2)
-			{
-				printf("running");
-			}
-			else
-			{
-				printf("stopped/starting");
-			}
-			printf(", Progression: ");
-			toPercentChar(getProgression(interpolators.taskArray+c),nrbfr);
-			printf(nrbfr);
-			printf("%\r\n\r\n");
-		}
-	}
+	Tasks interpolators=(Tasks)context;
+	startInterpolators(interpolators);
 }
 
+void stopCommand(char * cmd,void* context)
+{
+	Tasks interpolators=(Tasks)context;
+	stopInterpolators(interpolators);
+}
 
-void handleHelp(uint8_t nr,RGBStream * lamps)
+void helpCommand(char * cmd,void* context)
 {
 	printf("Supported Color commands are\r\n");
-	for(uint8_t c=0;c<N_COMMANDS;c++)
+	for(uint8_t c=0;c<N_COLOR_COMMANDS;c++)
 	{
 		printf(" * ");
 		printf(colorCommands[c]);
@@ -404,61 +183,261 @@ void handleHelp(uint8_t nr,RGBStream * lamps)
 	printf(" * DESCI: returns a description of all initialized interpolators\r\n");
 	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr\r\n");
 	printf("   does nothing if the interpolator is not initialized\r\n");
-
 }
 
-uint8_t expandLampDescription(char * description,uint8_t ** res)
+
+void interpCommand(char * cmd,void* context)
 {
-	char * arrayElement;
-	stripWhitespaces(description);
-	arrayElement = strtok(description,",");
-	uint8_t * rangePtr;
-	uint8_t rlength=0;
-	uint8_t nlamps=0;
-	uint8_t swapval;
-	uint8_t lampsnrs[N_LAMPS];
-	void* isInArray;
-	while (arrayElement != NULL)
+	char * var;
+	uint8_t lampnr;
+	uint8_t nsteps;
+	uint8_t repeating, has_errors = 0, retval;
+	char bracketContent[32];
+	char nrbfr[4];
+	Tasks interpolators=(Tasks)context;
+	getBracketContent(cmd,bracketContent);
+	if (bracketContent != 0)
 	{
-		rlength = expandRange(arrayElement,&rangePtr);
-		// insert into array
-		for(uint8_t c=0;c<rlength;c++)
+		var = strtok(bracketContent,",");
+		lampnr = tryToUInt8(var,&has_errors);
+		if (has_errors == 0)
 		{
-			isInArray = bsearch((void*)(rangePtr+c),lampsnrs,nlamps,sizeof(uint8_t),compareUint8);
-			if (isInArray==NULL)
+			checkLampRange(lampnr,&has_errors);
+		}
+		var = strtok(0,",");
+		nsteps = tryToUInt8(var,&has_errors);
+		var = strtok(0,",");
+		repeating = tryToUInt8(var,&has_errors);
+		if (repeating > 1)
+		{
+			printf("ERROR: repeating has to be either 0 or 1\r\n");
+			has_errors = 1;
+		}
+		if (repeating == 1 && nsteps == 1)
+		{
+			printf("ERROR: a repeating color sequence with only one color\r\n");
+			printf("       is meaningless, use RGB for setting a constant color\r\n");
+			printf("       or set <repeating> to 0\r\n");
+			has_errors = 1;
+		}
+		if (has_errors == 0)
+		{
+			retval = setLampInterpolator(interpolators,lampnr,nsteps,repeating);
+			if (retval != 0)
 			{
-				lampsnrs[nlamps++]=rangePtr[c];
-				for(uint8_t c2=nlamps-1;c2>0;c2--)
-				{
-					if(lampsnrs[c2-1] > lampsnrs[c2])
-					{
-						swapval = lampsnrs[c2-1];
-						lampsnrs[c2-1] = lampsnrs[c2];
-						lampsnrs[c2] = swapval;
-					}
-				}
+				printf("ERROR: returned error code ");
+				UInt8ToChar(retval, nrbfr);
+				printf(nrbfr);
+				printf(" from setLampInterpolator\r\n");
 			}
 		}
-		free(rangePtr);
-		arrayElement = strtok(NULL,",");
 	}
-	*res=lampsnrs;
-	return nlamps;
+	else
+	{
+		printf("ERROR: no content within brackets \"()\" found\r\n");
+	}
 }
 
-void handleRgbStruct(RGB clr,uint8_t nr,RGBStream * lamps)
+
+void istepCommand(char * cmd,void* context)
 {
-	(lamps+nr)->rgb.r=clr.r;
-	(lamps+nr)->rgb.b=clr.b;
-	(lamps+nr)->rgb.g=clr.g;
+	char * var;
+	uint8_t r,g,b;
+	int16_t frames;
+	uint8_t interpolation;
+	uint8_t lampnr;
+	uint8_t step, retval;
+	uint8_t has_errors = 0;
+	char bracketContent[32];
+	char nrbfr[4];
+	getBracketContent(cmd,bracketContent);
+	Tasks interpolators=(Tasks)context;
+	if (bracketContent != 0)
+	{
+		var = strtok(bracketContent,",");
+		r = tryToUInt8(var,&has_errors);
+		var = strtok(0,",");
+		g = tryToUInt8(var,&has_errors);
+		var = strtok(0,",");
+		b = tryToUInt8(var,&has_errors);
+		var = strtok(0,",");
+		frames = tryToInt16(var,&has_errors);
+		var = strtok(0,",");
+		interpolation = tryToUInt8(var,&has_errors);
+
+		if (interpolation > 1)
+		{
+			printf("ERROR: interpolation must be either 0 for constant or 1 for linear\r\n");
+			has_errors = 1;
+		}
+
+		var = strtok(0,",");
+		lampnr = tryToUInt8(var,&has_errors);
+		checkLampRange(lampnr,&has_errors);
+		var = strtok(0,",");
+		step = tryToUInt8(var,&has_errors);
+
+		if (has_errors == 0)
+		{
+			retval = setColorFramesInterpolation(interpolators,r,g,b,frames,interpolation,lampnr,step);
+			if (retval != 0)
+			{
+				printf("ERROR: returned error code ");
+				UInt8ToChar(retval, nrbfr);
+				printf(nrbfr);
+				printf(" from setColorFramesInterpolation\r\n");
+			}
+		}
+	}
+	else
+	{
+		printf("ERROR: no content within brackets \"()\" found\r\n");
+	}
+
 }
 
-void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr,RGBStream * lamps)
+void desciCommand(char * cmd,void* context)
 {
-	(lamps+nr)->rgb.r=r;
-	(lamps+nr)->rgb.b=b;
-	(lamps+nr)->rgb.g=g;
+	char nrbfr[8];
+	Tasks interpolators=(Tasks)context;
+	for(uint8_t c=0;c<interpolators->taskArrayLength;c++)
+	{
+		if (interpolators->taskArray[c].steps != 0)
+		{
+			printf("Color-Sequence ");
+			UInt8ToChar(c,nrbfr);
+			printf(nrbfr);
+			printf("\r\n");
+			printf("   Steps: ");
+			UInt8ToChar(interpolators->taskArray[c].Nsteps,nrbfr);
+			printf(nrbfr);
+			printf(", Lamp: ");
+			UInt8ToChar(interpolators->taskArray[c].lamp_nr,nrbfr);
+			printf(nrbfr);
+			if((interpolators->taskArray[c].state & 0x4) == 0x4)
+			{
+				printf("\r\n   Mode: repeating");
+			}
+			else
+			{
+				printf("\r\n   Mode: one-shot");
+			}
+			printf(", State: ");
+			if((interpolators->taskArray[c].state & 0x2) == 0x2)
+			{
+				printf("running");
+			}
+			else
+			{
+				printf("stopped/starting");
+			}
+			printf(", Progression: ");
+			toPercentChar(getProgression(interpolators->taskArray+c),nrbfr);
+			printf(nrbfr);
+			printf("%\r\n\r\n");
+		}
+	}
 }
+
+
+void destroyCommand(char * cmd,void* context)
+{
+	uint8_t has_errors = 0;
+	uint8_t lampnr;
+	uint8_t lampidx;
+	char bracketContent[32];
+	getBracketContent(cmd,bracketContent);
+	Tasks interpolators=(Tasks)context
+;	if (bracketContent != 0)
+	{
+		lampnr = tryToUInt8(bracketContent,&has_errors);
+		if (checkLampRange(lampnr,&has_errors) != 0)
+		{
+			lampidx = getLampIndex(interpolators,lampnr);
+			if (lampidx != 0xFF)
+			{
+				destroyTask(interpolators->taskArray+lampidx);
+			}
+			else
+			{
+				printf("ERROR: no interpolator found to destroy\r\n");
+			}
+		}
+	}
+}
+
+UserCommandType userCommands[] = {
+	{"BACKGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"FOREGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"RED",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"GREEN",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"DARKBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"LIGHTBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"MAGENTA",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"YELLOW",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"ORANGE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"PURPLE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"YELLOWGREEN",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"MEDIUMBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"DARKYELLOW",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"AQUA",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"DARKPURPLE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"GRAY",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"RGB",&rgbCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"START",&startCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
+	{"INTERP",&interpCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"ISTEP",&istepCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"DESCI",&desciCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"DESTROY",&destroyCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"0",0}
+};
+
+
+
+void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType)
+{
+	extern TasksType interpolators;
+	extern RGBStream * lamps;
+	switch(contextType)
+	{
+	case CONTEXT_TYPE_RGBSTREAM:
+		(*userFct)(cmd,(void*)lamps);
+		break;
+	case CONTEXT_TYPE_INTERPOLATORS:
+		(*userFct)(cmd,(void*)&interpolators);
+		break;
+	case CONTEXT_TYPE_NONE:
+		(*userFct)(cmd,0);
+		break;
+	default:
+		printf("ERROR: unknown context type in callUserFunction\r\n");
+	}
+}
+
+
+void handleCommand(char * cmd)
+{
+	uint8_t cnt = 0;
+	uint8_t cmdFound = 0;
+	while(userCommands[cnt].commandFct != 0 && cmdFound == 0)
+	{
+		if (startsWith(cmd,userCommands[cnt].commandName) > 0)
+		{
+			callUserFunction(userCommands[cnt].commandFct,cmd,userCommands[cnt].contextType);
+			cmdFound = 1;
+		}
+		cnt++;
+	}
+	if(cmdFound == 0)
+	{
+		printf("\r\nERROR: Unrecognized Command");
+	}
+}
+
+
+
+
 
 
 

@@ -11,25 +11,23 @@
 #ifndef TASKMANAGER_H_
 #define TASKMANAGER_H_
 
-#define N_COMMANDS 16
+#define N_COLOR_COMMANDS 16
 #define TASK_STATE_STOPPED 0
 #define TASK_STATE_RUNNING 1
 #define TASK_STATE_PAUSED 2
 
+#define CONTEXT_TYPE_NONE 0
+#define CONTEXT_TYPE_RGBSTREAM 1
+#define CONTEXT_TYPE_INTERPOLATORS 2
 
-void handleCommand(char*,RGBStream*);
+typedef struct
+{
+	char commandName[16];
+	void (*commandFct)(char*,void*context);
+	uint8_t contextType;
+} UserCommandType;
 
-void handleHelp(uint8_t,RGBStream*);
-
-void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t,RGBStream*);
-void handleRgbStruct(RGB,uint8_t,RGBStream*);
-
-void describeInterpolators();
-
-/*
- * expands a string list of lamp number into a array of unique lamp numbers
- * */
-uint8_t expandLampDescription(char *,uint8_t**);
+void handleCommand(char*);
 
 
 #endif /* TASKMANAGER_H_ */

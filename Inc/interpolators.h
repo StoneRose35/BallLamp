@@ -27,4 +27,5 @@ uint8_t setColorFramesInterpolation(Tasks, uint8_t,uint8_t,uint8_t,int16_t, uint
 uint8_t startInterpolators(Tasks tasks);
 uint8_t stopInterpolators(Tasks tasks);
 
+
 #endif /* INTERPOLATORS_H_ */
