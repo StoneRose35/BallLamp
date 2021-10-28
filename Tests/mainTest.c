@@ -162,6 +162,36 @@ void testPercentToChar()
 	}
 }
 
+void testFillWithLeadingZeros()
+{
+	char nrbfr[8];
+	nrbfr[0]=0x30;
+	nrbfr[1]=0;
+
+	fillWithLeadingZeros(4,nrbfr);
+	if ((uint8_t)nrbfr[0] != 0x30)
+	{
+		printf("testFillWithLeadingZeros failed, pos 1 is not 0");
+	}
+	if ((uint8_t)nrbfr[1] != 0x30)
+	{
+		printf("testFillWithLeadingZeros failed, pos 2 is not 0");
+	}
+	if ((uint8_t)nrbfr[2] != 0x30)
+	{
+		printf("testFillWithLeadingZeros failed, pos 3 is not 0");
+	}
+	if ((uint8_t)nrbfr[3] != 0x30)
+	{
+		printf("testFillWithLeadingZeros failed, pos 4 is not 0");
+	}
+	if ((uint8_t)nrbfr[4] != 0x0)
+	{
+		printf("testFillWithLeadingZeros failed, string is not zero-terminated");
+	}
+}
+
+
 int main(int argc,char** argv)
 {
 	interpolators.taskArray=(TaskType*)interpolatorsArray;
@@ -175,6 +205,7 @@ int main(int argc,char** argv)
 	demoColorInterpolator();
 	testConvertInts();
 	testPercentToChar();
+	testFillWithLeadingZeros();
 	return 0;
 }
 

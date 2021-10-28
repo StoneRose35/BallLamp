@@ -9,6 +9,7 @@ void toPercentChar(float percentVal,char * out)
 {
 	uint32_t ival = (uint32_t)(percentVal*100000.0);
 	UInt32ToChar(ival,out);
+	fillWithLeadingZeros(4,out);
 	//re-insert comma
 	uint8_t str_len = 0;
 	char swap, swap2;
@@ -115,6 +116,28 @@ void UInt32ToChar(uint32_t nr, char * out)
 		}
 	}
 	out[charpos]=0;
+}
+
+
+void fillWithLeadingZeros(uint8_t minlength,char * nr)
+{
+	uint8_t nrlen=0;
+	while(nr[nrlen] != 0)
+	{
+		nrlen++;
+	}
+	if (nrlen < minlength)
+	{
+		for(uint8_t c2=0;c2<minlength-nrlen;c2++)
+		{
+			for(uint8_t c3=nrlen+c2;c3>c2;c3--)
+			{
+				nr[c3]=nr[c3-1];
+			}
+			nr[c2]=0x30;
+		}
+		nr[minlength] = 0;
+	}
 }
 
 

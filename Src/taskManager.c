@@ -300,6 +300,7 @@ void desciCommand(char * cmd,void* context)
 {
 	char nrbfr[8];
 	Tasks interpolators=(Tasks)context;
+	printf("\r\n");
 	for(uint8_t c=0;c<interpolators->taskArrayLength;c++)
 	{
 		if (interpolators->taskArray[c].steps != 0)
@@ -334,7 +335,7 @@ void desciCommand(char * cmd,void* context)
 			printf(", Progression: ");
 			toPercentChar(getProgression(interpolators->taskArray+c),nrbfr);
 			printf(nrbfr);
-			printf("%\r\n\r\n");
+			printf("%\r\n");
 		}
 	}
 }
@@ -385,6 +386,7 @@ UserCommandType userCommands[] = {
 	{"GRAY",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"RGB",&rgbCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"START",&startCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"STOP",&stopCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"INTERP",&interpCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"ISTEP",&istepCommand,CONTEXT_TYPE_INTERPOLATORS},

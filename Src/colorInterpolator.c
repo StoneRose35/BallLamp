@@ -205,7 +205,7 @@ float getProgression(Task t)
 			passedFrames += t->stepProgressionCnt;
 		}
 	}
-	return (float)passedFrames/(float)totalFrames;
+	return (float)passedFrames/totalFrames;
 }
 
 uint32_t getSize(Task t)
