@@ -130,6 +130,12 @@ typedef struct {
 
 // Flash bits
 #define LATENCY (0)
+#define FLASH_BSY (0)
+#define FLASH_PER (1)
+#define FLASH_STRT (6)
+#define FLASH_EOP (5)
+#define FLASH_LOCK (7)
+#define FLASH_PG (0)
 
 #define CEN (0)
 #define OC1M (4)

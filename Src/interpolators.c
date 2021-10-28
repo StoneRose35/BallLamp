@@ -8,6 +8,7 @@
 
 #include "interpolators.h"
 #include "colorInterpolator.h"
+#include <stdlib.h>
 
 void initInterpolators(Tasks tasks)
 {
@@ -121,5 +122,64 @@ uint8_t stopInterpolators(Tasks tasks)
 		stop(&tasks->taskArray[c]);
 	}
 	return 0;
+}
+
+uint16_t* toStream(Tasks t)
+{
+	uint8_t* resultStream;
+	uint32_t tasksSize = 0;
+	uint32_t offset=0,offsetStream = 0;
+	tasksSize += sizeof(TasksType) - 4; // excluding the pointer to the array
+	for(uint8_t c=0;c<t->taskArrayLength;c++)
+	{
+		tasksSize += sizeof(TaskType) - 4; // again removing the pointer
+		tasksSize += t->taskArray[c].Nsteps*sizeof(ColorStepType);
+	}
+	if ((tasksSize & 0x1) == 0x1) // add a zero byte to get an integer half-word size
+	{
+		tasksSize++;
+	}
+	resultStream=(uint8_t*)malloc(tasksSize);
+
+	// store tasks header information (the nubmer of TaskType's and the name)
+	offset = 4;
+	for(uint8_t c=0;c<33;c++)
+	{
+		*(resultStream + offsetStream++)=*((uint8_t*)t+offset++);
+	}
+
+	// store TaskType's
+	for(uint8_t c=0;c<t->taskArrayLength;c++)
+	{
+		// loop through TaskType
+		offset = 4;
+		for (uint8_t c2=0;c2<sizeof(TasksType) - 4;c2++)
+		{
+			*(resultStream + offsetStream++) = *((uint8_t*)(t->taskArray + c)+offset++);
+		}
+		// store ColorStepTypes
+		for (uint8_t c3=0;c3<t->taskArray[c].Nsteps;c3++)
+		{
+			for(uint8_t c4=0;c4<sizeof(ColorStepType);c4++)
+			{
+				*(resultStream + offsetStream++) = *((uint8_t*)(t->taskArray[c].steps + c4) + c4);
+			}
+		}
+	}
+	return (uint16_t*)resultStream;
+}
+
+void fromStream(uint16_t* stream,Tasks t)
+{
+	uint32_t offset = 0;
+	uint8_t* byteStream=(uint8_t*)stream;
+	t->taskArrayLength = *(byteStream+offset++);
+	for(uint8_t c=0;c<32;c++)
+	{
+		*(t->name + c) = *(byteStream+offset++);
+	}
+	TaskType* tarr=(TaskType*)malloc(t->taskArrayLength*sizeof(TaskType));
+	t->taskArray=tarr;
+
 }
 

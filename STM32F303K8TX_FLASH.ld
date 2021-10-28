@@ -67,13 +67,22 @@ SECTIONS
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
   } >FLASH
+  
+  
+  .filesystem :
+  {
+      . = ALIGN(2K);
+      *(.filesysdata)
+      __filesystem_start = .;
+  } >FLASH
 
   /* Constant data into "FLASH" Rom type memory */
+  /*
   .rodata :
   {
     . = ALIGN(4);
-    *(.rodata)         /* .rodata sections (constants, strings, etc.) */
-    *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
+    *(.rodata)         // .rodata sections (constants, strings, etc.) 
+    *(.rodata*)        // .rodata* sections (constants, strings, etc.) 
     . = ALIGN(4);
   } >FLASH
 
@@ -118,7 +127,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH */
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
