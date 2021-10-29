@@ -28,10 +28,10 @@ typedef struct {
 	uint8_t g;
 	uint8_t b;
 	uint8_t interpolation; //  bit0: interpolation mode (set: linear, unset: constant)
-	int16_t frames;
-	int16_t deltar;
-	int16_t deltag;
-	int16_t deltab;
+	int32_t frames;
+	int32_t deltar;
+	int32_t deltag;
+	int32_t deltab;
 
 } ColorStepType;
 
@@ -44,9 +44,9 @@ typedef struct {
 	uint8_t stepCnt;
 	uint8_t lamp_nr;
 	uint8_t state; // bits 0-1: 0 stopped, 1 starting, 2 running, bit2: repeating if set
-	uint16_t r_cur;
-	uint16_t b_cur;
-	uint16_t g_cur;
+	uint32_t r_cur;
+	uint32_t b_cur;
+	uint32_t g_cur;
 } TaskType;
 
 typedef TaskType *Task;
@@ -72,7 +72,7 @@ void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx);
 /**
  * sets the number of frames a given steps should last, 30 frames is 1s
  */
-void setFrames(Task t,int16_t nframes,uint8_t idx);
+void setFrames(Task t,int32_t nframes,uint8_t idx);
 
 /**
  * make the interpolator run on the next task loop iteration

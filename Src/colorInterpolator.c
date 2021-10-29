@@ -65,39 +65,39 @@ void setColor(Task t,uint8_t r,uint8_t g, uint8_t b,uint8_t idx)
 
 	if (idx > 0)
 	{
-		t->steps[idx-1].deltar = ((t->steps[idx].r - t->steps[idx-1].r) << 8)/t->steps[idx-1].frames;
-		t->steps[idx-1].deltag = ((t->steps[idx].g - t->steps[idx-1].g) << 8)/t->steps[idx-1].frames;
-		t->steps[idx-1].deltab = ((t->steps[idx].b - t->steps[idx-1].b) << 8)/t->steps[idx-1].frames;
+		t->steps[idx-1].deltar = ((t->steps[idx].r - t->steps[idx-1].r) << 23)/t->steps[idx-1].frames;
+		t->steps[idx-1].deltag = ((t->steps[idx].g - t->steps[idx-1].g) << 23)/t->steps[idx-1].frames;
+		t->steps[idx-1].deltab = ((t->steps[idx].b - t->steps[idx-1].b) << 23)/t->steps[idx-1].frames;
 	}
 
 	if (idx < t->Nsteps-1)
 	{
-		t->steps[idx].deltar = ((t->steps[idx+1].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltar = ((t->steps[idx+1].r - t->steps[idx].r) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 23)/t->steps[idx].frames;
 	}
 	else if (idx == t->Nsteps-1 && (t->state & (1 << STATE_REPEATING))== (1 << STATE_REPEATING))
 	{
-		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 23)/t->steps[idx].frames;
 	}
 }
 
-void setFrames(Task t,int16_t nframes,uint8_t idx)
+void setFrames(Task t,int32_t nframes,uint8_t idx)
 {
 	t->steps[idx].frames = nframes;
 	if (idx < t->Nsteps-1)
 	{
-		t->steps[idx].deltar = ((t->steps[idx+1].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltar = ((t->steps[idx+1].r - t->steps[idx].r) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[idx+1].g - t->steps[idx].g) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[idx+1].b - t->steps[idx].b) << 23)/t->steps[idx].frames;
 	}
 	else if (idx == t->Nsteps-1 && (t->state & (1 << STATE_REPEATING))== (1 << STATE_REPEATING))
 	{
-		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 8)/t->steps[idx].frames;
-		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 8)/t->steps[idx].frames;
+		t->steps[idx].deltar = ((t->steps[0].r - t->steps[idx].r) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltag = ((t->steps[0].g - t->steps[idx].g) << 23)/t->steps[idx].frames;
+		t->steps[idx].deltab = ((t->steps[0].b - t->steps[idx].b) << 23)/t->steps[idx].frames;
 	}
 
 }
@@ -155,9 +155,9 @@ void updateTask(Task t,RGBStream * lampdata)
 					t->state &= ~(3 << 0);
 				}
 			}
-			t->r_cur = t->steps[t->stepCnt].r << 8;
-			t->g_cur = t->steps[t->stepCnt].g << 8;
-			t->b_cur = t->steps[t->stepCnt].b << 8;
+			t->r_cur = t->steps[t->stepCnt].r << 23;
+			t->g_cur = t->steps[t->stepCnt].g << 23;
+			t->b_cur = t->steps[t->stepCnt].b << 23;
 		}
 		else
 		{
@@ -169,23 +169,23 @@ void updateTask(Task t,RGBStream * lampdata)
 				t->b_cur += t->steps[t->stepCnt].deltab;
 			}
 		}
-		lampdata[t->lamp_nr].rgb.r = t->r_cur >> 8;
-		lampdata[t->lamp_nr].rgb.g = t->g_cur >> 8;
-		lampdata[t->lamp_nr].rgb.b = t->b_cur >> 8;
+		lampdata[t->lamp_nr].rgb.r = (t->r_cur >> 23) & 0xFF;
+		lampdata[t->lamp_nr].rgb.g = (t->g_cur >> 23) & 0xFF;
+		lampdata[t->lamp_nr].rgb.b = (t->b_cur >> 23) & 0xFF;
 		t->stepProgressionCnt++;
 	}
 	else if ((t->state & 0x3) == STATE_STARTING)
 	{
 		t->state &= ~0x3;
 		t->state |= STATE_RUNNING;
-		t->r_cur = t->steps[t->stepCnt].r << 8;
-		t->g_cur = t->steps[t->stepCnt].g << 8;
-		t->b_cur = t->steps[t->stepCnt].b << 8;
+		t->r_cur = t->steps[t->stepCnt].r << 23;
+		t->g_cur = t->steps[t->stepCnt].g << 23;
+		t->b_cur = t->steps[t->stepCnt].b << 23;
 
-		lampdata[t->lamp_nr].rgb.r = t->r_cur >> 8;
-		lampdata[t->lamp_nr].rgb.g = t->g_cur >> 8;
-		lampdata[t->lamp_nr].rgb.b = t->b_cur >> 8;
-		//t->stepProgressionCnt++;
+		lampdata[t->lamp_nr].rgb.r = (t->r_cur >> 23) & 0xFF;
+		lampdata[t->lamp_nr].rgb.g = (t->g_cur >> 23) & 0xFF;
+		lampdata[t->lamp_nr].rgb.b = (t->b_cur >> 23) & 0xFF;
+		t->stepProgressionCnt++;
 
 	}
 }

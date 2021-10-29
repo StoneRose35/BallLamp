@@ -192,12 +192,36 @@ void testFillWithLeadingZeros()
 }
 
 
+void testInterpolation()
+{
+	uint32_t nrit=2592000;
+	interpolators.taskArray = interpolatorsArray;
+	interpolators.taskArrayLength = 8;
+
+	setLampInterpolator(&interpolators,3,2,MODE_REPEATING);
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,nrit,INTERPOLATION_LINEAR, 3, 0);
+	setColorFramesInterpolation(&interpolators, 234,67,42,3,INTERPOLATION_LINEAR, 3, 1);
+
+	startInterpolators(&interpolators);
+
+	for (uint32_t q=0;q<nrit+10;q++)
+	{
+		updateTask(&interpolators.taskArray[0],lamps);
+		printf("\rStep: %i, r: %i,g: %i, b: %i",q,lamps[3].rgb.r,lamps[3].rgb.g,lamps[3].rgb.b);
+		fflush(stdout);
+	}
+
+}
+
+
 int main(int argc,char** argv)
 {
 	interpolators.taskArray=(TaskType*)interpolatorsArray;
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
 
+	testInterpolation();
+	/*
 	consoleHandlerHistoryCheck();
 	testExpandRange();
 	testExpandDescription();
@@ -206,6 +230,7 @@ int main(int argc,char** argv)
 	testConvertInts();
 	testPercentToChar();
 	testFillWithLeadingZeros();
+	*/
 	return 0;
 }
 
