@@ -38,7 +38,6 @@ typedef struct {
 typedef ColorStepType *ColorStep;
 
 typedef struct {
-	ColorStepType * steps;
 	uint32_t stepProgressionCnt;
 	uint8_t Nsteps;
 	uint8_t stepCnt;
@@ -47,6 +46,7 @@ typedef struct {
 	uint32_t r_cur;
 	uint32_t b_cur;
 	uint32_t g_cur;
+	ColorStepType * steps;
 } TaskType;
 
 typedef TaskType *Task;

@@ -38,7 +38,7 @@ uint8_t erasePage(uint8_t pagenr)
 	return 1;
 }
 
-uint8_t programHalfword(uint16_t wrd,uint32_t addr)
+uint8_t programHalfword(uint16_t hwrd,uint32_t addr)
 {
 	uint16_t readBack;
 	if ((FLASH->CR & (1 << FLASH_LOCK))==(1 << FLASH_LOCK))
@@ -47,11 +47,11 @@ uint8_t programHalfword(uint16_t wrd,uint32_t addr)
 	}
 
 	FLASH->CR |= (1 << FLASH_PG);
-	*((uint16_t*)addr)=wrd;
+	*((uint16_t*)addr)=hwrd;
 	while((FLASH->SR & (1 << FLASH_BSY))==(1 << FLASH_BSY));
 
 	readBack = *((uint16_t*)addr);
-	if (readBack == wrd)
+	if (readBack == hwrd)
 	{
 		return 0;
 	}

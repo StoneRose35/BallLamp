@@ -13,9 +13,10 @@
 #include "colorInterpolator.h"
 
 typedef struct {
-	TaskType* taskArray;
 	uint8_t taskArrayLength;
 	char name[32];
+	TaskType* taskArray;
+
 } TasksType;
 
 typedef TasksType* Tasks;
@@ -27,7 +28,7 @@ uint8_t setColorFramesInterpolation(Tasks, uint8_t,uint8_t,uint8_t,int32_t, uint
 uint8_t startInterpolators(Tasks tasks);
 uint8_t stopInterpolators(Tasks tasks);
 
-uint16_t* toStream(Tasks);
-
+uint32_t toStream(Tasks,uint8_t**);
+void fromStream(uint16_t* stream,Tasks t);
 
 #endif /* INTERPOLATORS_H_ */

@@ -22,6 +22,10 @@ void initInterpolators(Tasks tasks)
 		tasks->taskArray[c].state=0;
 		tasks->taskArray[c].stepCnt=0;
 		tasks->taskArray[c].stepProgressionCnt=0;
+		if (tasks->taskArray[c].steps != 0)
+		{
+			free(tasks->taskArray[c].steps);
+		}
 		tasks->taskArray[c].steps=0;
 	}
 }
@@ -124,62 +128,90 @@ uint8_t stopInterpolators(Tasks tasks)
 	return 0;
 }
 
-uint16_t* toStream(Tasks t)
+uint32_t toStream(Tasks t,uint8_t** resultStream)
 {
-	uint8_t* resultStream;
 	uint32_t tasksSize = 0;
 	uint32_t offset=0,offsetStream = 0;
-	tasksSize += sizeof(TasksType) - 4; // excluding the pointer to the array
+	uint32_t colorStepArraySize;
+
+	/*
+	 * SIZE CALCULATION
+	 */
+	tasksSize += sizeof(TasksType) - sizeof(void*); // excluding the pointer to the array
 	for(uint8_t c=0;c<t->taskArrayLength;c++)
 	{
-		tasksSize += sizeof(TaskType) - 4; // again removing the pointer
+		tasksSize += sizeof(TaskType) - sizeof(void*); // again removing the pointer
 		tasksSize += t->taskArray[c].Nsteps*sizeof(ColorStepType);
 	}
 	if ((tasksSize & 0x1) == 0x1) // add a zero byte to get an integer half-word size
 	{
 		tasksSize++;
 	}
-	resultStream=(uint8_t*)malloc(tasksSize);
+
+	/*
+	 * MEMORY ALLOCATION
+	 */
+	*resultStream=(uint8_t*)malloc(tasksSize);
+
 
 	// store tasks header information (the nubmer of TaskType's and the name)
-	offset = 4;
-	for(uint8_t c=0;c<33;c++)
+	for(uint8_t c=0;c<sizeof(TasksType)-sizeof(void*);c++)
 	{
-		*(resultStream + offsetStream++)=*((uint8_t*)t+offset++);
+		*(*resultStream + offsetStream++)=*((uint8_t*)t+offset++);
 	}
-
 	// store TaskType's
 	for(uint8_t c=0;c<t->taskArrayLength;c++)
 	{
 		// loop through TaskType
-		offset = 4;
-		for (uint8_t c2=0;c2<sizeof(TasksType) - 4;c2++)
+		offset = 0;
+		for (uint8_t c2=0;c2<sizeof(TaskType)-sizeof(void*);c2++)
 		{
-			*(resultStream + offsetStream++) = *((uint8_t*)(t->taskArray + c)+offset++);
+			*(*resultStream + offsetStream++) = *((uint8_t*)(t->taskArray + c)+offset++);
 		}
 		// store ColorStepTypes
-		for (uint8_t c3=0;c3<t->taskArray[c].Nsteps;c3++)
+		colorStepArraySize = t->taskArray[c].Nsteps*sizeof(ColorStepType);
+		for (uint8_t c3=0;c3<colorStepArraySize;c3++)
 		{
-			for(uint8_t c4=0;c4<sizeof(ColorStepType);c4++)
-			{
-				*(resultStream + offsetStream++) = *((uint8_t*)(t->taskArray[c].steps + c4) + c4);
-			}
+			*(*resultStream + offsetStream++) = *((uint8_t*)t->taskArray[c].steps + c3);
 		}
 	}
-	return (uint16_t*)resultStream;
+
+	return tasksSize;
 }
 
 void fromStream(uint16_t* stream,Tasks t)
 {
-	uint32_t offset = 0;
+	uint32_t streamOffset = 0;
 	uint8_t* byteStream=(uint8_t*)stream;
-	t->taskArrayLength = *(byteStream+offset++);
-	for(uint8_t c=0;c<32;c++)
+	uint16_t colorStepArraySize=0;
+	ColorStepType* cstep;
+	for(uint8_t c=0;c<sizeof(TasksType)-sizeof(void*);c++)
 	{
-		*(t->name + c) = *(byteStream+offset++);
+		*((uint8_t*)t + c) = *(byteStream+streamOffset++);
 	}
-	TaskType* tarr=(TaskType*)malloc(t->taskArrayLength*sizeof(TaskType));
+	TaskType* tarr=(TaskType*)malloc((t->taskArrayLength)*(sizeof(TaskType)));
 	t->taskArray=tarr;
-
+	for (uint8_t c2=0;c2 < t->taskArrayLength;c2++)
+	{
+		t->taskArray[c2].steps=0;
+		for (uint8_t c1=0;c1 < sizeof(TaskType)-sizeof(void*);c1++)
+		{
+			*((uint8_t*)(t->taskArray+c2) +  c1) = *(byteStream+streamOffset++);
+		}
+		colorStepArraySize = t->taskArray[c2].Nsteps*sizeof(ColorStepType);
+		if(colorStepArraySize > 0)
+		{
+			cstep=(ColorStepType*)malloc(colorStepArraySize);
+			for(uint16_t c5=0;c5<colorStepArraySize;c5++)
+			{
+				*((uint8_t*)(cstep)+c5) = *(byteStream+streamOffset++);
+			}
+			t->taskArray[c2].steps = cstep;
+		}
+		else
+		{
+			t->taskArray[c2].steps = 0;
+		}
+	}
 }
 

@@ -64,7 +64,7 @@ void colorCommand(char * cmd,void * context)
 {
 	char bracketContent[32];
 	uint8_t nLamps;
-	uint8_t * lampnrs;
+	uint8_t lampnrs[N_LAMPS];
 	uint8_t has_errors = 0;
 
 	uint8_t cnt=0,idx=0xFF;
@@ -80,12 +80,12 @@ void colorCommand(char * cmd,void * context)
 	getBracketContent(cmd,bracketContent);
 	if (bracketContent != 0 && idx != 0xFF)
 	{
-		nLamps = expandLampDescription(bracketContent,&lampnrs);
+		nLamps = expandLampDescription(bracketContent,lampnrs);
 		for (uint8_t c=0;c<nLamps;c++)
 		{
 			if (checkLampRange(*(lampnrs+c),&has_errors) == 1)
 			{
-				handleRgbStruct(*(colors+idx),*(lampnrs+c),lamps);
+				handleRgbStruct((colors+idx),*(lampnrs+c),lamps);
 			}
 		}
 	}
@@ -102,7 +102,7 @@ void rgbCommand(char* cmd,void* context)
 	uint8_t r,g,b;
 	uint8_t has_errors = 0;
 	char bracketContent[32];
-	uint8_t * lampnrs;
+	uint8_t lampnrs[N_LAMPS];
 	uint8_t nLamps;
 	RGBStream* lamps =(RGBStream*)context;
 	getBracketContent(cmd,bracketContent);
@@ -122,7 +122,7 @@ void rgbCommand(char* cmd,void* context)
 
 		if (clr != 0 && has_errors == 0)
 		{
-			nLamps = expandLampDescription(clr,&lampnrs);
+			nLamps = expandLampDescription(clr,lampnrs);
 			for (uint8_t c=0;c<nLamps;c++)
 			{
 				if (checkLampRange(*(lampnrs+c),&has_errors)==1)

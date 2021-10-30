@@ -62,16 +62,16 @@ uint8_t checkLampRange(uint8_t lampnr,uint8_t* has_errors_ptr)
 	}
 }
 
-uint8_t expandLampDescription(char * description,uint8_t ** res)
+uint8_t expandLampDescription(char * description,uint8_t * res)
 {
 	char * arrayElement;
-	stripWhitespaces(description);
-	arrayElement = strtok(description,",");
 	uint8_t * rangePtr;
 	uint8_t rlength=0;
 	uint8_t nlamps=0;
 	uint8_t swapval;
-	uint8_t lampsnrs[N_LAMPS];
+	stripWhitespaces(description);
+	arrayElement = strtok(description,",");
+	//uint8_t lampsnrs[N_LAMPS];
 	void* isInArray;
 	while (arrayElement != NULL)
 	{
@@ -79,17 +79,17 @@ uint8_t expandLampDescription(char * description,uint8_t ** res)
 		// insert into array
 		for(uint8_t c=0;c<rlength;c++)
 		{
-			isInArray = bsearch((void*)(rangePtr+c),lampsnrs,nlamps,sizeof(uint8_t),compareUint8);
+			isInArray = bsearch((void*)(rangePtr+c),res,nlamps,sizeof(uint8_t),compareUint8);
 			if (isInArray==NULL)
 			{
-				lampsnrs[nlamps++]=rangePtr[c];
+				res[nlamps++]=rangePtr[c];
 				for(uint8_t c2=nlamps-1;c2>0;c2--)
 				{
-					if(lampsnrs[c2-1] > lampsnrs[c2])
+					if(res[c2-1] > res[c2])
 					{
-						swapval = lampsnrs[c2-1];
-						lampsnrs[c2-1] = lampsnrs[c2];
-						lampsnrs[c2] = swapval;
+						swapval = res[c2-1];
+						res[c2-1] = res[c2];
+						res[c2] = swapval;
 					}
 				}
 			}
@@ -97,15 +97,15 @@ uint8_t expandLampDescription(char * description,uint8_t ** res)
 		free(rangePtr);
 		arrayElement = strtok(NULL,",");
 	}
-	*res=lampsnrs;
+	//*res=lampsnrs;
 	return nlamps;
 }
 
-void handleRgbStruct(RGB clr,uint8_t nr,RGBStream * lamps)
+void handleRgbStruct(RGB* clr,uint8_t nr,RGBStream * lamps)
 {
-	(lamps+nr)->rgb.r=clr.r;
-	(lamps+nr)->rgb.b=clr.b;
-	(lamps+nr)->rgb.g=clr.g;
+	(lamps+nr)->rgb.r=clr->r;
+	(lamps+nr)->rgb.b=clr->b;
+	(lamps+nr)->rgb.g=clr->g;
 }
 
 void handleRgb(uint8_t r,uint8_t g, uint8_t b,uint8_t nr,RGBStream * lamps)
