@@ -10,15 +10,22 @@
 #include "system.h"
 #ifdef STM32
 #include "uart.h"
+#include "flash.h"
 #else
 #include <stdio.h>
 #endif
 #include "stringFunctions.h"
 #include "interpolators.h"
 #include "taskManagerUtils.h"
+
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef STM32
+extern uint32_t __filesystem_start;
+#else
+uint32_t __filesystem_start = 0;
+#endif
 
 RGB colors[] = {
 		{.r=0,.g=0,.b=0}, // background
@@ -348,7 +355,7 @@ void destroyCommand(char * cmd,void* context)
 	uint8_t lampidx;
 	char bracketContent[32];
 	getBracketContent(cmd,bracketContent);
-	Tasks interpolators=(Tasks)context
+	Tasks interpolators=(Tasks)context;
 ;	if (bracketContent != 0)
 	{
 		lampnr = tryToUInt8(bracketContent,&has_errors);
@@ -365,6 +372,31 @@ void destroyCommand(char * cmd,void* context)
 			}
 		}
 	}
+}
+
+void saveCommand(char * cmd,void* context)
+{
+	uint16_t retcode = 0;
+	uint32_t streamsize;
+	char nrbfr[8];
+
+	Tasks interpolators=(Tasks)context;
+	uint8_t * streamout;
+	streamsize = toStream(interpolators,&streamout);
+	retcode = saveInFlash((uint16_t*)streamout,streamsize,0);
+	printf("\r\nsaved ");
+	UInt32ToChar(streamsize,nrbfr);
+	printf(nrbfr);
+	printf(" bytes to flash, returned code: ");
+	UInt16ToChar(retcode,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+}
+
+void loadCommand(char * cmd,void* context)
+{
+	Tasks interpolators=(Tasks)context;
+	fromStream((uint16_t*)__filesystem_start,interpolators);
 }
 
 UserCommandType userCommands[] = {
@@ -387,11 +419,13 @@ UserCommandType userCommands[] = {
 	{"RGB",&rgbCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"START",&startCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"STOP",&stopCommand,CONTEXT_TYPE_INTERPOLATORS},
-	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
+	{"SAVE",&saveCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"LOAD",&loadCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"INTERP",&interpCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"ISTEP",&istepCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"DESCI",&desciCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"DESTROY",&destroyCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };
 

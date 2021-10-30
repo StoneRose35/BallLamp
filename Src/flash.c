@@ -61,4 +61,21 @@ uint8_t programHalfword(uint16_t hwrd,uint32_t addr)
 	}
 }
 
+/*save a stream "data" of length "size" at the beginning of the "filesystem" flash section*/
+uint16_t saveInFlash(uint16_t * data,uint32_t size,uint32_t offset)
+{
+	uint16_t retcode=0;
+	uint8_t sizeInPages = (uint8_t)((size >> 11) + 1); // /2k
+	uint8_t initialPage = __filesystem_start >> 11;
+	for (uint8_t c=0;c<sizeInPages;c++)
+	{
+		retcode += erasePage(c+initialPage);
+	}
+	for (uint32_t c2=0;c2<size;c2+=2)
+	{
+		retcode += programHalfword(*(data+(c2>>1)),__filesystem_start+c2+offset);
+	}
+	return retcode;
+}
+
 #endif
