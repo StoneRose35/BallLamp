@@ -36,8 +36,10 @@
 
 #ifndef STM32
 #include <stdint.h>
+typedef unsigned long ptr;
 #else
 #include "types.h"
+typedef unsigned int ptr;
 #endif
 
 typedef struct

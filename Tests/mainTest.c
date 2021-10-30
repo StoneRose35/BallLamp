@@ -9,6 +9,7 @@
 #include "demoColorInterpolator.h"
 #include "colorInterpolator.h"
 #include "interpolators.h"
+#include "fakeFlash.h"
 
 
 TaskType interpolatorsArray[N_LAMPS];
@@ -324,6 +325,7 @@ int main(int argc,char** argv)
 	interpolators.taskArray=(TaskType*)interpolatorsArray;
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
+	initFakeFlash();
 
 
 	testStreamRoundtrip();

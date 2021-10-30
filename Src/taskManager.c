@@ -8,9 +8,9 @@
 #include "taskManager.h"
 #include "neopixelDriver.h"
 #include "system.h"
+#include "flash.h"
 #ifdef STM32
 #include "uart.h"
-#include "flash.h"
 #else
 #include <stdio.h>
 #endif
@@ -21,11 +21,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef STM32
-extern uint32_t __filesystem_start;
-#else
-uint32_t __filesystem_start = 0;
-#endif
+extern ptr __filesystem_start;
+
 
 RGB colors[] = {
 		{.r=0,.g=0,.b=0}, // background

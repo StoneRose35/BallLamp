@@ -8,6 +8,7 @@
 #ifndef FLASH_H_
 #define FLASH_H_
 
+#include "system.h"
 
 void unlockFlash();
 uint8_t erasePage(uint8_t pagenr);
