@@ -187,6 +187,8 @@ void helpCommand(char * cmd,void* context)
 	printf(" * DESCI: returns a description of all initialized interpolators\r\n");
 	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr\r\n");
 	printf("   does nothing if the interpolator is not initialized\r\n");
+	printf(" * SAVE: persistently saves the interpolators\r\n");
+	printf(" * LOAD: loads the interpolators\r\n");
 }
 
 
@@ -381,6 +383,7 @@ void saveCommand(char * cmd,void* context)
 	uint8_t * streamout;
 	streamsize = toStream(interpolators,&streamout);
 	retcode = saveInFlash((uint16_t*)streamout,streamsize,0);
+	free(streamout);
 	printf("\r\nsaved ");
 	UInt32ToChar(streamsize,nrbfr);
 	printf(nrbfr);
@@ -393,7 +396,11 @@ void saveCommand(char * cmd,void* context)
 void loadCommand(char * cmd,void* context)
 {
 	Tasks interpolators=(Tasks)context;
-	fromStream((uint16_t*)__filesystem_start,interpolators);
+	for (uint8_t c=0;c<interpolators->taskArrayLength;c++)
+	{
+		destroyTask(interpolators->taskArray+c);
+	}
+	fromStream((uint16_t*)&__filesystem_start,interpolators);
 }
 
 UserCommandType userCommands[] = {

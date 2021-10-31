@@ -145,8 +145,9 @@ SECTIONS
     .filesystem :
   {
       . = ALIGN(2K);
-      *(.filesysdata)
       __filesystem_start = .;
+      KEEP(*(.filesysdata))
+      __filesystem_end = .;
   } >FLASH
 
   /* Uninitialized data section into "RAM" Ram type memory */

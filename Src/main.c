@@ -115,16 +115,132 @@ int main(void)
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
 
+	setLampInterpolator(&interpolators,0,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 0,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 0,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 0,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 0,3);
+
+	setLampInterpolator(&interpolators,1,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,14,INTERPOLATION_LINEAR, 1,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 1,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 1,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 1,3);
+
+	setLampInterpolator(&interpolators,2,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 2,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 6,INTERPOLATION_LINEAR, 2,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 2,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 2,3);
+
+	setLampInterpolator(&interpolators,3,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 3,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 3,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 13,INTERPOLATION_LINEAR, 3,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 3,3);
+
+	setLampInterpolator(&interpolators,4,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 4,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 4,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 4,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 28,INTERPOLATION_LINEAR, 4,3);
+
+	setLampInterpolator(&interpolators,5,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,15,INTERPOLATION_LINEAR, 5,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 5,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 5,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 5,3);
+
+	setLampInterpolator(&interpolators,6,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 6,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 7,INTERPOLATION_LINEAR, 6,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 6,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 6,3);
+
+	setLampInterpolator(&interpolators,7,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 7,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 7,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 14,INTERPOLATION_LINEAR, 7,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 7,3);
+
+	setLampInterpolator(&interpolators,8,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 8,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 8,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 8,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 29,INTERPOLATION_LINEAR, 8,3);
+
+	setLampInterpolator(&interpolators,9,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,17,INTERPOLATION_LINEAR, 9,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 9,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 9,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 9,3);
 
 	setLampInterpolator(&interpolators,10,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
 	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 10,0);
-	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 10,1);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 9,INTERPOLATION_LINEAR, 10,1);
 	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 10,2);
 	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 10,3);
 
+	setLampInterpolator(&interpolators,11,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 11,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 11,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 16,INTERPOLATION_LINEAR, 11,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 11,3);
+
+	setLampInterpolator(&interpolators,12,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 12,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 12,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 12,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 31,INTERPOLATION_LINEAR, 12,3);
+
+	setLampInterpolator(&interpolators,13,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,19,INTERPOLATION_LINEAR, 13,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 13,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 13,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 13,3);
+
+	setLampInterpolator(&interpolators,14,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 14,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 11,INTERPOLATION_LINEAR, 14,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 14,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 14,3);
+
+	setLampInterpolator(&interpolators,15,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 15,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 15,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 18,INTERPOLATION_LINEAR, 15,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 15,3);
+
+	setLampInterpolator(&interpolators,16,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 16,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 16,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 16,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 33,INTERPOLATION_LINEAR, 16,3);
+
+	setLampInterpolator(&interpolators,17,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,21,INTERPOLATION_LINEAR, 17,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 17,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 17,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 17,3);
+
+
+	setLampInterpolator(&interpolators,18,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 18,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 13,INTERPOLATION_LINEAR, 18,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 12,INTERPOLATION_LINEAR, 18,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 18,3);
+
+	setLampInterpolator(&interpolators,19,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
+	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 19,0);
+	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 19,1);
+	setColorFramesInterpolation(&interpolators, 0,45,130, 20,INTERPOLATION_LINEAR, 19,2);
+	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 19,3);
+
+	/*
 	setLampInterpolator(&interpolators,1,2,MODE_REPEATING); // lamp 1, 2 steps, repeating
 	setColorFramesInterpolation(&interpolators, 0,0,0 ,50,INTERPOLATION_CONSTANT, 1,0);
 	setColorFramesInterpolation(&interpolators, 240,0,0, 50,INTERPOLATION_CONSTANT, 1,1);
+	*/
 	// test hack
 
 	startInterpolators(&interpolators);
