@@ -27,7 +27,7 @@ typedef struct {
 typedef ConsoleType* Console;
 
 void initConsole(Console);
-char* onCharacterReception(Console,uint8_t,RGBStream * lamps);
+char* onCharacterReception(Console,uint8_t);
 void clearCommandBuffer(Console,uint8_t,char*);
 void clearOutBuffer(Console);
 void copyCommand(uint8_t,uint8_t,char*); // copies a command from index src to index target

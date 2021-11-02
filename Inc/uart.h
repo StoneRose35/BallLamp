@@ -29,20 +29,6 @@ typedef struct
 	reg TDR;
 } UartTypeDef;
 
-#define INPUT_BUFFER_SIZE 8
-#define OUTPUT_BUFFER_SIZE 256
-
-typedef struct
-{
-	char inputBuffer[INPUT_BUFFER_SIZE];
-	char outputBuffer[OUTPUT_BUFFER_SIZE];
-	uint32_t outputBufferReadCnt;
-	uint32_t outputBufferWriteCnt;
-	uint8_t inputBufferCnt;
-} CommBufferType;
-
-typedef CommBufferType* CommBuffer;
-
 #define TXE (7)
 #define TC (6)
 #define RXNE (5)

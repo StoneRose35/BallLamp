@@ -4,6 +4,7 @@
 #include "consoleHandler.h"
 #include "taskManager.h"
 #include "taskManagerUtils.h"
+#include "bufferedInputHandler.h"
 #include "system.h"
 #include "stringFunctions.h"
 #include "demoColorInterpolator.h"
@@ -18,36 +19,39 @@ TasksType interpolators;
 RGBStream lampsarray[N_LAMPS];
 RGBStream * lamps=lampsarray;
 
+BufferedInputType bufferedInputType;
+BufferedInput  bufferedInput=&bufferedInputType;
+
 void consoleHandlerHistoryCheck()
 {
 	ConsoleType c1;
 	printf("******** starting consoleHandlerHistoryCheck\n");
 	initConsole(&c1);
 
-	onCharacterReception(&c1,(uint8_t)'A',lamps);
-	onCharacterReception(&c1,(uint8_t)'Q',lamps);
-	onCharacterReception(&c1,(uint8_t)'U',lamps);
-	onCharacterReception(&c1,(uint8_t)'A',lamps);
-	onCharacterReception(&c1,(uint8_t)'(',lamps);
-	onCharacterReception(&c1,(uint8_t)'0',lamps);
-	onCharacterReception(&c1,(uint8_t)')',lamps);
-	onCharacterReception(&c1,(uint8_t)'\r',lamps);
+	onCharacterReception(&c1,(uint8_t)'A');
+	onCharacterReception(&c1,(uint8_t)'Q');
+	onCharacterReception(&c1,(uint8_t)'U');
+	onCharacterReception(&c1,(uint8_t)'A');
+	onCharacterReception(&c1,(uint8_t)'(');
+	onCharacterReception(&c1,(uint8_t)'0');
+	onCharacterReception(&c1,(uint8_t)')');
+	onCharacterReception(&c1,(uint8_t)'\r');
 
 	// simulate up arrow
-	onCharacterReception(&c1,(uint8_t)'\e',lamps);
-	onCharacterReception(&c1,(uint8_t)'[',lamps);
-	onCharacterReception(&c1,(uint8_t)'A',lamps);
+	onCharacterReception(&c1,(uint8_t)'\e');
+	onCharacterReception(&c1,(uint8_t)'[');
+	onCharacterReception(&c1,(uint8_t)'A');
 
 	// delete two characters
-	onCharacterReception(&c1,127,lamps);
-	onCharacterReception(&c1,127,lamps);
+	onCharacterReception(&c1,127);
+	onCharacterReception(&c1,127);
 
 	// write a "1)", text should now be AQUA(1)
-	onCharacterReception(&c1,(uint8_t)'1',lamps);
-	onCharacterReception(&c1,(uint8_t)')',lamps);
+	onCharacterReception(&c1,(uint8_t)'1');
+	onCharacterReception(&c1,(uint8_t)')');
 
 
-	onCharacterReception(&c1,(uint8_t)'\r',lamps);
+	onCharacterReception(&c1,(uint8_t)'\r');
 
 	if (!(lamps->rgb.r == 0 && lamps->rgb.g == 210 && lamps->rgb.b == 140))
 	{

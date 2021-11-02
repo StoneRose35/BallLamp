@@ -11,6 +11,7 @@
 #include "uart.h"
 #include "system.h"
 #include "consoleHandler.h"
+#include "bufferedInputHandler.h"
 
 
 extern uint32_t task;

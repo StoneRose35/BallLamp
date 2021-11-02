@@ -25,6 +25,8 @@
 #include "systemClock.h"
 #include "uart.h"
 #include "consoleHandler.h"
+#include "apiHandler.h"
+#include "bufferedInputHandler.h"
 #include "colorInterpolator.h"
 #include "interpolators.h"
 #include "stringFunctions.h"
@@ -42,6 +44,8 @@ uint8_t* rawdata_ptr = rawdata;
 TaskType interpolatorsArray[N_LAMPS];
 TasksType interpolators;
 
+BufferedInputType bufferedInputType;
+BufferedInput bufferedInput=&bufferedInputType;
 
 volatile uint32_t task;
 volatile uint8_t context;
@@ -98,11 +102,28 @@ int main(void)
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
+	ApiType usbApi;
+	ApiType btApi;
+	BufferedInputType usbInput;
+	BufferedInputType btInput;
+
 	enableFpu();
     setupClock();
 
     initConsole(&usbConsole);
     initConsole(&btConsole);
+    initApi(&usbApi);
+    initApi(&btApi);
+
+    usbInput.api = &usbApi;
+    usbInput.console = &usbConsole;
+    usbInput.commBuffer=&usbCommBuffer;
+    usbInput.interfaceType=BINPUT_TYPE_CONSOLE;
+
+    btInput.api = &btApi;
+    btInput.console = &btConsole;
+    btInput.commBuffer=&btCommBuffer;
+    btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
 	initTimer();
 	initUart();
@@ -263,28 +284,34 @@ int main(void)
 		if ((task & (1 << TASK_USB_CONSOLE))==(1 << TASK_USB_CONSOLE))
 		{
 			context = (1 << CONTEXT_USB);
+			processInputBuffer(&usbInput);
+			/*
 			while(usbCommBuffer.inputBufferCnt > 0)
 			{
 				char* consoleBfr;
 
-				consoleBfr = onCharacterReception(&usbConsole,usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt-1],lamps);
+				consoleBfr = onCharacterReception(&usbConsole,usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt-1]);
 				printf(consoleBfr);
 				usbCommBuffer.inputBufferCnt--;
 			}
+			*/
 			task &= ~(1 << TASK_USB_CONSOLE);
 		}
 
 		if ((task & (1 << TASK_BT_CONSOLE))==(1 << TASK_BT_CONSOLE))
 		{
 			context = (1 << CONTEXT_BT);
+			processInputBuffer(&btInput);
+			/*
 			while(btCommBuffer.inputBufferCnt > 0)
 			{
 				char* consoleBfr;
 
-				consoleBfr = onCharacterReception(&btConsole,btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt-1],lamps);
+				consoleBfr = onCharacterReception(&btConsole,btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt-1]);
 				printf(consoleBfr);
 				btCommBuffer.inputBufferCnt--;
 			}
+			*/
 			task &= ~(1 << TASK_BT_CONSOLE);
 		}
 		/*

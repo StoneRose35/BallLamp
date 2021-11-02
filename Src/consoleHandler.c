@@ -33,13 +33,13 @@ const char * cmd_arrow_right = "[C";
 const char * cmd_arrow_up = "[A";
 const char * cmd_arrow_down = "[B";
 
-char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
+char* onCharacterReception(Console console,uint8_t charin)
 {
 	uint8_t c1=0;
 	uint8_t obCnt=0;
 
     clearOutBuffer(console);
-	if (c == 13 && console->mode == 0) // convert \r into \r\n, print a new console line
+	if (charin == 13 && console->mode == 0) // convert \r into \r\n, print a new console line
 	{
 		console->outBfr[obCnt++] = 13;
 		console->outBfr[obCnt++] = 10;
@@ -79,7 +79,7 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
 
 
 
-	else if ((c == 0x7F || c == 0x8) && console->cbfCnt>0 && console->mode == 0 && console->cursor > 0) // DEL/backspace
+	else if ((charin == 0x7F || charin == 0x8) && console->cbfCnt>0 && console->mode == 0 && console->cursor > 0) // DEL/backspace
 	{
         if (console->cursor < console->cbfCnt) // within the command
         {
@@ -119,7 +119,7 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
         	console->cursor--;
         }
 	}
-	else if (c < 32) // control character received
+	else if (charin < 32) // control character received
 	{
 		console->mode = 1;
 		console->cmdBfr[0]=0;
@@ -128,12 +128,12 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
 	}
 	else if (console->mode==1) // first describing character after the control character
 	{
-		console->cmdBfr[console->mode-1] = c;
+		console->cmdBfr[console->mode-1] = charin;
 		console->mode++;
 	}
 	else if (console->mode==2) 		// command mode, arrows behave rougly the same as in bash
 	{
-		console->cmdBfr[console->mode-1] = c;
+		console->cmdBfr[console->mode-1] = charin;
 		console->mode = 0;
 		if (strcmp(console->cmdBfr,cmd_arrow_left)==0)
 		{
@@ -200,14 +200,14 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
 			}
 		}
 	}
-	else if (c < 127) // "normal" (non-control) character nor del or special characters entered
+	else if (charin < 127) // "normal" (non-control) character nor del or special characters entered
 	{
 		if (console->cursor < console->cbfCnt) // within the command
 		{
 			char swap, swap2, backcnt=0;
 			swap = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
-			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor++]=c;
-			console->outBfr[obCnt++]=c;
+			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor++]=charin;
+			console->outBfr[obCnt++]=charin;
 			while (swap != 0)
 			{
 				swap2 = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
@@ -227,8 +227,8 @@ char* onCharacterReception(Console console,uint8_t c,RGBStream * lamps)
 		}
 		else
 		{
-			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt++] = c;
-			console->outBfr[obCnt++] = c;
+			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt++] = charin;
+			console->outBfr[obCnt++] = charin;
 			console->cursor++;
 		}
 	}

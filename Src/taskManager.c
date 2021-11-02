@@ -17,6 +17,7 @@
 #include "stringFunctions.h"
 #include "interpolators.h"
 #include "taskManagerUtils.h"
+#include <bufferedInputHandler.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -189,6 +190,11 @@ void helpCommand(char * cmd,void* context)
 	printf("   does nothing if the interpolator is not initialized\r\n");
 	printf(" * SAVE: persistently saves the interpolators\r\n");
 	printf(" * LOAD: loads the interpolators\r\n");
+	printf(" * API: switches physical interface to api mode, does not echo character and does not allow \r\n");
+	printf("   command line editing and history\r\n");
+	printf(" * CONSOLE: swtoche the physical interface to console mode, characters received are echoed\r\n");
+	printf("   also command line history and editing is possible\\r\n");
+
 }
 
 
@@ -403,6 +409,20 @@ void loadCommand(char * cmd,void* context)
 	fromStream((uint16_t*)&__filesystem_start,interpolators);
 }
 
+void apiCommand(char * cmd,void* context)
+{
+	BufferedInput binput = (BufferedInput)context;
+	binput->interfaceType = BINPUT_TYPE_API;
+	printf("APIOK\n");
+}
+
+void consoleCommand(char * cmd,void* context)
+{
+	BufferedInput binput = (BufferedInput)context;
+	binput->interfaceType = BINPUT_TYPE_CONSOLE;
+	printf("Switching back to Console Mode\r\n");
+}
+
 UserCommandType userCommands[] = {
 	{"BACKGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"FOREGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
@@ -429,6 +449,8 @@ UserCommandType userCommands[] = {
 	{"ISTEP",&istepCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"DESCI",&desciCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"DESTROY",&destroyCommand,CONTEXT_TYPE_INTERPOLATORS},
+	{"API",&apiCommand,CONTEXT_TYPE_BUFFEREDINPUT},
+	{"CONSOLE",&consoleCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };
@@ -439,6 +461,7 @@ void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType)
 {
 	extern TasksType interpolators;
 	extern RGBStream * lamps;
+	extern BufferedInput bufferedInput;
 	switch(contextType)
 	{
 	case CONTEXT_TYPE_RGBSTREAM:
@@ -446,6 +469,9 @@ void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType)
 		break;
 	case CONTEXT_TYPE_INTERPOLATORS:
 		(*userFct)(cmd,(void*)&interpolators);
+		break;
+	case CONTEXT_TYPE_BUFFEREDINPUT:
+		(*userFct)(cmd,(void*)bufferedInput);
 		break;
 	case CONTEXT_TYPE_NONE:
 		(*userFct)(cmd,0);
