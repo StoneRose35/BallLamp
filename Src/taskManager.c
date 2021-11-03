@@ -178,15 +178,15 @@ void helpCommand(char * cmd,void* context)
 	printf("   example: RED(13) switches led 13 to red while leaving all others\r\n");
 	printf(" * START: starts all interpolators\r\n");
 	printf(" * STOP: stops all interpolators\r\n");
-	printf(" * INTERP(<lamp_nr>,<nSteps>,<repeating>): defines an interpolator/color sequence for Lamp <lampnr>\r\n");
+	printf(" * INTERP(<lamp_nr>,<nSteps>,<repeating>): defines an interpolator/color sequence for Lamp <lampnr>, 255 means every lamp\r\n");
 	printf("   with <nSteps> steps, loops if <repeating> is 1, executes as one-shot if 0 \r\n");
 	printf(" * ISTEP(<r>,<g>,<b>,<frames>,<interpolation>,<lampnr>,<step>)\r\n");
 	printf("   with <r>, <g>, <b> being the colors, <frames> the number of frames the step should last\r\n");
 	printf("   <interpolation> is 0 for constant, 1 for linear interpolation to the next value\r\n");
-	printf("   <lampnr> is the lamp nr,<step> is the step to define\r\n");
+	printf("   <lampnr> is the lamp nr, 255 means every lamp,<step> is the step to define\r\n");
 	printf("   make sure to call INTERP prior to defining individual steps\r\n");
 	printf(" * DESCI: returns a description of all initialized interpolators\r\n");
-	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr\r\n");
+	printf(" * DESTROY(<lampnr>) removes an interpolator for a certain lamp nr or all lamps if 255 is give as a lamp nr\r\n");
 	printf("   does nothing if the interpolator is not initialized\r\n");
 	printf(" * SAVE: persistently saves the interpolators\r\n");
 	printf(" * LOAD: loads the interpolators\r\n");
@@ -234,7 +234,18 @@ void interpCommand(char * cmd,void* context)
 		}
 		if (has_errors == 0)
 		{
-			retval = setLampInterpolator(interpolators,lampnr,nsteps,repeating);
+			if (lampnr < 0xFF)
+			{
+				retval = setLampInterpolator(interpolators,lampnr,nsteps,repeating);
+			}
+			else
+			{
+				retval=0;
+				for (uint8_t cc=0;cc<N_LAMPS;cc++)
+				{
+					retval += setLampInterpolator(interpolators,cc,nsteps,repeating);
+				}
+			}
 			if (retval != 0)
 			{
 				printf("ERROR: returned error code ");
@@ -291,7 +302,18 @@ void istepCommand(char * cmd,void* context)
 
 		if (has_errors == 0)
 		{
-			retval = setColorFramesInterpolation(interpolators,r,g,b,frames,interpolation,lampnr,step);
+			if (lampnr < 0xFF)
+			{
+				retval = setColorFramesInterpolation(interpolators,r,g,b,frames,interpolation,lampnr,step);
+			}
+			else
+			{
+				retval=0;
+				for(uint8_t cc=0;cc<N_LAMPS;cc++)
+				{
+					retval += setColorFramesInterpolation(interpolators,r,g,b,frames,interpolation,cc,step);
+				}
+			}
 			if (retval != 0)
 			{
 				printf("ERROR: returned error code ");
@@ -366,14 +388,32 @@ void destroyCommand(char * cmd,void* context)
 		lampnr = tryToUInt8(bracketContent,&has_errors);
 		if (checkLampRange(lampnr,&has_errors) != 0)
 		{
-			lampidx = getLampIndex(interpolators,lampnr);
-			if (lampidx != 0xFF)
+			if(lampnr < 0xFF)
 			{
-				destroyTask(interpolators->taskArray+lampidx);
+				lampidx = getLampIndex(interpolators,lampnr);
+				if (lampidx != 0xFF)
+				{
+					destroyTask(interpolators->taskArray+lampidx);
+				}
+				else
+				{
+					printf("ERROR: no interpolator found to destroy\r\n");
+				}
 			}
 			else
 			{
-				printf("ERROR: no interpolator found to destroy\r\n");
+				for(uint8_t cc=0;cc<N_LAMPS;cc++)
+				{
+					lampidx = getLampIndex(interpolators,cc);
+					if (lampidx != 0xFF)
+					{
+						destroyTask(interpolators->taskArray+lampidx);
+					}
+					else
+					{
+						printf("ERROR: no interpolator found to destroy\r\n");
+					}
+				}
 			}
 		}
 	}

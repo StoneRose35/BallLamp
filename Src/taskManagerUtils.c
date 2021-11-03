@@ -47,7 +47,7 @@ int16_t tryToInt16(char * str,uint8_t* has_errors_ptr)
 uint8_t checkLampRange(uint8_t lampnr,uint8_t* has_errors_ptr)
 {
 	char nrbfr[4];
-	if (lampnr < N_LAMPS)
+	if (lampnr < N_LAMPS || lampnr == 0xFF)
 	{
 		return 1;
 	}

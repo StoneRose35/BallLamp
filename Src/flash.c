@@ -77,10 +77,10 @@ uint16_t saveInFlash(uint16_t * data,uint32_t size,uint32_t offset)
 {
 	uint16_t retcode=0;
 	uint8_t sizeInPages = (uint8_t)((size >> 11) + 1); // /2k
-	uint8_t initialPage = (uint32_t)&__filesystem_start >> 11;
+	//uint8_t initialPage = (uint32_t)&__filesystem_start >> 11;
 	for (uint8_t c=0;c<sizeInPages;c++)
 	{
-		retcode += erasePage(c+initialPage);
+		retcode += erasePage(c);
 	}
 	for (uint32_t c2=0;c2<size;c2+=2)
 	{
