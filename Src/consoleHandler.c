@@ -33,207 +33,207 @@ const char * cmd_arrow_right = "[C";
 const char * cmd_arrow_up = "[A";
 const char * cmd_arrow_down = "[B";
 
-char* onCharacterReception(Console console,uint8_t charin)
+char* onCharacterReception(BufferedInput binput,uint8_t charin)
 {
 	uint8_t c1=0;
 	uint8_t obCnt=0;
 
-    clearOutBuffer(console);
-	if (charin == 13 && console->mode == 0) // convert \r into \r\n, print a new console line
+    clearOutBuffer(binput->console);
+	if (charin == 13 && binput->console->mode == 0) // convert \r into \r\n, print a new console line
 	{
-		console->outBfr[obCnt++] = 13;
-		console->outBfr[obCnt++] = 10;
+		binput->console->outBfr[obCnt++] = 13;
+		binput->console->outBfr[obCnt++] = 10;
 
 		while(consolePrefix[c1] != 0)
 		{
-			console->outBfr[obCnt]=consolePrefix[c1];
+			binput->console->outBfr[obCnt]=consolePrefix[c1];
 			c1++;
 			obCnt++;
 		}
 
 
 		// copy the possibly edited command into the first position of the shadow command buffer
-		copyCommandBetweenArrays(console->cbfIdx,0,console->commandBuffer,console->commandBufferShadow);
+		copyCommandBetweenArrays(binput->console->cbfIdx,0,binput->console->commandBuffer,binput->console->commandBufferShadow);
 
 		// push command into history
 		for(uint8_t c=COMMAND_HISTORY_SIZE-1;c>0;c--)
 		{
-			copyCommand(c-1,c,console->commandBufferShadow);
+			copyCommand(c-1,c,binput->console->commandBufferShadow);
 		}
 
-		console->cbfIdx=0;
+		binput->console->cbfIdx=0;
 
-		handleCommand(console->commandBufferShadow);
+		handleCommand(binput->console->commandBufferShadow,binput);
 
-		clearCommandBuffer(console,console->cbfIdx,console->commandBufferShadow);
+		clearCommandBuffer(binput->console,binput->console->cbfIdx,binput->console->commandBufferShadow);
 
 		// copy shadow into edit buffer
 		for (uint16_t cc=0;cc<COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE;cc++)
 		{
-			*(console->commandBuffer+cc) = *(console->commandBufferShadow+cc);
+			*(binput->console->commandBuffer+cc) = *(binput->console->commandBufferShadow+cc);
 		}
 
-		console->cursor = 0;
+		binput->console->cursor = 0;
 
 	}
 
 
 
-	else if ((charin == 0x7F || charin == 0x8) && console->cbfCnt>0 && console->mode == 0 && console->cursor > 0) // DEL/backspace
+	else if ((charin == 0x7F || charin == 0x8) && binput->console->cbfCnt>0 && binput->console->mode == 0 && binput->console->cursor > 0) // DEL/backspace
 	{
-        if (console->cursor < console->cbfCnt) // within the command
+        if (binput->console->cursor < binput->console->cbfCnt) // within the command
         {
         	uint8_t swap, backcnt=0;
-        	swap=console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
-        	console->outBfr[obCnt++] = 27;
-        	console->outBfr[obCnt++] = 91;
-        	console->outBfr[obCnt++] = 68;
+        	swap=binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor];
+        	binput->console->outBfr[obCnt++] = 27;
+        	binput->console->outBfr[obCnt++] = 91;
+        	binput->console->outBfr[obCnt++] = 68;
         	while (swap != 0)
         	{
-        		console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor-1] = swap;
-        		console->outBfr[obCnt++] = swap;
-        		console->cursor++;
+        		binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor-1] = swap;
+        		binput->console->outBfr[obCnt++] = swap;
+        		binput->console->cursor++;
         		backcnt++;
-        		swap=console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
+        		swap=binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor];
         	}
-        	console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor-1]=0;
-        	console->outBfr[obCnt++]=' ';
-        	console->cursor++;
+        	binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor-1]=0;
+        	binput->console->outBfr[obCnt++]=' ';
+        	binput->console->cursor++;
         	backcnt++;
         	for (uint8_t q=0;q<backcnt;q++)
         	{
-        		console->outBfr[obCnt++] = 27;
-        		console->outBfr[obCnt++] = 91;
-        		console->outBfr[obCnt++] = 68;
-        		console->cursor--;
+        		binput->console->outBfr[obCnt++] = 27;
+        		binput->console->outBfr[obCnt++] = 91;
+        		binput->console->outBfr[obCnt++] = 68;
+        		binput->console->cursor--;
         	}
-        	console->cbfCnt--;
-        	console->cursor--;
+        	binput->console->cbfCnt--;
+        	binput->console->cursor--;
         }
         else // at the right end (default after typing)
         {
-        	console->outBfr[obCnt++] = 0x8;
-        	console->outBfr[obCnt++] = 0x20;
-        	console->outBfr[obCnt++] = 0x8;
-        	console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt--] = 0;
-        	console->cursor--;
+        	binput->console->outBfr[obCnt++] = 0x8;
+        	binput->console->outBfr[obCnt++] = 0x20;
+        	binput->console->outBfr[obCnt++] = 0x8;
+        	binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt--] = 0;
+        	binput->console->cursor--;
         }
 	}
 	else if (charin < 32) // control character received
 	{
-		console->mode = 1;
-		console->cmdBfr[0]=0;
-		console->cmdBfr[1]=0;
-		console->cmdBfr[2]=0;
+		binput->console->mode = 1;
+		binput->console->cmdBfr[0]=0;
+		binput->console->cmdBfr[1]=0;
+		binput->console->cmdBfr[2]=0;
 	}
-	else if (console->mode==1) // first describing character after the control character
+	else if (binput->console->mode==1) // first describing character after the control character
 	{
-		console->cmdBfr[console->mode-1] = charin;
-		console->mode++;
+		binput->console->cmdBfr[binput->console->mode-1] = charin;
+		binput->console->mode++;
 	}
-	else if (console->mode==2) 		// command mode, arrows behave rougly the same as in bash
+	else if (binput->console->mode==2) 		// command mode, arrows behave rougly the same as in bash
 	{
-		console->cmdBfr[console->mode-1] = charin;
-		console->mode = 0;
-		if (strcmp(console->cmdBfr,cmd_arrow_left)==0)
+		binput->console->cmdBfr[binput->console->mode-1] = charin;
+		binput->console->mode = 0;
+		if (strcmp(binput->console->cmdBfr,cmd_arrow_left)==0)
 		{
-			if (console->cursor>0)
+			if (binput->console->cursor>0)
 			{
-				console->cursor--;
-				console->outBfr[obCnt++] = 27;
-				console->outBfr[obCnt++] = 91;
-				console->outBfr[obCnt++] = 68;
+				binput->console->cursor--;
+				binput->console->outBfr[obCnt++] = 27;
+				binput->console->outBfr[obCnt++] = 91;
+				binput->console->outBfr[obCnt++] = 68;
 			}
 		}
-		if (strcmp(console->cmdBfr,cmd_arrow_right)==0)
+		if (strcmp(binput->console->cmdBfr,cmd_arrow_right)==0)
 		{
-			if (console->cursor<console->cbfCnt)
+			if (binput->console->cursor<binput->console->cbfCnt)
 			{
-				console->cursor++;
-				console->outBfr[obCnt++] = 27;
-				console->outBfr[obCnt++] = 91;
-				console->outBfr[obCnt++] = 67;
+				binput->console->cursor++;
+				binput->console->outBfr[obCnt++] = 27;
+				binput->console->outBfr[obCnt++] = 91;
+				binput->console->outBfr[obCnt++] = 67;
 			}
 		}
-		if (strcmp(console->cmdBfr,cmd_arrow_up)==0)
+		if (strcmp(binput->console->cmdBfr,cmd_arrow_up)==0)
 		{
 			// remove old command
-			while (console->cbfCnt>0)
+			while (binput->console->cbfCnt>0)
 			{
-				console->outBfr[obCnt++] = 0x8;
-				console->outBfr[obCnt++] = 0x20;
-				console->outBfr[obCnt++] = 0x8;
-				console->cbfCnt--;
+				binput->console->outBfr[obCnt++] = 0x8;
+				binput->console->outBfr[obCnt++] = 0x20;
+				binput->console->outBfr[obCnt++] = 0x8;
+				binput->console->cbfCnt--;
 			}
-			if (console->cbfIdx < COMMAND_HISTORY_SIZE-1)
+			if (binput->console->cbfIdx < COMMAND_HISTORY_SIZE-1)
 			{
-				console->cbfIdx++;
-				console->cbfCnt=0;
-				console->cursor=0;
-				while (console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt] != 0)
+				binput->console->cbfIdx++;
+				binput->console->cbfCnt=0;
+				binput->console->cursor=0;
+				while (binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt] != 0)
 				{
-					console->outBfr[obCnt++] = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt++];
-					console->cursor++;
+					binput->console->outBfr[obCnt++] = binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt++];
+					binput->console->cursor++;
 				}
 			}
 		}
-		if (strcmp(console->cmdBfr,cmd_arrow_down)==0)
+		if (strcmp(binput->console->cmdBfr,cmd_arrow_down)==0)
 		{
 			// remove old command
-			while (console->cbfCnt>0)
+			while (binput->console->cbfCnt>0)
 			{
-				console->outBfr[obCnt++] = 0x8;
-				console->outBfr[obCnt++] = 0x20;
-				console->outBfr[obCnt++] = 0x8;
-				console->cbfCnt--;
+				binput->console->outBfr[obCnt++] = 0x8;
+				binput->console->outBfr[obCnt++] = 0x20;
+				binput->console->outBfr[obCnt++] = 0x8;
+				binput->console->cbfCnt--;
 			}
-			if (console->cbfIdx >0)
+			if (binput->console->cbfIdx >0)
 			{
-				console->cbfIdx--;
-				console->cbfCnt=0;
-				console->cursor=0;
-				while (console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt] != 0)
+				binput->console->cbfIdx--;
+				binput->console->cbfCnt=0;
+				binput->console->cursor=0;
+				while (binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt] != 0)
 				{
-					console->outBfr[obCnt++] = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt++];
-					console->cursor++;
+					binput->console->outBfr[obCnt++] = binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt++];
+					binput->console->cursor++;
 				}
 			}
 		}
 	}
 	else if (charin < 127) // "normal" (non-control) character nor del or special characters entered
 	{
-		if (console->cursor < console->cbfCnt) // within the command
+		if (binput->console->cursor < binput->console->cbfCnt) // within the command
 		{
 			char swap, swap2, backcnt=0;
-			swap = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
-			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor++]=charin;
-			console->outBfr[obCnt++]=charin;
+			swap = binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor];
+			binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor++]=charin;
+			binput->console->outBfr[obCnt++]=charin;
 			while (swap != 0)
 			{
-				swap2 = console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor];
-				console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cursor++]= swap;
-				console->outBfr[obCnt++]=swap;
+				swap2 = binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor];
+				binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cursor++]= swap;
+				binput->console->outBfr[obCnt++]=swap;
 				swap=swap2;
 				backcnt++;
 			}
            for (uint8_t q =0;q<backcnt;q++)
            {
-        	   console->outBfr[obCnt++] = 27;
-        	   console->outBfr[obCnt++] = 91;
-        	   console->outBfr[obCnt++] = 68;
-        	   console->cursor--;
+        	   binput->console->outBfr[obCnt++] = 27;
+        	   binput->console->outBfr[obCnt++] = 91;
+        	   binput->console->outBfr[obCnt++] = 68;
+        	   binput->console->cursor--;
            }
-           console->cbfCnt++;
+           binput->console->cbfCnt++;
 		}
 		else
 		{
-			console->commandBuffer[console->cbfIdx*COMMAND_BUFFER_SIZE + console->cbfCnt++] = charin;
-			console->outBfr[obCnt++] = charin;
-			console->cursor++;
+			binput->console->commandBuffer[binput->console->cbfIdx*COMMAND_BUFFER_SIZE + binput->console->cbfCnt++] = charin;
+			binput->console->outBfr[obCnt++] = charin;
+			binput->console->cursor++;
 		}
 	}
-	console->outBfr[obCnt++] = 0;
-	return console->outBfr;
+	binput->console->outBfr[obCnt++] = 0;
+	return binput->console->outBfr;
 }
 
 

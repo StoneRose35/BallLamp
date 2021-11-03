@@ -8,6 +8,7 @@
 #include "system.h"
 #include "apiHandler.h"
 #include "taskManager.h"
+#include "bufferedInputHandler.h"
 
 
 void initApi(Api api)
@@ -19,21 +20,31 @@ void initApi(Api api)
 	}
 }
 
-char* onByteReception(Api api,uint8_t charin)
+char* onByteReception(BufferedInput binput,uint8_t charin)
 {
 	if (charin == 13) // handle command when a newline character has been received
 	{
-		handleCommand(api->inputBuffer);
+		handleCommand(binput->api->inputBuffer,binput);
+
+		binput->api->ibidx = 0;
+		for(uint16_t c=0;c<API_INPUT_BUFFER_SIZE;c++)
+		{
+			binput->api->inputBuffer[c] = 0;
+		}
 	}
 	else
 	{
-		api->inputBuffer[api->ibidx++] = charin;
-		if (api->ibidx > API_INPUT_BUFFER_SIZE)
+		binput->api->inputBuffer[binput->api->ibidx++] = charin;
+		if (binput->api->ibidx > API_INPUT_BUFFER_SIZE)
 		{
-			api->outputBuffer[0] = 0x31;
+			binput->api->outputBuffer[0] = 0x31;
+		}
+		else
+		{
+			binput->api->outputBuffer[1]=0;
 		}
 	}
-	api->outputBuffer[0] = 0x30;
-	return api->outputBuffer;
+	binput->api->outputBuffer[1] = 0;
+	return binput->api->outputBuffer;
 }
 

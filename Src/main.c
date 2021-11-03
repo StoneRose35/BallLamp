@@ -44,8 +44,6 @@ uint8_t* rawdata_ptr = rawdata;
 TaskType interpolatorsArray[N_LAMPS];
 TasksType interpolators;
 
-BufferedInputType bufferedInputType;
-BufferedInput bufferedInput=&bufferedInputType;
 
 volatile uint32_t task;
 volatile uint8_t context;
@@ -136,6 +134,7 @@ int main(void)
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
 
+	/*
 	setLampInterpolator(&interpolators,0,4,MODE_REPEATING); // lamp 10, 4 steps, repeating
 	setColorFramesInterpolation(&interpolators, 0,0,0 ,13,INTERPOLATION_LINEAR, 0,0);
 	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 0,1);
@@ -256,13 +255,8 @@ int main(void)
 	setColorFramesInterpolation(&interpolators, 0,255,0, 5,INTERPOLATION_LINEAR, 19,1);
 	setColorFramesInterpolation(&interpolators, 0,45,130, 20,INTERPOLATION_LINEAR, 19,2);
 	setColorFramesInterpolation(&interpolators, 200,200,200, 27,INTERPOLATION_LINEAR, 19,3);
+*/
 
-	/*
-	setLampInterpolator(&interpolators,1,2,MODE_REPEATING); // lamp 1, 2 steps, repeating
-	setColorFramesInterpolation(&interpolators, 0,0,0 ,50,INTERPOLATION_CONSTANT, 1,0);
-	setColorFramesInterpolation(&interpolators, 240,0,0, 50,INTERPOLATION_CONSTANT, 1,1);
-	*/
-	// test hack
 
 	startInterpolators(&interpolators);
 

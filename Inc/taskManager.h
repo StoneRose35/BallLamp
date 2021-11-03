@@ -28,7 +28,7 @@ typedef struct
 	uint8_t contextType;
 } UserCommandType;
 
-void handleCommand(char*);
+void handleCommand(char*,void*);
 
 
 #endif /* TASKMANAGER_H_ */

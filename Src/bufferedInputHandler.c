@@ -6,6 +6,8 @@
  */
 
 #include "bufferedInputHandler.h"
+#include "consoleHandler.h"
+#include "apiHandler.h"
 #ifndef STM32
 #include <stdio.h>
 #endif
@@ -17,7 +19,7 @@ void processInputBuffer(BufferedInput binput)
 	{
 		while(binput->commBuffer->inputBufferCnt > 0)
 		{
-			returnBfr = onCharacterReception(binput->console,binput->commBuffer->inputBuffer[binput->commBuffer->inputBufferCnt-1]);
+			returnBfr = onCharacterReception(binput,binput->commBuffer->inputBuffer[binput->commBuffer->inputBufferCnt-1]);
 			binput->commBuffer->inputBufferCnt--;
 			printf(returnBfr);
 		}
@@ -26,7 +28,7 @@ void processInputBuffer(BufferedInput binput)
 	{
 		while(binput->commBuffer->inputBufferCnt > 0)
 		{
-			returnBfr = onByteReception(binput->api,binput->commBuffer->inputBuffer[binput->commBuffer->inputBufferCnt-1]);
+			returnBfr = onByteReception(binput,binput->commBuffer->inputBuffer[binput->commBuffer->inputBufferCnt-1]);
 			binput->commBuffer->inputBufferCnt--;
 			printf(returnBfr);
 		}

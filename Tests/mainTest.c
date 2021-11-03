@@ -27,31 +27,32 @@ void consoleHandlerHistoryCheck()
 	ConsoleType c1;
 	printf("******** starting consoleHandlerHistoryCheck\n");
 	initConsole(&c1);
+	bufferedInput->console = &c1;
 
-	onCharacterReception(&c1,(uint8_t)'A');
-	onCharacterReception(&c1,(uint8_t)'Q');
-	onCharacterReception(&c1,(uint8_t)'U');
-	onCharacterReception(&c1,(uint8_t)'A');
-	onCharacterReception(&c1,(uint8_t)'(');
-	onCharacterReception(&c1,(uint8_t)'0');
-	onCharacterReception(&c1,(uint8_t)')');
-	onCharacterReception(&c1,(uint8_t)'\r');
+	onCharacterReception(bufferedInput,(uint8_t)'A');
+	onCharacterReception(bufferedInput,(uint8_t)'Q');
+	onCharacterReception(bufferedInput,(uint8_t)'U');
+	onCharacterReception(bufferedInput,(uint8_t)'A');
+	onCharacterReception(bufferedInput,(uint8_t)'(');
+	onCharacterReception(bufferedInput,(uint8_t)'0');
+	onCharacterReception(bufferedInput,(uint8_t)')');
+	onCharacterReception(bufferedInput,(uint8_t)'\r');
 
 	// simulate up arrow
-	onCharacterReception(&c1,(uint8_t)'\e');
-	onCharacterReception(&c1,(uint8_t)'[');
-	onCharacterReception(&c1,(uint8_t)'A');
+	onCharacterReception(bufferedInput,(uint8_t)'\e');
+	onCharacterReception(bufferedInput,(uint8_t)'[');
+	onCharacterReception(bufferedInput,(uint8_t)'A');
 
 	// delete two characters
-	onCharacterReception(&c1,127);
-	onCharacterReception(&c1,127);
+	onCharacterReception(bufferedInput,127);
+	onCharacterReception(bufferedInput,127);
 
 	// write a "1)", text should now be AQUA(1)
-	onCharacterReception(&c1,(uint8_t)'1');
-	onCharacterReception(&c1,(uint8_t)')');
+	onCharacterReception(bufferedInput,(uint8_t)'1');
+	onCharacterReception(bufferedInput,(uint8_t)')');
 
 
-	onCharacterReception(&c1,(uint8_t)'\r');
+	onCharacterReception(bufferedInput,(uint8_t)'\r');
 
 	if (!(lamps->rgb.r == 0 && lamps->rgb.g == 210 && lamps->rgb.b == 140))
 	{
@@ -128,7 +129,7 @@ void testRgbCommand()
 {
 	printf("******** starting testRgcCommand\n");
 	char command[32] = "RGB(23,34,45,1)";
-	handleCommand(command);
+	handleCommand(command,0);
 	if (lamps[1].rgb.r != 23 || lamps[1].rgb.g != 34 || lamps[1].rgb.b != 45)
 	{
 		printf("test failed: color set for lamp 1 is incorrect\n");
