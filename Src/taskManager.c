@@ -18,11 +18,12 @@
 #include "interpolators.h"
 #include "taskManagerUtils.h"
 #include <bufferedInputHandler.h>
+#include "bluetoothATConfig.h"
 
 #include <string.h>
 #include <stdlib.h>
 
-extern ptr __filesystem_start;
+extern uint32_t __filesystem_start;
 
 
 RGB colors[] = {
@@ -428,7 +429,7 @@ void saveCommand(char * cmd,void* context)
 	Tasks interpolators=(Tasks)context;
 	uint8_t * streamout;
 	streamsize = toStream(interpolators,&streamout);
-	retcode = saveInFlash((uint16_t*)streamout,streamsize,0);
+	retcode = saveInFlash((uint16_t*)streamout,streamsize,FLASH_HEADER_SIZE);
 	free(streamout);
 	printf("\r\nsaved ");
 	UInt32ToChar(streamsize,nrbfr);
@@ -446,7 +447,7 @@ void loadCommand(char * cmd,void* context)
 	{
 		destroyTask(interpolators->taskArray+c);
 	}
-	fromStream((uint16_t*)&__filesystem_start,interpolators);
+	fromStream((uint16_t*)((uint32_t)&__filesystem_start+FLASH_HEADER_SIZE),interpolators);
 }
 
 void apiCommand(char * cmd,void* context)
@@ -462,6 +463,20 @@ void consoleCommand(char * cmd,void* context)
 	BufferedInput binput = (BufferedInput)context;
 	binput->interfaceType = BINPUT_TYPE_CONSOLE;
 	printf("Switching back to Console Mode\r\n");
+}
+
+void setupBluetoothCommand(char * cmd,void* context)
+{
+	if(ATCheckEnabled() == 0)
+	{
+		ATSetName("BallLamp");
+		ATSetPin("3006");
+		ATSetBaud("7");
+	}
+	else
+	{
+		printf("Can't configure Bluetooth: already paired\r\n");
+	}
 }
 
 UserCommandType userCommands[] = {
@@ -492,6 +507,7 @@ UserCommandType userCommands[] = {
 	{"DESTROY",&destroyCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"API",&apiCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"CONSOLE",&consoleCommand,CONTEXT_TYPE_BUFFEREDINPUT},
+	{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

@@ -34,6 +34,9 @@
 #define CONTEXT_USB 0
 #define CONTEXT_BT 1
 
+#define FLASH_HEADER_SIZE 32
+#define FLASH_PAGE_SIZE 2048
+
 #ifndef STM32
 #include <stdint.h>
 typedef unsigned long ptr;

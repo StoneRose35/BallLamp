@@ -155,6 +155,8 @@ void initUart()
  * */
 void initBTUart()
 {
+	uint32_t brr_value;
+	extern uint32_t __filesystem_start;
 	// GPIO Settings
 	RCC->AHBENR |= (1 << IOPBEN);
 	GPIOB->MODER |= (AF << 6*2) | (AF << 7*2); // alternate function for pb6 and pb7
@@ -168,7 +170,9 @@ void initBTUart()
 	UART1->CR1 |= (1 << 5) | (1 << 3) | (1 << 2);
 
 	// set baud rate
-	UART1->BRR = F_APB1/BAUD_RATE_BT;
+	brr_value = *(&__filesystem_start + 0);
+
+	UART1->BRR = brr_value;
 
 	// enable uart1 interrupt, at pos 37 --> pos 5 of 2nd register
 	*NVIC_ISER1 |= (1 << 5);

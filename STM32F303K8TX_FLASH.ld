@@ -146,6 +146,9 @@ SECTIONS
   {
       . = ALIGN(2K);
       __filesystem_start = .;
+      LONG(64000000/2/9600) /* place default bluetooth baudrate at the beginning of the filesystem settings */
+      
+      
       KEEP(*(.filesysdata))
       __filesystem_end = .;
   } >FLASH

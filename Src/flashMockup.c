@@ -4,15 +4,9 @@
 #include "fakeFlash.h"
 
 
-uint16_t fakeFlash[1024*1024];
+uint16_t fakeflash[1024*1024];
 
-ptr __filesystem_start;
-
-
-void initFakeFlash()
-{
-	__filesystem_start = (ptr)fakeFlash;
-}
+uint32_t __filesystem_start;
 
 void unlockFlash()
 {
@@ -32,7 +26,7 @@ uint16_t saveInFlash(uint16_t * data,uint32_t size,uint32_t offset)
 {
 	for(uint32_t c=0;c<size;c+=2)
 	{
-		*(fakeFlash+c) = *(data+c);
+		*(fakeflash+c) = *(data+c);
 	}
 	return 0;
 }
