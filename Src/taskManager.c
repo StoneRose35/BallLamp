@@ -8,7 +8,7 @@
 #include "taskManager.h"
 #include "neopixelDriver.h"
 #include "system.h"
-#include "flash.h"
+#include "memoryAccess.h"
 #ifdef STM32
 #include "uart.h"
 #else
@@ -429,7 +429,7 @@ void saveCommand(char * cmd,void* context)
 	Tasks interpolators=(Tasks)context;
 	uint8_t * streamout;
 	streamsize = toStream(interpolators,&streamout);
-	retcode = saveInFlash((uint16_t*)streamout,streamsize,FLASH_HEADER_SIZE);
+	retcode = saveData((uint16_t*)streamout,streamsize,FLASH_HEADER_SIZE);
 	free(streamout);
 	printf("\r\nsaved ");
 	UInt32ToChar(streamsize,nrbfr);
@@ -447,7 +447,7 @@ void loadCommand(char * cmd,void* context)
 	{
 		destroyTask(interpolators->taskArray+c);
 	}
-	fromStream((uint16_t*)((uint32_t)&__filesystem_start+FLASH_HEADER_SIZE),interpolators);
+	fromStream((uint16_t*)((ptr)&__filesystem_start+FLASH_HEADER_SIZE),interpolators);
 }
 
 void apiCommand(char * cmd,void* context)

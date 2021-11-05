@@ -6,8 +6,8 @@
  */
 
 #include <stdlib.h>
-#ifdef STM32
 #include "types.h"
+#ifdef STM32
 #include "system.h"
 #endif
 #include "colorInterpolator.h"

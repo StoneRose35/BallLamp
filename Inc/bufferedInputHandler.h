@@ -10,7 +10,6 @@
 
 #include "types.h"
 #include "bufferedInputStructs.h"
-
 #include "uart.h"
 
 

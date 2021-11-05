@@ -37,20 +37,15 @@
 #define FLASH_HEADER_SIZE 32
 #define FLASH_PAGE_SIZE 2048
 
-#ifndef STM32
-#include <stdint.h>
-typedef unsigned long ptr;
-#else
+
 #include "types.h"
-typedef unsigned int ptr;
-#endif
+
 
 typedef struct
 {
 	uint8_t r;
 	uint8_t g;
 	uint8_t b;
-	//uint8_t res;
 } RGB;
 
 typedef union
