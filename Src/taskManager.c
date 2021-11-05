@@ -193,7 +193,8 @@ void helpCommand(char * cmd,void* context)
 	printf(" * API: switches physical interface to api mode, does not echo character and does not allow \r\n");
 	printf("   command line editing and history\r\n");
 	printf(" * CONSOLE: switches the physical interface to console mode, characters received are echoed\r\n");
-	printf("   also command line history and editing is possible\\r\n");
+	printf("   also command line history and editing is possible\r\n");
+	printf(" * SETUPBT: changes the bluetooth interface name and pin, sets bluetooth speed to 57600\r\n");
 
 }
 

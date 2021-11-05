@@ -19,16 +19,18 @@ const char * ATCommandSetPinPrefix = "AT+PIN";
 
 uint8_t ATSendCommand(char * cmd,char * out)
 {
-	uint8_t cnt = 0;
-	*NVIC_ICER1 |= (1 << 5); // clear interrupt since config is done synchronously
+	uint8_t cnt = 0,cntout = 0;
+	volatile uint32_t timercnt;
 
+	UART1->CR1 &= ~(1 << 5);// clear interrupt since config is done synchronously
+	out[0]=UART1->RDR & 0xFF;
 	while (cmd[cnt] != 0)
 	{
-		while (!((UART2->ISR & (1 << TC)) == (1 << TC)));
+		while (!((UART1->ISR & (1 << TC)) == (1 << TC)))
+		{
+		}
 		UART1->TDR =cmd[cnt++];
 	}
-
-	cnt=0;
 
 	// enable timer3 as as timeout watcher
 
@@ -36,18 +38,26 @@ uint8_t ATSendCommand(char * cmd,char * out)
 	TIM3->PSC = 0xFFFF;
 	TIM3->CNT = 0;
 	TIM3->CR1 |= 1;
-
-	// wait ~1s for command (since no end sign is returned a timeout
-	while (TIM3->CNT < 1000){
-		if ((UART1->ISR & (1 << RXNE)) == (1 << RXNE))
+	TIM3->ARR = 100;
+	timercnt=0;
+	TIM3->SR &= ~(1 << 0);
+	// wait ~3s for command (since no end sign is returned)
+	while (timercnt < 7){
+		if ((UART1->ISR & (1 << RXNE)) != 0)
 		{
-			out[cnt++]=UART1->RDR & 0xFF;
+			out[cntout++]=UART1->RDR & 0xFF;
+		}
+		if((TIM3->SR & (1 << 0)) != 0)
+		{
+			TIM3->SR &= ~(1 << 0);
+			timercnt++;
 		}
 	}
 
 	TIM3->CR1 &= ~1;
 
-	return cnt;
+	UART1->CR1 |= (1 << 5); // re-enble interrupt
+	return cntout;
 }
 
 uint8_t ATCheckEnabled()
@@ -61,6 +71,7 @@ uint8_t ATCheckEnabled()
 		c++;
 		creq++;
 	}
+	request[creq]=0;
 	ATSendCommand(request,response);
 	if (startsWith(response,"OK") > 0)
 	{
@@ -104,9 +115,9 @@ uint8_t ATSetBaud(char * idx)
 	char response[32];
 	char request[32];
 	uint16_t baudrate[2];
-	while (ATCommandSetNamePrefix[c] != 0)
+	while (ATCommandSetBaudPrefix[c] != 0)
 	{
-		request[creq]=ATCommandSetNamePrefix[c];
+		request[creq]=ATCommandSetBaudPrefix[c];
 		c++;
 		creq++;
 	}
