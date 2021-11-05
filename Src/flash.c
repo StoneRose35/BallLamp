@@ -41,7 +41,7 @@ uint8_t erasePage(uint8_t pagenr)
 	return 1;
 }
 
-uint8_t programHalfword(uint16_t hwrd,uint32_t addr)
+uint8_t programHalfword(uint16_t hwrd,ptr addr)
 {
 	uint16_t readBack;
 	uint8_t errcode = 0;
