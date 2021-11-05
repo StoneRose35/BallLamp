@@ -267,7 +267,7 @@ void istepCommand(char * cmd,void* context)
 {
 	char * var;
 	uint8_t r,g,b;
-	int16_t frames;
+	uint32_t frames;
 	uint8_t interpolation;
 	uint8_t lampnr;
 	uint8_t step, retval;
@@ -285,7 +285,7 @@ void istepCommand(char * cmd,void* context)
 		var = strtok(0,",");
 		b = tryToUInt8(var,&has_errors);
 		var = strtok(0,",");
-		frames = tryToInt16(var,&has_errors);
+		frames = tryToUInt32(var,&has_errors);
 		var = strtok(0,",");
 		interpolation = tryToUInt8(var,&has_errors);
 

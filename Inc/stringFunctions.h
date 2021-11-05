@@ -17,6 +17,7 @@ void UInt16ToChar(uint16_t, char*);
 void UInt32ToChar(uint32_t, char*);
 uint8_t toUInt8(char*);
 int16_t toInt16(char*);
+uint32_t toUInt32(char*);
 
 void fillWithLeadingZeros(uint8_t minlength,char * nr);
 void toPercentChar(float,char*);

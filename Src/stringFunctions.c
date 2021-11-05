@@ -168,6 +168,20 @@ uint8_t toUInt8(char * chr)
 	return res;
 }
 
+uint32_t toUInt32(char * chr)
+{
+	uint32_t res=0;
+	uint32_t cnt=0;
+	while (chr[cnt]!=0)
+	{
+		res *= 10;
+		res += (chr[cnt] - 0x30);
+		cnt++;
+	}
+	return res;
+}
+
+
 int16_t toInt16(char * chr)
 {
 	int16_t res=0;

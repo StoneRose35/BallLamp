@@ -16,6 +16,8 @@ uint8_t tryToUInt8(char * str,uint8_t* has_errors_ptr);
 
 int16_t tryToInt16(char * str,uint8_t* has_errors_ptr);
 
+uint32_t tryToUInt32(char * str,uint8_t* has_errors_ptr);
+
 uint8_t checkLampRange(uint8_t,uint8_t* has_errors_ptr);
 
 void handleRgb(uint8_t,uint8_t,uint8_t,uint8_t,RGBStream*);

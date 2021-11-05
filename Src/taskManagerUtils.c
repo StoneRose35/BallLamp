@@ -44,6 +44,20 @@ int16_t tryToInt16(char * str,uint8_t* has_errors_ptr)
 	}
 }
 
+uint32_t tryToUInt32(char * str,uint8_t* has_errors_ptr)
+{
+	if (str != 0)
+	{
+		return toUInt32(str);
+	}
+	else
+	{
+		printf("ERROR: tryToInt16 got a NullPointer\n");
+		*has_errors_ptr = 1;
+		return 0;
+	}
+}
+
 uint8_t checkLampRange(uint8_t lampnr,uint8_t* has_errors_ptr)
 {
 	char nrbfr[4];

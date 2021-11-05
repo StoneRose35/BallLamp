@@ -12,7 +12,7 @@
 #include <stdint.h>
 #endif
 
-#define COMMAND_BUFFER_SIZE 32
+#define COMMAND_BUFFER_SIZE 48
 #define COMMAND_HISTORY_SIZE 4
 #define OUT_BUFFER_SIZE 256
 
@@ -26,14 +26,6 @@ typedef struct {
 
 	char inputBuffer[API_INPUT_BUFFER_SIZE];
 	char outputBuffer[API_OUTPUT_BUFFER_SIZE];
-	//char commandBuffer[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
-	//char commandBufferShadow[COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE];
-	//char outBfr[OUT_BUFFER_SIZE];
-	//char cmdBfr[3];
-	//uint8_t cbfCnt;
-	//uint8_t cbfIdx;
-	//uint8_t cursor;
-	//uint8_t mode;
 	uint16_t ibidx;
 } ApiType;
 
