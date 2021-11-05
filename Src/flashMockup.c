@@ -1,12 +1,7 @@
 #ifndef STM32
 
 #include "flash.h"
-#include "fakeFlash.h"
 
-
-uint16_t fakeflash[1024*1024];
-
-uint32_t __filesystem_start;
 
 void unlockFlash()
 {
@@ -15,9 +10,9 @@ void unlockFlash()
 
 uint8_t erasePage(uint8_t pagenr)
 {
-	for(uint16_t c=pagenr<<10;c<(pagenr<<10) + (FLASH_PAGE_SIZE>>1);c++)
+	for(uint16_t c=(pagenr-1)<<10;c<((pagenr-1)<<10) + (FLASH_PAGE_SIZE>>1);c++)
 	{
-		*(fakeflash+c)=0xFFFF;
+		*(fakeflash +c)=0xFFFF;
 	}
 	return 0;
 }

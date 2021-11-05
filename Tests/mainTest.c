@@ -10,7 +10,9 @@
 #include "demoColorInterpolator.h"
 #include "colorInterpolator.h"
 #include "interpolators.h"
-#include "fakeFlash.h"
+#include "flash.h"
+#include "memoryAccess.h"
+
 
 
 TaskType interpolatorsArray[N_LAMPS];
@@ -324,6 +326,23 @@ void testStreamRoundtrip()
 }
 
 
+void testFlashHeaderWrite()
+{
+	uint16_t headerdata[8];
+	printf("******** starting testFlashHeaderWrite\n");
+	char * dummy="lorem ipsum dolor sit amet... ";
+	saveData((uint16_t*)dummy,30,FLASH_HEADER_SIZE);
+
+	headerdata[0]=42;
+	saveHeader(headerdata,1);
+
+	if(startsWith((char*)(fakeflash)+FLASH_HEADER_SIZE,"lorem ipsum dolor sit amet... ") == 0)
+	{
+		printf("write to  header has overwritten the body data\n");
+	}
+	printf("******** ending testFlashHeaderWrite\n");
+}
+
 
 int main(int argc,char** argv)
 {
@@ -331,6 +350,7 @@ int main(int argc,char** argv)
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
 
+	testFlashHeaderWrite();
 
 	testStreamRoundtrip();
 	testInterpolation();

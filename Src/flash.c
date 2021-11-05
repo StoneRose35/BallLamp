@@ -10,9 +10,7 @@
 #include "types.h"
 #include "neopixelDriver.h"
 #include "stdlib.h"
-
-
-extern uint8_t __filesystem_start;
+#include "flash.h"
 
 
 void unlockFlash()
@@ -30,7 +28,7 @@ uint8_t erasePage(uint8_t pagenr)
 	while((FLASH->SR & (1 << FLASH_BSY))==(1 << FLASH_BSY));
 	FLASH->CR &= ~(1 << FLASH_PG);
 	FLASH->CR |= (1 << FLASH_PER);
-	FLASH->AR = (uint32_t)&__filesystem_start + (pagenr << 11);
+	FLASH->AR = (uint32_t)getFilesystemStart() + (pagenr << 11);
 	FLASH->CR|= (1 << FLASH_STRT);
 	while((FLASH->SR & (1 << FLASH_BSY))==(1 << FLASH_BSY));
 	if ((FLASH->SR & (1 << FLASH_EOP))== (1 << FLASH_EOP))

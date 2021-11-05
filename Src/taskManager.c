@@ -9,6 +9,7 @@
 #include "neopixelDriver.h"
 #include "system.h"
 #include "memoryAccess.h"
+#include "flash.h"
 #ifdef STM32
 #include "uart.h"
 #else
@@ -22,8 +23,6 @@
 
 #include <string.h>
 #include <stdlib.h>
-
-extern uint32_t __filesystem_start;
 
 
 RGB colors[] = {
@@ -447,7 +446,7 @@ void loadCommand(char * cmd,void* context)
 	{
 		destroyTask(interpolators->taskArray+c);
 	}
-	fromStream((uint16_t*)((ptr)&__filesystem_start+FLASH_HEADER_SIZE),interpolators);
+	fromStream((uint16_t*)((ptr)getFilesystemStart()+FLASH_HEADER_SIZE),interpolators);
 }
 
 void apiCommand(char * cmd,void* context)
