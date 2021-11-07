@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="139dp"
+        android:layout_height="18dp"
+        android:text="@string/main_label_text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintHorizontal_bias="0.183"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.046" />
+
+    <SeekBar
+        android:id="@+id/amountRed"
+        android:layout_width="312dp"
+        android:layout_height="17dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="49dp"
+        android:max="255"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView" />
+
+    <SeekBar
+        android:id="@+id/amountGreen"
+        android:layout_width="312dp"
+        android:layout_height="17dp"
+        android:layout_marginStart="50dp"
+        android:layout_marginTop="19dp"
+        android:layout_marginEnd="49dp"
+        android:max="255"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/amountRed" />
+
+    <SeekBar
+        android:id="@+id/amountBlue"
+        android:layout_width="312dp"
+        android:layout_height="17dp"
+        android:layout_marginStart="49dp"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="50dp"
+        android:max="255"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/amountGreen" />
+
+    <FrameLayout
+        android:id="@+id/frameLayout"
+        android:layout_width="114dp"
+        android:layout_height="91dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="24dp"
+        android:background="#000000"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/amountBlue">
+
+        <View
+            android:id="@+id/colorView"
+            android:layout_width="91dp"
+            android:layout_height="69dp"
+
+            android:layout_margin="9dp"
+            android:background="#FFFFFF"
+            android:backgroundTint="#00000000"
+            android:backgroundTintMode="add" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/textViewConnectionState"
+        android:layout_width="183dp"
+        android:layout_height="23dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="328dp"
+        android:text="TextView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/btnConnect"
+        android:layout_width="145dp"
+        android:layout_height="44dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:text="Connect"
+        app:layout_constraintStart_toEndOf="@+id/frameLayout"
+        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+
+    <Button
+        android:id="@+id/btnSendHelp"
+        android:layout_width="144dp"
+        android:layout_height="39dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:text="Help"
+        app:layout_constraintStart_toEndOf="@+id/frameLayout"
+        app:layout_constraintTop_toBottomOf="@+id/btnConnect" />
+
+    <TextView
+        android:id="@+id/serialOut"
+        android:layout_width="323dp"
+        android:layout_height="332dp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>

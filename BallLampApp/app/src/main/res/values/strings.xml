@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">BallLampApp</string>
+    <string name="main_label_text">RGB Sliders</string>
+</resources>
