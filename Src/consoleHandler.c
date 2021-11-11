@@ -200,7 +200,7 @@ char* onCharacterReception(BufferedInput binput,uint8_t charin)
 			}
 		}
 	}
-	else if (charin < 127) // "normal" (non-control) character nor del or special characters entered
+	else if (charin < 127 && binput->console->cbfCnt < COMMAND_BUFFER_SIZE-1) // "normal" (non-control) character nor del or special characters entered
 	{
 		if (binput->console->cursor < binput->console->cbfCnt) // within the command
 		{
