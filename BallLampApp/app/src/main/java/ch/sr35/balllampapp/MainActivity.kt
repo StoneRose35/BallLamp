@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         findViewById<Button>(R.id.btnSendHelp).setOnClickListener {
-            sendString("  HELP\r\n")
+            sendString("HELP\r")
         }
 
         var btReceiver = BTReceiver(this)
