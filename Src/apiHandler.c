@@ -31,17 +31,20 @@ char* onByteReception(BufferedInput binput,uint8_t charin)
 		{
 			binput->api->inputBuffer[c] = 0;
 		}
+		binput->api->outputBuffer[0] = 0;
+		binput->api->outputBuffer[1] = 0;
 	}
 	else
 	{
 		binput->api->inputBuffer[binput->api->ibidx++] = charin;
-		if (binput->api->ibidx > API_INPUT_BUFFER_SIZE)
+		if (binput->api->ibidx >= API_INPUT_BUFFER_SIZE)
 		{
+			binput->api->ibidx = API_INPUT_BUFFER_SIZE-1;
 			binput->api->outputBuffer[0] = 0x31;
 		}
 		else
 		{
-			binput->api->outputBuffer[1]=0;
+			binput->api->outputBuffer[0]=0;
 		}
 	}
 	binput->api->outputBuffer[1] = 0;
