@@ -67,7 +67,7 @@ const char * colorCommands[N_COLOR_COMMANDS] = {
 
 void colorCommand(char * cmd,void * context)
 {
-	char bracketContent[32];
+	char bracketContent[128];
 	uint8_t nLamps;
 	uint8_t lampnrs[N_LAMPS];
 	uint8_t has_errors = 0;
@@ -106,7 +106,7 @@ void rgbCommand(char* cmd,void* context)
 	const char comma[2]=",";
 	uint8_t r,g,b;
 	uint8_t has_errors = 0;
-	char bracketContent[32];
+	char bracketContent[128];
 	uint8_t lampnrs[N_LAMPS];
 	uint8_t nLamps;
 	RGBStream* lamps =(RGBStream*)context;
@@ -205,7 +205,7 @@ void interpCommand(char * cmd,void* context)
 	uint8_t lampnr;
 	uint8_t nsteps;
 	uint8_t repeating, has_errors = 0, retval;
-	char bracketContent[32];
+	char bracketContent[128];
 	char nrbfr[4];
 	Tasks interpolators=(Tasks)context;
 	getBracketContent(cmd,bracketContent);
@@ -272,7 +272,7 @@ void istepCommand(char * cmd,void* context)
 	uint8_t lampnr;
 	uint8_t step, retval;
 	uint8_t has_errors = 0;
-	char bracketContent[32];
+	char bracketContent[128];
 	char nrbfr[4];
 	getBracketContent(cmd,bracketContent);
 	Tasks interpolators=(Tasks)context;
@@ -381,7 +381,7 @@ void destroyCommand(char * cmd,void* context)
 	uint8_t has_errors = 0;
 	uint8_t lampnr;
 	uint8_t lampidx;
-	char bracketContent[32];
+	char bracketContent[128];
 	getBracketContent(cmd,bracketContent);
 	Tasks interpolators=(Tasks)context;
 ;	if (bracketContent != 0)
