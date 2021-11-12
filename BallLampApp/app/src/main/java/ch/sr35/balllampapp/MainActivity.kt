@@ -149,6 +149,8 @@ class MainActivity : AppCompatActivity() {
 
                         btReceiverThread = BluetoothReceiverThread(btSocket?.inputStream!!,serialLogger!!)
                         btReceiverThread?.start()
+
+                        sendString("API\r")
                     } catch (e: IOException)
                     {
                         connectionState?.text = getString(R.string.bt_timeout)
@@ -201,7 +203,20 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
         val lampsUpper = parentAct.lampBallSelectorUpper?.getSelectedString()
         val lampsLower = parentAct.lampBallSelectorLower?.getSelectedString()
 
-        val clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b},$lampsUpper,$lampsLower)\r"
+        var clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b})"
+        if (lampsUpper != null) {
+            if (lampsUpper.isNotEmpty())
+            {
+                clrCmd += ",$lampsUpper"
+            }
+        }
+        if (lampsLower != null) {
+            if (lampsLower.isNotEmpty())
+            {
+                clrCmd += ",$lampsLower"
+            }
+        }
+        clrCmd += ")\r"
         parentAct.sendString(clrCmd)
 
     }

@@ -17,13 +17,13 @@ import kotlin.math.sin
 
 class LampSelectorView(context: Context,attributes: AttributeSet): View(context,attributes) {
 
-    var innerRadius: Double = 1.0
-    var outerRadius: Double = 1.4
-    var centerX: Double = 0.0
-    var centerY: Double = 0.0
-    var triangleColors: Array<SimpleIntColor> =
-        Array<SimpleIntColor>(10) { SimpleIntColor(255, 255, 255) }
-    var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
+    private var innerRadius: Double = 1.0
+    private var outerRadius: Double = 1.4
+    private var centerX: Double = 0.0
+    private var centerY: Double = 0.0
+    private var triangleColors: Array<SimpleIntColor> =
+        Array(10) { SimpleIntColor(255, 255, 255) }
+    private var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
     var triangleSelectedEventListener: TriangleSelectedEventListener? = null
     var mappingTable: IntArray? = null
 
@@ -60,7 +60,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         {
             res += "${mappingTable?.get(cnt)},"
         }
-        res.dropLast(1)
+        res = res.dropLast(1)
         return res
     }
 
