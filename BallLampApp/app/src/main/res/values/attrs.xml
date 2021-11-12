@@ -1,8 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <declare-styleable name="LampSelectorView">
-        <attr name="outlineColor" format="color"></attr>
-        <attr name="android:fillColor" format="color"></attr>
+        <attr name="mappingTable" format="reference">0</attr>
     </declare-styleable>
+
+    <integer-array name="lampMappingUpper">
+        <item>0</item>
+        <item>5</item>
+        <item>1</item>
+        <item>6</item>
+        <item>2</item>
+        <item>7</item>
+        <item>3</item>
+        <item>8</item>
+        <item>4</item>
+        <item>9</item>
+    </integer-array>
+
+    <integer-array name="lampMappingLower">
+        <item>10</item>
+        <item>15</item>
+        <item>11</item>
+        <item>16</item>
+        <item>12</item>
+        <item>17</item>
+        <item>13</item>
+        <item>18</item>
+        <item>14</item>
+        <item>19</item>
+    </integer-array>
+
 
 </resources>

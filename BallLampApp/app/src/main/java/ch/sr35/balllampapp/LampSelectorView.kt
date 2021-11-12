@@ -1,6 +1,7 @@
 package ch.sr35.balllampapp
 
 import android.content.Context
+import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
@@ -8,41 +9,74 @@ import android.graphics.Path
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.res.ResourcesCompat.getColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
 
-class LampSelectorView(context: Context,attributes: AttributeSet): View(context) {
+class LampSelectorView(context: Context,attributes: AttributeSet): View(context,attributes) {
 
     var innerRadius: Double = 1.0
     var outerRadius: Double = 1.4
     var centerX: Double = 0.0
     var centerY: Double = 0.0
-    var triangleColors: Array<simpleIntColor> =
-        Array<simpleIntColor>(20) { simpleIntColor(255, 100, 255) }
-    var triangleSelected: Array<Boolean> = Array<Boolean>(20){false}
+    var triangleColors: Array<SimpleIntColor> =
+        Array<SimpleIntColor>(10) { SimpleIntColor(255, 255, 255) }
+    var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
     var triangleSelectedEventListener: TriangleSelectedEventListener? = null
-
+    var mappingTable: IntArray? = null
 
     var path: Path = Path()
-    var blackLine: Paint = Paint()
+    private var blackLine: Paint = Paint()
+    private var whiteLine: Paint = Paint()
     var filler: Paint = Paint()
 
 
-    fun setColor(i: Int,clr: simpleIntColor)
+
+    fun setColorForSelected(clr: SimpleIntColor)
     {
-        triangleColors[i]=clr
+        var filteredData = triangleSelected.withIndex().filter { e-> e.value }
+        for ((cnt, _) in triangleSelected.withIndex().filter { e-> e.value })
+        {
+            triangleColors[cnt] = clr.clone()
+        }
         invalidate()
+    }
+
+    fun setColorForAll(clr: SimpleIntColor)
+    {
+        for (cnt in 0..9)
+        {
+            triangleColors[cnt] = clr.clone()
+        }
+        invalidate()
+    }
+
+    fun getSelectedString(): String
+    {
+        var res=""
+        for ((cnt,_) in triangleSelected.withIndex().filter { e->e.value })
+        {
+            res += "${mappingTable?.get(cnt)},"
+        }
+        res.dropLast(1)
+        return res
     }
 
     override fun onDraw(canvas: Canvas?) {
 
         super.onDraw(canvas)
         blackLine.color= Color.BLACK
-        blackLine.strokeWidth=16.5f
+        blackLine.strokeWidth=12.5f
         blackLine.strokeCap = Paint.Cap.ROUND
         blackLine.isAntiAlias = true
+
+        whiteLine.color = Color.WHITE
+        whiteLine.strokeWidth=3.5f
+        whiteLine.strokeCap = Paint.Cap.ROUND
+        whiteLine.isAntiAlias = true
+
         var phi0: Double
         var phi1: Double
         var coord: DoubleArray
@@ -93,7 +127,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
             filler.color = Color.argb(255,triangleColors[triangleCntr].r, triangleColors[triangleCntr].g,triangleColors[triangleCntr].b)
             canvas?.drawPath(path,filler)
 
-            triangleCntr++
+
 
             // draw outer lines
 
@@ -106,6 +140,15 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
             canvas?.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
                 centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),blackLine)
 
+            canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+                centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),whiteLine)
+            canvas?.drawLine(centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),
+                centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat() +  coord1[1].toFloat(),whiteLine)
+            canvas?.drawLine(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat()+ coord[1].toFloat(),
+                centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),whiteLine)
+            canvas?.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
+                centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),whiteLine)
+
             if(triangleSelected[triangleCntr] )
             {
                 var centerPt = triangle.centerCoordinates()
@@ -114,10 +157,14 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
                     255 - triangleColors[triangleCntr].b)
                 canvas?.drawCircle(centerPt.x.toFloat(), centerPt.y.toFloat(),triangle.inscribedRadius().toFloat()*0.3f,filler)
             }
+
+            triangleCntr++
         }
         coord = toXYCoordinates(innerRadius, 0.0)
         canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
             centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),blackLine)
+        canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+            centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),whiteLine)
 
     }
 
@@ -138,9 +185,13 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
         super.onSizeChanged(w, h, oldw, oldh)
     }
 
+    override fun performClick(): Boolean {
+        return super.performClick()
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        var xcoord= event?.x?.minus(centerX)
-        var ycoord=event?.y?.minus(centerY)
+        val xcoord= event?.x?.toDouble()
+        val ycoord=event?.y?.toDouble()
 
         if (event?.action == MotionEvent.ACTION_DOWN) {
             var phi0: Double
@@ -151,7 +202,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
             var triangle: Triangle
             var triangleCntr: Int = 0
             if (xcoord != null && ycoord != null) {
-                for (i in 0..5) {
+                for (i in 0..4) {
                     phi0 = i * 2.0 * PI / 5.0
                     phi1 = (i + 1) * 2.0 * PI / 5.0
                     coord = toXYCoordinates(innerRadius, phi0)
@@ -163,7 +214,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
                         Vertex(coord1[0]+ centerX, coord1[1]+centerY)
                     )
                     if (triangle.isInTriangle(Vertex(xcoord, ycoord))) {
-                        triangleSelected[triangleCntr] = true // !triangleSelected[triangleCntr]
+                        triangleSelected[triangleCntr] = !triangleSelected[triangleCntr]
                         invalidate()
                         triangleSelectedEventListener?.onSelected(triangleCntr)
                     }
@@ -171,10 +222,10 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
                     triangle = Triangle(
                         Vertex(coord[0]+centerX, coord[1]+centerY),
                         Vertex(coord1[0]+centerX, coord1[1]+centerY),
-                        Vertex(coord2[0]+centerX, coord2[1]+centerY)
-                    )
+                        Vertex(coord2[0]+centerX, coord2[1]+centerY))
+
                     if (triangle.isInTriangle(Vertex(xcoord, ycoord))) {
-                        triangleSelected[triangleCntr] = true //!triangleSelected[triangleCntr]
+                        triangleSelected[triangleCntr] = !triangleSelected[triangleCntr]
                         invalidate()
                         triangleSelectedEventListener?.onSelected(triangleCntr)
 
@@ -186,11 +237,8 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context)
         return super.onTouchEvent(event)
     }
 
-    fun getInnerSidelength(): Double{
-        return 2.0*sin(PI/5.0)*innerRadius
-    }
 
-    fun toXYCoordinates(r: Double,phi: Double): DoubleArray
+    private fun toXYCoordinates(r: Double, phi: Double): DoubleArray
     {
         var res: DoubleArray=DoubleArray(2)
         res[0] = r* sin(phi)

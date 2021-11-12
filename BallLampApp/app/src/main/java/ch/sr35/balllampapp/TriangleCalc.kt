@@ -19,8 +19,8 @@ class Triangle(var a: Vertex,var b: Vertex,var c: Vertex)
         if (determinator != 0.0)
         {
             determinator = 1.0/determinator
-            var barU = (matD*p.x - matB*p.y)*determinator
-            var barV = (matA*p.y - matC*p.x)*determinator
+            var barU = (matD*(p.x-a.x) - matB*(p.y-a.y))*determinator
+            var barV = (matA*(p.y-a.y) - matC*(p.x-a.x))*determinator
             return barU > 0 && barV > 0 && barU + barV < 1.0
         }
         else

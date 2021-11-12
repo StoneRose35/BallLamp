@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">BallLampApp</string>
     <string name="main_label_text">RGB Sliders</string>
+    <string name="connect_text">Connect</string>
+    <string name="button_red_text">Red</string>
+    <string name="button_blue_text">Blue</string>
+    <string name="button_green_text">Green</string>
+    <string name="button_warm_white_text">Warm</string>
+    <string name="button_cold_white_text">Cold</string>
+    <string name="button_bright_white_text">Bright</string>
+    <string name="button_off_text">Off</string>
+
+
+    <string name="bt_switch_on">Switching on Bluetooth</string>
+    <string name="bt_discovery">Discovering...</string>
+    <string name="bt_connected">Lamp connected!</string>
+    <string name="bt_timeout">Connection Timout, try again..</string>
+
+    <string name="lbl_lower">Lower</string>
+    <string name="lbl_upper">Upper</string>
 </resources>

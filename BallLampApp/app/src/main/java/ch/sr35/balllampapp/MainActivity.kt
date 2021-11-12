@@ -1,11 +1,9 @@
 package ch.sr35.balllampapp
 
-import android.app.Activity
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -15,11 +13,12 @@ import android.view.View
 import android.graphics.Color
 import android.os.Handler
 import android.widget.*
-import org.w3c.dom.Text
+import androidx.core.graphics.blue
+import androidx.core.graphics.green
+import androidx.core.graphics.red
 import java.io.IOException
 import java.io.InputStream
-import java.util.*
-import java.util.concurrent.Executor
+
 
 const val COLOR_RED = 0
 const val COLOR_GREEN = 1
@@ -27,9 +26,11 @@ const val COLOR_BLUE = 2
 
 class MainActivity : AppCompatActivity() {
     var clrView: View? = null
-    var lbl: TextView? = null
+    private var lbl: TextView? = null
     var connectionState: TextView? = null
-    var mainClr: simpleIntColor = simpleIntColor(0,0,0)
+    var mainClr: SimpleIntColor = SimpleIntColor(0,0,0)
+    var lampBallSelectorUpper: LampSelectorView? = null
+    var lampBallSelectorLower: LampSelectorView? = null
     var btSocket: BluetoothSocket? = null
     var btAdapter: BluetoothAdapter? = null
     var connectionInitActive: Boolean = true
@@ -38,7 +39,7 @@ class MainActivity : AppCompatActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        var btMan: BluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val btMan: BluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         btAdapter = btMan.adapter
         connectionInitActive = true
 
@@ -48,26 +49,64 @@ class MainActivity : AppCompatActivity() {
         findViewById<SeekBar>(R.id.amountRed).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_RED))
         findViewById<SeekBar>(R.id.amountGreen).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_GREEN))
         findViewById<SeekBar>(R.id.amountBlue).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_BLUE))
-        clrView = findViewById<View>(R.id.colorView)
-        lbl = findViewById<TextView>(R.id.textView)
+        clrView = findViewById(R.id.colorView)
+        lbl = findViewById(R.id.textViewLblLower)
         connectionState = findViewById(R.id.textViewConnectionState)
         serialLogger = findViewById(R.id.serialOut)
+        lampBallSelectorUpper = findViewById(R.id.lampSelectorUpper)
+        lampBallSelectorLower = findViewById(R.id.lampSelectorLower)
 
+        lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
+        lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
 
 
         findViewById<Button>(R.id.btnConnect).setOnClickListener {
             initConnection()
         }
 
-        findViewById<Button>(R.id.btnSendHelp).setOnClickListener {
-            sendString("HELP\r")
-        }
+        initButtons()
 
-        var btReceiver = BTReceiver(this)
+        val btReceiver = BTReceiver(this)
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
         registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
+    }
+
+
+    fun initButtons()
+    {
+        findViewById<Button>(R.id.buttonRed).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_red)
+        }
+        findViewById<Button>(R.id.buttonGreen).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_green)
+        }
+        findViewById<Button>(R.id.buttonBlue).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_blue)
+        }
+        findViewById<Button>(R.id.buttonWarmWhite).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_war_white)
+        }
+        findViewById<Button>(R.id.buttonColdWhite).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_cold_white)
+        }
+        findViewById<Button>(R.id.buttonBrightWhite).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_bright)
+        }
+        findViewById<Button>(R.id.buttonOff).setOnClickListener {
+            setColorOnSelectorAndLamp(R.color.lamp_off)
+        }
+
+    }
+
+    private fun setColorOnSelectorAndLamp( resourceIdClr: Int)
+    {
+        val clr = getColor(resourceIdClr)
+        val siclr = SimpleIntColor(clr.red,clr.green,clr.blue)
+        sendString("RGB(${clr.red},${clr.green},${clr.blue},0-19)\r")
+        lampBallSelectorLower?.setColorForAll(siclr)
+        lampBallSelectorUpper?.setColorForAll(siclr)
     }
 
     override fun onPause() {
@@ -78,7 +117,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         btReceiverThread?.isRunning=true
-        if (btReceiverThread?.isAlive() != true)
+        if (btReceiverThread?.isAlive != true)
         {
             btReceiverThread?.start()
         }
@@ -90,15 +129,15 @@ class MainActivity : AppCompatActivity() {
 
         if (connectionInitActive) {
             if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
-                var btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                val btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                 connectionInitActive=false
-                connectionState?.text = "Switching on Bluetooth"
+                connectionState?.text =  getString(R.string.bt_switch_on)
                 startActivity(btOnIntent)
             } else {
-                var btDevice =
+                val btDevice =
                     btAdapter?.bondedDevices?.firstOrNull { e -> e.name == DEVICE_NAME }
                 if (btDevice == null) {
-                    connectionState?.text = "Discovering.."
+                    connectionState?.text = getString(R.string.bt_discovery)
                     btAdapter?.startDiscovery()
                     connectionInitActive=false
                 } else {
@@ -106,13 +145,13 @@ class MainActivity : AppCompatActivity() {
                     btSocket = btDevice.createRfcommSocketToServiceRecord(appUuid)
                     try {
                         btSocket?.connect()
-                        connectionState?.text = "Connected!"
+                        connectionState?.text = getString(R.string.bt_connected)
 
                         btReceiverThread = BluetoothReceiverThread(btSocket?.inputStream!!,serialLogger!!)
                         btReceiverThread?.start()
                     } catch (e: IOException)
                     {
-                        connectionState?.text = "Connection Timeout"
+                        connectionState?.text = getString(R.string.bt_timeout)
                         btSocket = null
                     }
                 }
@@ -135,28 +174,6 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    fun updateLogger(str: String)
-    {
-        serialLogger?.text = str
-    }
-
-    @Override
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 42 )
-        {
-            if(resultCode==BluetoothAdapter.STATE_ON)
-            {
-
-            }
-            Toast.makeText(applicationContext,"received as response from bluetooth enable request",Toast.LENGTH_SHORT).show()
-        }
-        else
-        {
-            Toast.makeText(applicationContext,"received as response from bluetooth enable request",Toast.LENGTH_SHORT).show()
-        }
-    }
-
 }
 
 
@@ -175,11 +192,18 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
             parentAct.mainClr.b = progress
         }
 
-        parentAct.lbl?.text = "Color: 1,${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b}"
         parentAct.clrView?.setBackgroundColor(Color.argb(255,parentAct.mainClr.r,parentAct.mainClr.g,parentAct.mainClr.b))
         parentAct.clrView?.invalidate()
 
-        parentAct.sendString("  RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b},0-19)\r\n")
+        parentAct.lampBallSelectorUpper?.setColorForSelected(parentAct.mainClr)
+        parentAct.lampBallSelectorLower?.setColorForSelected(parentAct.mainClr)
+
+        val lampsUpper = parentAct.lampBallSelectorUpper?.getSelectedString()
+        val lampsLower = parentAct.lampBallSelectorLower?.getSelectedString()
+
+        val clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b},$lampsUpper,$lampsLower)\r"
+        parentAct.sendString(clrCmd)
+
     }
 
     override fun onStartTrackingTouch(seekBar: SeekBar?) {
@@ -191,74 +215,28 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
     }
 }
 
-class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
-{
-    override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED)
-        {
-            var state = intent?.getIntExtra(BluetoothAdapter.EXTRA_STATE,0)
-            if (state == BluetoothAdapter.STATE_ON) {
-                mainActivity.connectionState?.text = "Bluetooth Radio On"
-                mainActivity.connectionInitActive = true
-                mainActivity.initConnection()
-            }
-        }
-        else if (intent?.action == BluetoothDevice.ACTION_FOUND)
-        {
-            var discoveredDevice = intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-            if( discoveredDevice?.name== DEVICE_NAME)
-            {
-                mainActivity.connectionState?.text = "discovered $DEVICE_NAME"
-                mainActivity.btAdapter?.cancelDiscovery()
-                discoveredDevice.createBond()
-            }
-        }
-        else if (intent?.action == BluetoothDevice.ACTION_BOND_STATE_CHANGED)
-        {
-            var bondState = intent?.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,-1)
-            if(bondState==BluetoothDevice.BOND_BONDED)
-            {
-                var bondedDevice = intent?.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                mainActivity.btSocket = bondedDevice?.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
-                try {
-                    mainActivity.btSocket?.connect()
-                    mainActivity.connectionState?.text = "Connected!"
 
-                    mainActivity.btReceiverThread = BluetoothReceiverThread(mainActivity.btSocket?.inputStream!!,mainActivity.serialLogger!!)
-                    mainActivity.btReceiverThread?.start()
-                } catch (e: IOException)
-                {
-                    mainActivity.btSocket = null
-                    mainActivity.connectionState?.text = "Connection Timeout"
-                }
-
-
-            }
-        }
-    }
-
-}
 
 class BluetoothReceiverThread(var inputStream: InputStream,var logger: TextView): Thread()
 {
-    var handler: Handler = Handler()
+    private val handler: Handler = Handler()
     var isRunning = true
     @Override
     override fun run() {
         while(isRunning)
         {
-            var bytesAvailable = inputStream.available()
+            val bytesAvailable = inputStream.available()
             if(bytesAvailable > 0)
             {
-                var b: ByteArray = ByteArray(bytesAvailable)
+                val b = ByteArray(bytesAvailable)
                 inputStream.read(b)
-                var addedText = b.decodeToString()
+                val addedText = b.decodeToString()
                 handler.post {
                     logger.text = addedText
                 }
 
             }
-            Thread.sleep(100)
+            sleep(100)
         }
     }
 }
