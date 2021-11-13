@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity() {
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
 
+        labelConnectButton()
 
         findViewById<Button>(R.id.btnConnect).setOnClickListener {
             initConnection()
@@ -121,43 +122,67 @@ class MainActivity : AppCompatActivity() {
         {
             btReceiverThread?.start()
         }
+        labelConnectButton()
+    }
+
+
+    private fun labelConnectButton()
+    {
+        var btnConnect: Button = findViewById(R.id.btnConnect)
+        if (btSocket?.isConnected != true)
+        {
+            btnConnect.text = getString(R.string.connect_text)
+        }
+        else
+        {
+            btnConnect.text = getString(R.string.disconnect_text)
+        }
     }
 
 
     fun initConnection()
     {
+        if (btSocket?.isConnected != true) {
 
-        if (connectionInitActive) {
-            if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
-                val btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-                connectionInitActive=false
-                connectionState?.text =  getString(R.string.bt_switch_on)
-                startActivity(btOnIntent)
-            } else {
-                val btDevice =
-                    btAdapter?.bondedDevices?.firstOrNull { e -> e.name == DEVICE_NAME }
-                if (btDevice == null) {
-                    connectionState?.text = getString(R.string.bt_discovery)
-                    btAdapter?.startDiscovery()
-                    connectionInitActive=false
+            if (connectionInitActive) {
+                if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
+                    val btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                    connectionInitActive = false
+                    connectionState?.text = getString(R.string.bt_switch_on)
+                    startActivity(btOnIntent)
                 } else {
+                    val btDevice =
+                        btAdapter?.bondedDevices?.firstOrNull { e -> e.name == DEVICE_NAME }
+                    if (btDevice == null) {
+                        connectionState?.text = getString(R.string.bt_discovery)
+                        btAdapter?.startDiscovery()
+                        connectionInitActive = false
+                    } else {
 
-                    btSocket = btDevice.createRfcommSocketToServiceRecord(appUuid)
-                    try {
-                        btSocket?.connect()
-                        connectionState?.text = getString(R.string.bt_connected)
+                        btSocket = btDevice.createRfcommSocketToServiceRecord(appUuid)
+                        try {
+                            btSocket?.connect() // is blocking, so the connection is established on the next line
+                            connectionState?.text = getString(R.string.bt_connected)
 
-                        btReceiverThread = BluetoothReceiverThread(btSocket?.inputStream!!,serialLogger!!)
-                        btReceiverThread?.start()
+                            btReceiverThread =
+                                BluetoothReceiverThread(btSocket?.inputStream!!, serialLogger!!)
+                            btReceiverThread?.start()
 
-                        sendString("API\r")
-                    } catch (e: IOException)
-                    {
-                        connectionState?.text = getString(R.string.bt_timeout)
-                        btSocket = null
+                            sendString("API\r")
+                            labelConnectButton()
+                        } catch (e: IOException) {
+                            connectionState?.text = getString(R.string.bt_timeout)
+                            btSocket = null
+
+                        }
                     }
                 }
             }
+        }else
+        {
+            btSocket?.inputStream?.close()
+            btSocket?.outputStream?.close()
+            btSocket?.close()
         }
 
     }
@@ -203,7 +228,7 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
         val lampsUpper = parentAct.lampBallSelectorUpper?.getSelectedString()
         val lampsLower = parentAct.lampBallSelectorLower?.getSelectedString()
 
-        var clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b})"
+        var clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b}"
         if (lampsUpper != null) {
             if (lampsUpper.isNotEmpty())
             {

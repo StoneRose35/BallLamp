@@ -2,6 +2,7 @@
     <string name="app_name">BallLampApp</string>
     <string name="main_label_text">RGB Sliders</string>
     <string name="connect_text">Connect</string>
+    <string name="disconnect_text">Disconnect</string>
     <string name="button_red_text">Red</string>
     <string name="button_blue_text">Blue</string>
     <string name="button_green_text">Green</string>
