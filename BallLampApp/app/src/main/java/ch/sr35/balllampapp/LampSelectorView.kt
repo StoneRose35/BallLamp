@@ -21,7 +21,8 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
     private var outerRadius: Double = 1.4
     private var centerX: Double = 0.0
     private var centerY: Double = 0.0
-    private var triangleColors: Array<SimpleIntColor> =
+    var editable: Boolean = true
+    var triangleColors: Array<SimpleIntColor> =
         Array(10) { SimpleIntColor(255, 255, 255) }
     private var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
     var triangleSelectedEventListener: TriangleSelectedEventListener? = null
@@ -193,7 +194,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         val xcoord= event?.x?.toDouble()
         val ycoord=event?.y?.toDouble()
 
-        if (event?.action == MotionEvent.ACTION_DOWN) {
+        if (event?.action == MotionEvent.ACTION_DOWN && editable) {
             var phi0: Double
             var phi1: Double
             var coord: DoubleArray
