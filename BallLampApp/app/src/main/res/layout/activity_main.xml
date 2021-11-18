@@ -6,215 +6,25 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <SeekBar
-        android:id="@+id/amountRed"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="49dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_red"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.51"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <SeekBar
-        android:id="@+id/amountGreen"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="19dp"
-        android:layout_marginEnd="49dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_green"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountRed" />
-
-    <SeekBar
-        android:id="@+id/amountBlue"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="49dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="50dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_blue"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountGreen" />
-
     <FrameLayout
-        android:id="@+id/frameLayout"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="48dp"
-        android:layout_marginTop="24dp"
-        android:background="#000000"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue">
+        android:id="@+id/main_frame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-        <View
-            android:id="@+id/colorView"
-            android:layout_width="31dp"
-            android:layout_height="31dp"
 
-            android:layout_margin="9dp"
-            android:background="#FFFFFF"
-            android:backgroundTint="#00000000"
-            android:backgroundTintMode="add" />
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/textViewConnectionState"
-        android:layout_width="183dp"
-        android:layout_height="23dp"
-        android:layout_marginStart="204dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnConnect" />
 
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="142dp"
-        android:layout_height="51dp"
-        android:layout_marginStart="124dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/connect_text"
-        app:layout_constraintStart_toEndOf="@+id/frameLayout"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
-
-    <TextView
-        android:id="@+id/serialOut"
-        android:layout_width="325dp"
-        android:layout_height="29dp"
-        android:layout_marginBottom="16dp"
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/navigator"
+        android:layout_width="407dp"
+        android:layout_height="66dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.443"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <ch.sr35.balllampapp.LampSelectorView
-        android:id="@+id/lampSelectorUpper"
-        android:layout_width="169dp"
-        android:layout_height="157dp"
-        android:layout_marginTop="132dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue"
-        app:mappingTable="@array/lampMappingUpper" />
-
-    <ch.sr35.balllampapp.LampSelectorView
-        android:id="@+id/lampSelectorLower"
-        android:layout_width="175dp"
-        android:layout_height="154dp"
-        android:layout_marginTop="132dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+        app:menu="@menu/navigation_items">
 
-    <Button
-        android:id="@+id/buttonRed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_red"
-        android:text="@string/button_red_text"
-        android:textColor="#9CFFA0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorLower" />
-
-    <Button
-        android:id="@+id/buttonGreen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_green"
-        android:text="@string/button_green_text"
-        android:textColor="#000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonRed"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorLower" />
-
-    <Button
-        android:id="@+id/buttonBlue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_blue"
-        android:text="@string/button_blue_text"
-        app:layout_constraintStart_toEndOf="@+id/buttonGreen"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorUpper" />
-
-    <Button
-        android:id="@+id/buttonWarmWhite"
-        android:layout_width="91dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_war_white"
-        android:text="@string/button_warm_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonRed" />
-
-    <Button
-        android:id="@+id/buttonColdWhite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_cold_white"
-        android:text="@string/button_cold_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonWarmWhite"
-        app:layout_constraintTop_toBottomOf="@+id/buttonGreen" />
-
-    <Button
-        android:id="@+id/buttonBrightWhite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_bright"
-        android:text="@string/button_bright_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonColdWhite"
-        app:layout_constraintTop_toBottomOf="@+id/buttonBlue" />
-
-    <Button
-        android:id="@+id/buttonOff"
-        android:layout_width="87dp"
-        android:layout_height="93dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="@color/black"
-        android:text="@string/button_off_text"
-        app:layout_constraintStart_toEndOf="@+id/buttonBlue"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorUpper" />
-
-    <TextView
-        android:id="@+id/textViewLblLower"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"
-        android:text="@string/lbl_lower"
-        app:layout_constraintBottom_toTopOf="@+id/lampSelectorLower"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/textViewLblUpper"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="4dp"
-        android:text="@string/lbl_upper"
-        app:layout_constraintBottom_toTopOf="@+id/lampSelectorUpper"
-        app:layout_constraintStart_toStartOf="@+id/lampSelectorUpper" />
+    </com.google.android.material.bottomnavigation.BottomNavigationView>
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

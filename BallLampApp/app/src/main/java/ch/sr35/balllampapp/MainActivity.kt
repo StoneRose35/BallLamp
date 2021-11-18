@@ -16,6 +16,8 @@ import android.widget.*
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.fragment.app.Fragment
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.IOException
 import java.io.InputStream
 
@@ -25,12 +27,8 @@ const val COLOR_GREEN = 1
 const val COLOR_BLUE = 2
 
 class MainActivity : AppCompatActivity() {
-    var clrView: View? = null
-    private var lbl: TextView? = null
+
     var connectionState: TextView? = null
-    var mainClr: SimpleIntColor = SimpleIntColor(0,0,0)
-    var lampBallSelectorUpper: LampSelectorView? = null
-    var lampBallSelectorLower: LampSelectorView? = null
     var btSocket: BluetoothSocket? = null
     var btAdapter: BluetoothAdapter? = null
     var connectionInitActive: Boolean = true
@@ -46,26 +44,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<SeekBar>(R.id.amountRed).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_RED))
-        findViewById<SeekBar>(R.id.amountGreen).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_GREEN))
-        findViewById<SeekBar>(R.id.amountBlue).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_BLUE))
-        clrView = findViewById(R.id.colorView)
-        lbl = findViewById(R.id.textViewLblLower)
-        connectionState = findViewById(R.id.textViewConnectionState)
-        serialLogger = findViewById(R.id.serialOut)
-        lampBallSelectorUpper = findViewById(R.id.lampSelectorUpper)
-        lampBallSelectorLower = findViewById(R.id.lampSelectorLower)
+        val csFragment=colorSelect()
+        val alFragment=AnimationList()
 
-        lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
-        lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
-
-        labelConnectButton()
-
-        findViewById<Button>(R.id.btnConnect).setOnClickListener {
-            initConnection()
+        var bottomNavigationView = findViewById<BottomNavigationView>(R.id.navigator)
+        bottomNavigationView.setOnNavigationItemSelectedListener {
+            when(it.itemId){
+                R.id.nav_color_select->setFragment(csFragment)
+                R.id.nav_animation_view->setFragment(alFragment)
+            }
+            true
         }
-
-        initButtons()
 
         val btReceiver = BTReceiver(this)
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
@@ -74,41 +63,14 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
-    fun initButtons()
+    fun setFragment(fragment: Fragment)
     {
-        findViewById<Button>(R.id.buttonRed).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_red)
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.main_frame,fragment)
+            commit()
         }
-        findViewById<Button>(R.id.buttonGreen).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_green)
-        }
-        findViewById<Button>(R.id.buttonBlue).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_blue)
-        }
-        findViewById<Button>(R.id.buttonWarmWhite).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_war_white)
-        }
-        findViewById<Button>(R.id.buttonColdWhite).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_cold_white)
-        }
-        findViewById<Button>(R.id.buttonBrightWhite).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_bright)
-        }
-        findViewById<Button>(R.id.buttonOff).setOnClickListener {
-            setColorOnSelectorAndLamp(R.color.lamp_off)
-        }
-
     }
 
-    private fun setColorOnSelectorAndLamp( resourceIdClr: Int)
-    {
-        val clr = getColor(resourceIdClr)
-        val siclr = SimpleIntColor(clr.red,clr.green,clr.blue)
-        sendString("RGB(${clr.red},${clr.green},${clr.blue},0-19)\r")
-        lampBallSelectorLower?.setColorForAll(siclr)
-        lampBallSelectorUpper?.setColorForAll(siclr)
-    }
 
     override fun onPause() {
         super.onPause()
@@ -122,21 +84,7 @@ class MainActivity : AppCompatActivity() {
         {
             btReceiverThread?.start()
         }
-        labelConnectButton()
-    }
 
-
-    private fun labelConnectButton()
-    {
-        var btnConnect: Button = findViewById(R.id.btnConnect)
-        if (btSocket?.isConnected != true)
-        {
-            btnConnect.text = getString(R.string.connect_text)
-        }
-        else
-        {
-            btnConnect.text = getString(R.string.disconnect_text)
-        }
     }
 
 
@@ -169,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                             btReceiverThread?.start()
 
                             sendString("API\r")
-                            labelConnectButton()
+
                         } catch (e: IOException) {
                             connectionState?.text = getString(R.string.bt_timeout)
                             btSocket = null
@@ -204,31 +152,29 @@ class MainActivity : AppCompatActivity() {
 }
 
 
-class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var clr: Int) : SeekBar.OnSeekBarChangeListener
+class RGBSeekBarChangeListener(private var csFragment: colorSelect,private var clr: Int) : SeekBar.OnSeekBarChangeListener
 {
 
 
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (clr== COLOR_RED) {
-            parentAct.mainClr.r = progress
+            csFragment.mainClr.r = progress
         } else if (clr ==COLOR_GREEN)
         {
-            parentAct.mainClr.g = progress
+            csFragment.mainClr.g = progress
         } else if (clr == COLOR_BLUE)
         {
-            parentAct.mainClr.b = progress
+            csFragment.mainClr.b = progress
         }
 
-        parentAct.clrView?.setBackgroundColor(Color.argb(255,parentAct.mainClr.r,parentAct.mainClr.g,parentAct.mainClr.b))
-        parentAct.clrView?.invalidate()
 
-        parentAct.lampBallSelectorUpper?.setColorForSelected(parentAct.mainClr)
-        parentAct.lampBallSelectorLower?.setColorForSelected(parentAct.mainClr)
+        csFragment.lampBallSelectorUpper?.setColorForSelected(csFragment.mainClr)
+        csFragment.lampBallSelectorLower?.setColorForSelected(csFragment.mainClr)
 
-        val lampsUpper = parentAct.lampBallSelectorUpper?.getSelectedString()
-        val lampsLower = parentAct.lampBallSelectorLower?.getSelectedString()
+        val lampsUpper = csFragment.lampBallSelectorUpper?.getSelectedString()
+        val lampsLower = csFragment.lampBallSelectorLower?.getSelectedString()
 
-        var clrCmd = "RGB(${parentAct.mainClr.r},${parentAct.mainClr.g},${parentAct.mainClr.b}"
+        var clrCmd = "RGB(${csFragment.mainClr.r},${csFragment.mainClr.g},${csFragment.mainClr.b}"
         if (lampsUpper != null) {
             if (lampsUpper.isNotEmpty())
             {
@@ -242,7 +188,7 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
             }
         }
         clrCmd += ")\r"
-        parentAct.sendString(clrCmd)
+        (csFragment.activity as MainActivity).sendString(clrCmd)
 
     }
 
@@ -254,8 +200,6 @@ class RGBSeekBarChangeListener(private var parentAct: MainActivity,private var c
         //TODO("Not yet implemented")
     }
 }
-
-
 
 class BluetoothReceiverThread(var inputStream: InputStream,var logger: TextView): Thread()
 {

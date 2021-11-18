@@ -19,4 +19,7 @@
 
     <string name="lbl_lower">Lower</string>
     <string name="lbl_upper">Upper</string>
+
+    <string name="navig_color_select">Color Select</string>
+    <string name="navig_animation">Animation</string>
 </resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/navigation_menu"
+    >
+
+    <item android:title="@string/navig_color_select"
+        android:id="@+id/nav_color_select"
+        />
+    <item android:title="@string/navig_animation"
+        android:id="@+id/nav_animation_view"/>
+</menu>
