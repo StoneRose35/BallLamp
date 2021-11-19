@@ -12,9 +12,11 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
     {
         var cmdList: ArrayList<String> = ArrayList<String>()
         var currentColor = SimpleIntColor(0,0,0)
-        var currentDuration: Long = 0
+        var summedDuration: Long = 0
+        var lastDuration: Long = 0
         var currentInterpolationType: InterpolationType = InterpolationType.CONSTANT
         var cnt = 0
+        var sameClrCnt = 0
 
 
         for (la in lampAnimations)
@@ -35,8 +37,10 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
                 if (el.index == 0)
                 {
                     currentColor = el.value.color
-                    currentDuration = el.value.duration
+                    summedDuration = el.value.duration
+                    lastDuration = el.value.duration
                     currentInterpolationType = el.value.interpolation
+                    sameClrCnt = 0
                 }
 
                 else {
@@ -44,13 +48,22 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
 
                         val interpolationType =
                             if (currentInterpolationType == InterpolationType.LINEAR) 1 else 0
-                        preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$currentDuration,$interpolationType,${lampidx},${cnt})\r")
-                        currentColor = el.value.color
-                        currentDuration = el.value.duration
-                        currentInterpolationType = el.value.interpolation
+                        if(sameClrCnt > 0)
+                        {
+                            preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},${summedDuration-lastDuration},0,${lampidx},${cnt})\r")
+                            cnt++
+                        }
+                        preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$lastDuration,$interpolationType,${lampidx},${cnt})\r")
                         cnt++
+                        currentColor = el.value.color
+                        summedDuration = el.value.duration
+                        lastDuration = el.value.duration
+                        currentInterpolationType = el.value.interpolation
+                        sameClrCnt = 0
                     } else {
-                        currentDuration += el.value.duration
+                        summedDuration += el.value.duration
+                        lastDuration = el.value.duration
+                        sameClrCnt++
                     }
                 }
             }
@@ -58,7 +71,13 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
             {
                 val interpolationType =
                     if (currentInterpolationType == InterpolationType.LINEAR) 1 else 0
-                preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$currentDuration,$interpolationType,${lampidx},${cnt})\r")
+
+                if(sameClrCnt > 0)
+                {
+                    preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},${summedDuration-lastDuration},0,${lampidx},${cnt})\r")
+                    cnt++
+                }
+                preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$lastDuration,$interpolationType,${lampidx},${cnt})\r")
                 cnt++
             }
             var repeatingInt = if (la.repeating && cnt > 1)  1 else 0
