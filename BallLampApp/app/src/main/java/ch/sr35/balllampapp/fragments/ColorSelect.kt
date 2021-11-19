@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.core.graphics.blue
@@ -26,6 +27,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var lampBallSelectorLower: LampSelectorView? = null
 
     var serialLogger: TextView? = null
+    var durationField: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,6 +62,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         serialLogger = view.findViewById(R.id.serialOut)
         lampBallSelectorUpper = view.findViewById(R.id.lampSelectorUpper)
         lampBallSelectorLower =view. findViewById(R.id.lampSelectorLower)
+        var durField = view.findViewById<EditText>(R.id.editTextDuration)
 
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
@@ -68,6 +71,23 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
             (activity as MainActivity).initConnection()
+        }
+
+        view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
+            for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex())
+            {
+                var txtVal = durField.text
+                val doubleDuration = txtVal.toString().toDouble()
+                if (la.index < 10 && lampBallSelectorUpper != null) {
+                    var newstep = Step(lampBallSelectorUpper!!.triangleColors[la.index].clone(),(doubleDuration*30).toLong(),InterpolationType.LINEAR)
+                    la.value.steps.add(newstep)
+                }
+                else
+                {
+                    var newstep = Step(lampBallSelectorLower!!.triangleColors[la.index-10].clone(),(doubleDuration*30).toLong(),InterpolationType.LINEAR)
+                    la.value.steps.add(newstep)
+                }
+            }
         }
 
         initButtons()

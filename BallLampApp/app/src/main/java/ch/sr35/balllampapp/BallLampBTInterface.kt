@@ -18,7 +18,7 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
         {
             var state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,0)
             if (state == BluetoothAdapter.STATE_ON) {
-                mainActivity.connectionState?.text = "Bluetooth Radio On"
+                mainActivity.csFragment.connectionState?.text = "Bluetooth Radio On"
                 mainActivity.connectionInitActive = true
                 mainActivity.initConnection()
             }
@@ -28,7 +28,7 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
             var discoveredDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
             if( discoveredDevice?.name== DEVICE_NAME)
             {
-                mainActivity.connectionState?.text = "discovered $DEVICE_NAME"
+                mainActivity.csFragment.connectionState?.text = "discovered $DEVICE_NAME"
                 mainActivity.btAdapter?.cancelDiscovery()
                 discoveredDevice.createBond()
             }
@@ -42,16 +42,16 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
                 mainActivity.btSocket = bondedDevice?.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
                 try {
                     mainActivity.btSocket?.connect()
-                    mainActivity.connectionState?.text = "Connected!"
+                    mainActivity.csFragment.connectionState?.text = "Connected!"
 
-                    mainActivity.btReceiverThread = BluetoothReceiverThread(mainActivity.btSocket?.inputStream!!,mainActivity.serialLogger!!)
+                    mainActivity.btReceiverThread = BluetoothReceiverThread(mainActivity.btSocket?.inputStream!!,mainActivity.csFragment.serialLogger!!)
                     mainActivity.btReceiverThread?.start()
 
                     mainActivity.sendString("API\r")
                 } catch (e: IOException)
                 {
                     mainActivity.btSocket = null
-                    mainActivity.connectionState?.text = "Connection Timeout"
+                    mainActivity.csFragment.connectionState?.text = "Connection Timeout"
                 }
 
 

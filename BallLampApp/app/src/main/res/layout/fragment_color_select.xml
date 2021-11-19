@@ -52,35 +52,36 @@
         android:id="@+id/textViewConnectionState"
         android:layout_width="183dp"
         android:layout_height="23dp"
-        android:layout_marginStart="204dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnConnect" />
+        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
     <Button
         android:id="@+id/btnConnect"
         android:layout_width="142dp"
         android:layout_height="51dp"
-        android:layout_marginStart="244dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginStart="240dp"
+        android:layout_marginTop="16dp"
         android:text="@string/connect_text"
         app:layout_constraintStart_toStartOf="@+id/lampSelectorLower"
         app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
     <TextView
         android:id="@+id/serialOut"
-        android:layout_width="325dp"
-        android:layout_height="29dp"
-        android:layout_marginBottom="80dp"
+        android:layout_width="326dp"
+        android:layout_height="159dp"
+        android:layout_marginBottom="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.52"
         app:layout_constraintStart_toStartOf="parent" />
 
     <ch.sr35.balllampapp.LampSelectorView
         android:id="@+id/lampSelectorUpper"
         android:layout_width="169dp"
         android:layout_height="157dp"
-        android:layout_marginTop="132dp"
+        android:layout_marginTop="92dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/amountBlue"
@@ -90,7 +91,7 @@
         android:id="@+id/lampSelectorLower"
         android:layout_width="175dp"
         android:layout_height="154dp"
-        android:layout_marginTop="132dp"
+        android:layout_marginTop="80dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
@@ -180,8 +181,8 @@
         android:id="@+id/textViewLblLower"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="28dp"
+        android:layout_marginBottom="12dp"
         android:text="@string/lbl_lower"
         app:layout_constraintBottom_toTopOf="@+id/lampSelectorLower"
         app:layout_constraintStart_toStartOf="parent" />
@@ -195,6 +196,27 @@
         android:text="@string/lbl_upper"
         app:layout_constraintBottom_toTopOf="@+id/lampSelectorUpper"
         app:layout_constraintStart_toStartOf="@+id/lampSelectorUpper" />
+
+    <Button
+        android:id="@+id/add_to_animation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="40dp"
+        android:text="@string/button_add_to_animation"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/buttonOff" />
+
+    <EditText
+        android:id="@+id/editTextDuration"
+        android:layout_width="211dp"
+        android:layout_height="51dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="44dp"
+        android:ems="10"
+        android:inputType="numberDecimal"
+        app:layout_constraintEnd_toStartOf="@+id/add_to_animation"
+        app:layout_constraintTop_toBottomOf="@+id/buttonColdWhite" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

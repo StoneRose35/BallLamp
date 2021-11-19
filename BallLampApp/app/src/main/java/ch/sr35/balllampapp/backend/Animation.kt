@@ -6,6 +6,8 @@ const val FRAMERATE = 30.0
 
 class Animation(var lampAnimations: ArrayList<LampAnimation>) {
 
+    var mappingLower: IntArray? = null
+    var mappingUpper: IntArray? = null
     fun toCommandList(): Array<String>
     {
         var cmdList: ArrayList<String> = ArrayList<String>()
@@ -13,8 +15,19 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
         var currentDuration: Long = 0
         var currentInterpolationType: InterpolationType = InterpolationType.CONSTANT
         var cnt = 0
+
+
         for (la in lampAnimations)
         {
+            var lampidx: Int
+            if (la.lampNr < 10)
+            {
+                lampidx = mappingUpper?.get(la.lampNr.toInt())!!
+            }
+            else
+            {
+                lampidx = mappingLower?.get(la.lampNr.toInt()-10)!!
+            }
             cnt = 0
             var preliminaryStepList = ArrayList<String>()
             for (el in la.steps.withIndex())
@@ -31,7 +44,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
 
                         val interpolationType =
                             if (currentInterpolationType == InterpolationType.LINEAR) 1 else 0
-                        preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$currentDuration,$interpolationType,${la.lampNr},${cnt})\r")
+                        preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$currentDuration,$interpolationType,${lampidx},${cnt})\r")
                         currentColor = el.value.color
                         currentDuration = el.value.duration
                         currentInterpolationType = el.value.interpolation
@@ -40,10 +53,17 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
                         currentDuration += el.value.duration
                     }
                 }
-
             }
-            var repeatingInt = if (la.repeating) 1 else 0
-            cmdList.add("INTERP(${la.lampNr},$cnt,$repeatingInt)\r")
+            if (cnt >= preliminaryStepList.size)
+            {
+                val interpolationType =
+                    if (currentInterpolationType == InterpolationType.LINEAR) 1 else 0
+                preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$currentDuration,$interpolationType,${lampidx},${cnt})\r")
+                cnt++
+            }
+            var repeatingInt = if (la.repeating && cnt > 1)  1 else 0
+
+            cmdList.add("INTERP(${lampidx},$cnt,$repeatingInt)\r")
             cmdList.addAll(preliminaryStepList)
         }
         return cmdList.toTypedArray()

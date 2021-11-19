@@ -4,6 +4,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter<AnimationListAdapter.ViewHolder>(){
@@ -15,13 +16,13 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val lampSelectorLower: LampSelectorView
             val lampSelectorUpper:LampSelectorView
-            val timefield: EditText
+            val timefield: TextView
 
             init {
                 // Define click listener for the ViewHolder's View.
                 lampSelectorLower = view.findViewById(R.id.lampSelectorViewLower)
                 lampSelectorUpper = view.findViewById(R.id.lampSelectorViewUpper)
-                timefield = view.findViewById(R.id.editTextTime2)
+                timefield = view.findViewById(R.id.timeView)
                 lampSelectorLower.editable = false
                 lampSelectorUpper.editable = false
             }
@@ -52,6 +53,7 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
                         el.steps[position].color
                 }
             }
+            viewHolder.timefield.text = (dataSet.lampAnimations[0].steps[position].duration/30.0).toString()
 
         }
 

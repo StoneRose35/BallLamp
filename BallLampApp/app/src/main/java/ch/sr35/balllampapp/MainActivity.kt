@@ -29,15 +29,16 @@ const val COLOR_BLUE = 2
 
 class MainActivity : AppCompatActivity() {
 
-    var connectionState: TextView? = null
+
     var btSocket: BluetoothSocket? = null
     var btAdapter: BluetoothAdapter? = null
     var connectionInitActive: Boolean = true
     var btReceiverThread: BluetoothReceiverThread? = null
-    var serialLogger: TextView? = null
 
     var csInstanceState: Fragment.SavedState? = null
     var alInstanceState: Fragment.SavedState? = null
+    var csFragment: ColorSelect = ColorSelect()
+    var alFragment: AnimationList = AnimationList()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,11 +47,6 @@ class MainActivity : AppCompatActivity() {
         connectionInitActive = true
 
         super.onCreate(savedInstanceState)
-
-        val csFragment = ColorSelect() // supportFragmentManager.findFragmentById(R.id.frag_color_select)
-        val alFragment= AnimationList() // supportFragmentManager.findFragmentById(R.id.frag_animation_list)
-
-
 
         setContentView(R.layout.activity_main)
 
@@ -77,6 +73,10 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        supportFragmentManager.beginTransaction().apply {
+            setFragment(csFragment)
+            commit()
+        }
         val btReceiver = BTReceiver(this)
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
@@ -118,13 +118,13 @@ class MainActivity : AppCompatActivity() {
                 if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
                     val btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     connectionInitActive = false
-                    connectionState?.text = getString(R.string.bt_switch_on)
+
                     startActivity(btOnIntent)
                 } else {
                     val btDevice =
                         btAdapter?.bondedDevices?.firstOrNull { e -> e.name == DEVICE_NAME }
                     if (btDevice == null) {
-                        connectionState?.text = getString(R.string.bt_discovery)
+
                         btAdapter?.startDiscovery()
                         connectionInitActive = false
                     } else {
@@ -132,16 +132,17 @@ class MainActivity : AppCompatActivity() {
                         btSocket = btDevice.createRfcommSocketToServiceRecord(appUuid)
                         try {
                             btSocket?.connect() // is blocking, so the connection is established on the next line
-                            connectionState?.text = getString(R.string.bt_connected)
 
+
+                            csFragment.serialLogger
                             btReceiverThread =
-                                BluetoothReceiverThread(btSocket?.inputStream!!, serialLogger!!)
+                                BluetoothReceiverThread(btSocket?.inputStream!!, csFragment.serialLogger!!)
                             btReceiverThread?.start()
 
                             sendString("API\r")
 
                         } catch (e: IOException) {
-                            connectionState?.text = getString(R.string.bt_timeout)
+
                             btSocket = null
 
                         }
@@ -227,6 +228,7 @@ class BluetoothReceiverThread(var inputStream: InputStream,var logger: TextView)
 {
     private val handler: Handler = Handler()
     var isRunning = true
+    var fullString: String = ""
     @Override
     override fun run() {
         while(isRunning)
@@ -236,9 +238,9 @@ class BluetoothReceiverThread(var inputStream: InputStream,var logger: TextView)
             {
                 val b = ByteArray(bytesAvailable)
                 inputStream.read(b)
-                val addedText = b.decodeToString()
+                fullString  += b.decodeToString()
                 handler.post {
-                    logger.text = addedText
+                    logger.text = fullString
                 }
 
             }

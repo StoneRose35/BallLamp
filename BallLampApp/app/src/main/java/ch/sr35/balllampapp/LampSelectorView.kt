@@ -36,14 +36,6 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
     var filler: Paint = Paint()
 
 
-    fun initialize(lampSelectorData: LampSelectorData)
-    {
-        for (clr in lampSelectorData.colors.withIndex())
-        {
-            triangleColors[clr.index] = clr.value.clone()
-            triangleSelected[clr.index] = lampSelectorData.selected[clr.index]
-        }
-    }
 
     var lampData: LampSelectorData
         get() {
@@ -61,7 +53,6 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
 
     fun setColorForSelected(clr: SimpleIntColor)
     {
-        var filteredData = triangleSelected.withIndex().filter { e-> e.value }
         for ((cnt, _) in triangleSelected.withIndex().filter { e-> e.value })
         {
             triangleColors[cnt] = clr.clone()

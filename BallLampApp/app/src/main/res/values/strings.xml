@@ -10,10 +10,12 @@
     <string name="button_cold_white_text">Cold</string>
     <string name="button_bright_white_text">Bright</string>
     <string name="button_off_text">Off</string>
-
+    <string name="button_add_to_animation">To Anim</string>
+    <string name="button_start_animation">Start</string>
+    <string name="switch_start_animation">Animation On</string>
 
     <string name="bt_switch_on">Switching on Bluetooth</string>
-    <string name="bt_discovery">Discovering...</string>
+    <string name="bt_discovery">Discovering..</string>
     <string name="bt_connected">Lamp connected!</string>
     <string name="bt_timeout">Connection Timout, try again..</string>
 
@@ -22,4 +24,6 @@
 
     <string name="navig_color_select">Color Select</string>
     <string name="navig_animation">Animation</string>
+
+    <string name="tv_anim_descr">Total Length: %1$s, Size: %2$s bytes</string>
 </resources>
