@@ -1,10 +1,11 @@
-package ch.sr35.balllampapp
+package ch.sr35.balllampapp.fragments
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
+import ch.sr35.balllampapp.*
+import ch.sr35.balllampapp.backend.SimpleIntColor
 
 class AnimationList: Fragment(R.layout.activity_animation_list) {
 

@@ -1,5 +1,7 @@
 package ch.sr35.balllampapp
 
+import ch.sr35.balllampapp.backend.SimpleIntColor
+
 const val FRAMERATE = 30.0
 
 class Animation(var lampAnimations: ArrayList<LampAnimation>) {
@@ -85,7 +87,7 @@ class LampAnimation(var lampNr: Byte,var steps: ArrayList<Step>,var repeating: B
     }
 }
 
-class Step(var color: SimpleIntColor, var duration: Long,var interpolation: InterpolationType) {
+class Step(var color: SimpleIntColor, var duration: Long, var interpolation: InterpolationType) {
 
     override fun equals(other: Any?): Boolean {
         if (other is Step)

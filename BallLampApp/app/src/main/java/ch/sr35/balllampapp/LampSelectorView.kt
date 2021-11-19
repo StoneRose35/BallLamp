@@ -1,15 +1,17 @@
 package ch.sr35.balllampapp
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
-import androidx.core.content.res.ResourcesCompat.getColor
+import ch.sr35.balllampapp.backend.LampSelectorData
+import ch.sr35.balllampapp.backend.SimpleIntColor
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
@@ -33,6 +35,28 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
     private var whiteLine: Paint = Paint()
     var filler: Paint = Paint()
 
+
+    fun initialize(lampSelectorData: LampSelectorData)
+    {
+        for (clr in lampSelectorData.colors.withIndex())
+        {
+            triangleColors[clr.index] = clr.value.clone()
+            triangleSelected[clr.index] = lampSelectorData.selected[clr.index]
+        }
+    }
+
+    var lampData: LampSelectorData
+        get() {
+            return LampSelectorData(triangleColors,triangleSelected)
+        }
+        set(ld) {
+            //lampData = ld
+            for (clr in ld.colors.withIndex())
+            {
+                triangleColors[clr.index] = clr.value.clone()
+                triangleSelected[clr.index] = ld.selected[clr.index]
+            }
+        }
 
 
     fun setColorForSelected(clr: SimpleIntColor)
@@ -246,6 +270,10 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         res[1] = r* cos(phi)
         return res
     }
+
+
+
+
 }
 
 interface TriangleSelectedEventListener

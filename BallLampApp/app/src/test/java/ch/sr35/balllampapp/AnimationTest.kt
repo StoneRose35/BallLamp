@@ -1,9 +1,9 @@
 package ch.sr35.balllampapp
 
+import ch.sr35.balllampapp.backend.SimpleIntColor
 import org.junit.Test
 import kotlin.math.abs
 import kotlin.random.Random
-import kotlin.random.nextUInt
 
 class AnimationTest {
 

@@ -1,7 +1,5 @@
-package ch.sr35.balllampapp
+package ch.sr35.balllampapp.fragments
 
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothSocket
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -13,9 +11,12 @@ import android.widget.TextView
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import ch.sr35.balllampapp.*
+import ch.sr35.balllampapp.backend.LampSelectorData
+import ch.sr35.balllampapp.backend.SimpleIntColor
 
 
-class colorSelect : Fragment(R.layout.fragment_color_select) {
+class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
 
     private var lbl: TextView? = null
@@ -28,14 +29,31 @@ class colorSelect : Fragment(R.layout.fragment_color_select) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val ldLower = savedInstanceState?.getParcelable<LampSelectorData>("lampLowerData")
+        val ldUpper = savedInstanceState?.getParcelable<LampSelectorData>("lampUpperData")
+        if (ldLower != null)
+        {
+            lampBallSelectorLower?.lampData=ldLower
+        }
+        if (ldUpper != null)
+        {
+            lampBallSelectorUpper?.lampData=ldUpper
+        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        view.findViewById<SeekBar>(R.id.amountRed).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_RED))
-        view.findViewById<SeekBar>(R.id.amountGreen).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_GREEN))
-        view.findViewById<SeekBar>(R.id.amountBlue).setOnSeekBarChangeListener(RGBSeekBarChangeListener(this,COLOR_BLUE))
+        view.findViewById<SeekBar>(R.id.amountRed).setOnSeekBarChangeListener(
+            RGBSeekBarChangeListener(this, COLOR_RED)
+        )
+        view.findViewById<SeekBar>(R.id.amountGreen).setOnSeekBarChangeListener(
+            RGBSeekBarChangeListener(this, COLOR_GREEN)
+        )
+        view.findViewById<SeekBar>(R.id.amountBlue).setOnSeekBarChangeListener(
+            RGBSeekBarChangeListener(this, COLOR_BLUE)
+        )
 
         lbl = view.findViewById(R.id.textViewLblLower)
         connectionState = view.findViewById(R.id.textViewConnectionState)
@@ -53,6 +71,25 @@ class colorSelect : Fragment(R.layout.fragment_color_select) {
         }
 
         initButtons()
+
+        val ld_lower = savedInstanceState?.getParcelable<LampSelectorData>("lampLowerData")
+        val ld_upper = savedInstanceState?.getParcelable<LampSelectorData>("lampUpperData")
+        if (ld_lower != null)
+        {
+            lampBallSelectorLower?.lampData=ld_lower
+        }
+        if (ld_upper != null)
+        {
+            lampBallSelectorUpper?.lampData=ld_upper
+        }
+
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putParcelable("lampLowerData",lampBallSelectorLower?.lampData)
+        outState.putParcelable("lampUpperData",lampBallSelectorUpper?.lampData)
     }
 
     fun initButtons()

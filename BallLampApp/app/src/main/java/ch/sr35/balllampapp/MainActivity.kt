@@ -7,16 +7,17 @@ import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
-import android.graphics.Color
 import android.os.Handler
+import android.os.PersistableBundle
 import android.widget.*
-import androidx.core.graphics.blue
-import androidx.core.graphics.green
-import androidx.core.graphics.red
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.fragment.app.FragmentTransaction
+import ch.sr35.balllampapp.fragments.AnimationList
+import ch.sr35.balllampapp.fragments.ColorSelect
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.IOException
 import java.io.InputStream
@@ -35,6 +36,9 @@ class MainActivity : AppCompatActivity() {
     var btReceiverThread: BluetoothReceiverThread? = null
     var serialLogger: TextView? = null
 
+    var csInstanceState: Fragment.SavedState? = null
+    var alInstanceState: Fragment.SavedState? = null
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val btMan: BluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -42,16 +46,33 @@ class MainActivity : AppCompatActivity() {
         connectionInitActive = true
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
-        val csFragment=colorSelect()
-        val alFragment=AnimationList()
+        val csFragment = ColorSelect() // supportFragmentManager.findFragmentById(R.id.frag_color_select)
+        val alFragment= AnimationList() // supportFragmentManager.findFragmentById(R.id.frag_animation_list)
+
+
+
+        setContentView(R.layout.activity_main)
 
         var bottomNavigationView = findViewById<BottomNavigationView>(R.id.navigator)
         bottomNavigationView.setOnNavigationItemSelectedListener {
             when(it.itemId){
-                R.id.nav_color_select->setFragment(csFragment)
-                R.id.nav_animation_view->setFragment(alFragment)
+                R.id.nav_color_select-> {
+                    if (supportFragmentManager.fragments.contains(alFragment)) {
+                        alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
+                    }
+                    csFragment.setInitialSavedState(csInstanceState)
+                    setFragment(csFragment)
+                }
+
+                R.id.nav_animation_view-> {
+                    if (supportFragmentManager.fragments.contains(csFragment)) {
+                        csInstanceState = supportFragmentManager.saveFragmentInstanceState(csFragment)
+                    }
+                    alFragment.setInitialSavedState(alInstanceState)
+                    setFragment(alFragment)
+
+                }
             }
             true
         }
@@ -61,7 +82,9 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
         registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
+
     }
+
 
     fun setFragment(fragment: Fragment)
     {
@@ -86,7 +109,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
 
     fun initConnection()
     {
@@ -152,7 +174,7 @@ class MainActivity : AppCompatActivity() {
 }
 
 
-class RGBSeekBarChangeListener(private var csFragment: colorSelect,private var clr: Int) : SeekBar.OnSeekBarChangeListener
+class RGBSeekBarChangeListener(private var csFragment: ColorSelect, private var clr: Int) : SeekBar.OnSeekBarChangeListener
 {
 
 
