@@ -16,7 +16,7 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED)
         {
-            var state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,0)
+            val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,0)
             if (state == BluetoothAdapter.STATE_ON) {
                 mainActivity.csFragment.connectionState?.text = "Bluetooth Radio On"
                 mainActivity.connectionInitActive = true
@@ -25,7 +25,7 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
         }
         else if (intent?.action == BluetoothDevice.ACTION_FOUND)
         {
-            var discoveredDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+            val discoveredDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
             if( discoveredDevice?.name== DEVICE_NAME)
             {
                 mainActivity.csFragment.connectionState?.text = "discovered $DEVICE_NAME"
@@ -35,19 +35,16 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
         }
         else if (intent?.action == BluetoothDevice.ACTION_BOND_STATE_CHANGED)
         {
-            var bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,-1)
+            val bondState = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,-1)
             if(bondState==BluetoothDevice.BOND_BONDED)
             {
-                var bondedDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+                val bondedDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
                 mainActivity.btSocket = bondedDevice?.createRfcommSocketToServiceRecord(UUID.fromString("00001101-0000-1000-8000-00805F9B34FB"))
                 try {
-                    mainActivity.btSocket?.connect()
-                    mainActivity.csFragment.connectionState?.text = "Connected!"
+                    val connectorThread = BluetoothConnectionThread(mainActivity)
+                    connectorThread.start()
+                    mainActivity.csFragment.connectionState?.text = "Connecting"
 
-                    mainActivity.btReceiverThread = BluetoothReceiverThread(mainActivity.btSocket?.inputStream!!,mainActivity.csFragment.serialLogger!!)
-                    mainActivity.btReceiverThread?.start()
-
-                    mainActivity.sendString("API\r")
                 } catch (e: IOException)
                 {
                     mainActivity.btSocket = null

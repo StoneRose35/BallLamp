@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:scrollbarStyle="insideInset"
+    android:scrollbars="vertical"
     tools:context=".fragments.ColorSelect">
 
     <SeekBar
@@ -50,10 +52,13 @@
 
     <TextView
         android:id="@+id/textViewConnectionState"
-        android:layout_width="183dp"
-        android:layout_height="23dp"
-        android:layout_marginStart="28dp"
-        android:layout_marginTop="24dp"
+        android:layout_width="184dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/rectangles"
+        android:gravity="center"
+        android:shadowColor="#734343"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
@@ -61,21 +66,30 @@
         android:id="@+id/btnConnect"
         android:layout_width="142dp"
         android:layout_height="51dp"
-        android:layout_marginStart="240dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="232dp"
+        android:layout_marginTop="8dp"
         android:text="@string/connect_text"
         app:layout_constraintStart_toStartOf="@+id/lampSelectorLower"
         app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
     <TextView
         android:id="@+id/serialOut"
-        android:layout_width="326dp"
-        android:layout_height="159dp"
-        android:layout_marginBottom="20dp"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/console_bg"
+        android:padding="6.2dp"
+        android:scrollbars="vertical"
+        android:typeface="monospace"
+        android:verticalScrollbarPosition="defaultPosition"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.52"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/editTextDuration" />
 
     <ch.sr35.balllampapp.LampSelectorView
         android:id="@+id/lampSelectorUpper"

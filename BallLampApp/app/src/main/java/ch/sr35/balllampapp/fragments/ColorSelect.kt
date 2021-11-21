@@ -15,7 +15,6 @@ import androidx.core.graphics.red
 import ch.sr35.balllampapp.*
 import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.backend.SimpleIntColor
-import android.content.DialogInterface
 import androidx.appcompat.app.AlertDialog
 
 import ch.sr35.balllampapp.MainActivity
@@ -34,7 +33,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var lampBallSelectorLower: LampSelectorView? = null
 
     var serialLogger: TextView? = null
-    var durationField: EditText? = null
+    private var btnConnect: Button? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,22 +68,27 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         serialLogger = view.findViewById(R.id.serialOut)
         lampBallSelectorUpper = view.findViewById(R.id.lampSelectorUpper)
         lampBallSelectorLower =view. findViewById(R.id.lampSelectorLower)
-        var durField = view.findViewById<EditText>(R.id.editTextDuration)
+        btnConnect = view.findViewById(R.id.btnConnect)
+        val durField = view.findViewById<EditText>(R.id.editTextDuration)
 
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
 
-        labelConnectButton()
+        serialLogger?.text = (activity as MainActivity).btReceiverThread?.fullString
+        connectionState?.text = savedInstanceState?.getCharSequence("connectionState")
+        btnConnect?.text = savedInstanceState?.getCharSequence("connectBtnLabel")
+
+        //labelConnectButton()
 
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
             (activity as MainActivity).initConnection()
         }
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
-            val doubleDuration = -1.0
-            var txtVal = durField.text
+            var doubleDuration = -1.0
+            val txtVal = durField.text
             try {
-                val doubleDuration = txtVal.toString().toDouble()
+                doubleDuration = txtVal.toString().toDouble()
             } catch (e: NumberFormatException) {
                 val alertDialog: AlertDialog? =
                     context?.let { it1 -> AlertDialog.Builder(it1).create() }
@@ -99,14 +103,14 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
                 for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
 
                     if (la.index < 10 && lampBallSelectorUpper != null) {
-                        var newstep = Step(
+                        val newstep = Step(
                             lampBallSelectorUpper!!.triangleColors[la.index].clone(),
                             (doubleDuration * 30).toLong(),
                             InterpolationType.LINEAR
                         )
                         la.value.steps.add(newstep)
                     } else {
-                        var newstep = Step(
+                        val newstep = Step(
                             lampBallSelectorLower!!.triangleColors[la.index - 10].clone(),
                             (doubleDuration * 30).toLong(),
                             InterpolationType.LINEAR
@@ -120,15 +124,15 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
         initButtons()
 
-        val ld_lower = savedInstanceState?.getParcelable<LampSelectorData>("lampLowerData")
-        val ld_upper = savedInstanceState?.getParcelable<LampSelectorData>("lampUpperData")
-        if (ld_lower != null)
+        val ldLower = savedInstanceState?.getParcelable<LampSelectorData>("lampLowerData")
+        val ldUpper = savedInstanceState?.getParcelable<LampSelectorData>("lampUpperData")
+        if (ldLower != null)
         {
-            lampBallSelectorLower?.lampData=ld_lower
+            lampBallSelectorLower?.lampData=ldLower
         }
-        if (ld_upper != null)
+        if (ldUpper != null)
         {
-            lampBallSelectorUpper?.lampData=ld_upper
+            lampBallSelectorUpper?.lampData=ldUpper
         }
 
     }
@@ -138,9 +142,11 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
         outState.putParcelable("lampLowerData",lampBallSelectorLower?.lampData)
         outState.putParcelable("lampUpperData",lampBallSelectorUpper?.lampData)
+        outState.putCharSequence("connectionState",connectionState?.text)
+        outState.putCharSequence( "connectBtnLabel",btnConnect?.text)
     }
 
-    fun initButtons()
+    private fun initButtons()
     {
         view?.findViewById<Button>(R.id.buttonRed)?.setOnClickListener {
             setColorOnSelectorAndLamp(R.color.lamp_red)
@@ -173,19 +179,6 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         (activity as MainActivity).sendString("RGB(${clr.red},${clr.green},${clr.blue},0-19)\r")
         lampBallSelectorLower?.setColorForAll(siclr)
         lampBallSelectorUpper?.setColorForAll(siclr)
-    }
-
-    private fun labelConnectButton()
-    {
-        var btnConnect: Button? = view?.findViewById(R.id.btnConnect)
-        if ((activity as MainActivity).btSocket?.isConnected != true)
-        {
-            btnConnect?.text = getString(R.string.connect_text)
-        }
-        else
-        {
-            btnConnect?.text = getString(R.string.disconnect_text)
-        }
     }
 
     override fun onCreateView(
