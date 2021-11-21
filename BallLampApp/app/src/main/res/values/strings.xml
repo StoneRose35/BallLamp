@@ -26,4 +26,9 @@
     <string name="navig_animation">Animation</string>
 
     <string name="tv_anim_descr">Total Length: %1$s, Size: %2$s bytes</string>
+
+
+    <string name="napa_alert_duration_title">Butbut</string>
+    <string name="napa_alert_duration_message">Ey bubut eyy sie haben ned geseikket wie lange tut geyyen</string>
+    <string name="napa_alert_duration_ok">Good</string>
 </resources>

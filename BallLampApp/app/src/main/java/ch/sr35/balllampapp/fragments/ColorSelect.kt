@@ -15,6 +15,13 @@ import androidx.core.graphics.red
 import ch.sr35.balllampapp.*
 import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.backend.SimpleIntColor
+import android.content.DialogInterface
+import androidx.appcompat.app.AlertDialog
+
+import ch.sr35.balllampapp.MainActivity
+
+
+
 
 
 class ColorSelect : Fragment(R.layout.fragment_color_select) {
@@ -74,20 +81,41 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         }
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
-            for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex())
-            {
-                var txtVal = durField.text
+            val doubleDuration = -1.0
+            var txtVal = durField.text
+            try {
                 val doubleDuration = txtVal.toString().toDouble()
-                if (la.index < 10 && lampBallSelectorUpper != null) {
-                    var newstep = Step(lampBallSelectorUpper!!.triangleColors[la.index].clone(),(doubleDuration*30).toLong(),InterpolationType.LINEAR)
-                    la.value.steps.add(newstep)
-                }
-                else
-                {
-                    var newstep = Step(lampBallSelectorLower!!.triangleColors[la.index-10].clone(),(doubleDuration*30).toLong(),InterpolationType.LINEAR)
-                    la.value.steps.add(newstep)
+            } catch (e: NumberFormatException) {
+                val alertDialog: AlertDialog? =
+                    context?.let { it1 -> AlertDialog.Builder(it1).create() }
+                alertDialog?.setTitle(resources.getString(R.string.napa_alert_duration_title))
+                alertDialog?.setMessage(resources.getString(R.string.napa_alert_duration_message))
+                alertDialog?.setButton(
+                    AlertDialog.BUTTON_NEGATIVE, resources.getString(R.string.napa_alert_duration_ok)
+                ) { dialog, _ -> dialog.cancel() }
+                alertDialog?.show()
+            }
+            if (doubleDuration >= 0.0) {
+                for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
+
+                    if (la.index < 10 && lampBallSelectorUpper != null) {
+                        var newstep = Step(
+                            lampBallSelectorUpper!!.triangleColors[la.index].clone(),
+                            (doubleDuration * 30).toLong(),
+                            InterpolationType.LINEAR
+                        )
+                        la.value.steps.add(newstep)
+                    } else {
+                        var newstep = Step(
+                            lampBallSelectorLower!!.triangleColors[la.index - 10].clone(),
+                            (doubleDuration * 30).toLong(),
+                            InterpolationType.LINEAR
+                        )
+                        la.value.steps.add(newstep)
+                    }
                 }
             }
+
         }
 
         initButtons()
