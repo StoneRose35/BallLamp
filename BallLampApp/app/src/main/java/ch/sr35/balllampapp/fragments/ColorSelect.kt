@@ -1,7 +1,7 @@
 package ch.sr35.balllampapp.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
+import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,18 +9,14 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.fragment.app.Fragment
 import ch.sr35.balllampapp.*
 import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.backend.SimpleIntColor
-import androidx.appcompat.app.AlertDialog
-
-import ch.sr35.balllampapp.MainActivity
-
-
-
 
 
 class ColorSelect : Fragment(R.layout.fragment_color_select) {
@@ -75,10 +71,10 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
 
         serialLogger?.text = (activity as MainActivity).btReceiverThread?.fullString
+        serialLogger?.movementMethod = ScrollingMovementMethod()
         connectionState?.text = savedInstanceState?.getCharSequence("connectionState")
         btnConnect?.text = savedInstanceState?.getCharSequence("connectBtnLabel")
 
-        //labelConnectButton()
 
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
             (activity as MainActivity).initConnection()
@@ -119,7 +115,6 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
                     }
                 }
             }
-
         }
 
         initButtons()
