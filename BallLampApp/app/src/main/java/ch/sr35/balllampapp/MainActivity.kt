@@ -56,18 +56,17 @@ class MainActivity : AppCompatActivity() {
                 R.id.nav_color_select-> {
                     if (supportFragmentManager.fragments.contains(alFragment)) {
                         alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
+                        csFragment.setInitialSavedState(csInstanceState)
+                        setFragment(csFragment)
                     }
-                    csFragment.setInitialSavedState(csInstanceState)
-                    setFragment(csFragment)
                 }
 
                 R.id.nav_animation_view-> {
                     if (supportFragmentManager.fragments.contains(csFragment)) {
                         csInstanceState = supportFragmentManager.saveFragmentInstanceState(csFragment)
+                        alFragment.setInitialSavedState(alInstanceState)
+                        setFragment(alFragment)
                     }
-                    alFragment.setInitialSavedState(alInstanceState)
-                    setFragment(alFragment)
-
                 }
             }
             true
@@ -81,8 +80,6 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
         registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
-
-
     }
 
 
