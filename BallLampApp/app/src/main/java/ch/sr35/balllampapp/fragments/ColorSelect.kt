@@ -72,8 +72,23 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
         serialLogger?.text = (activity as MainActivity).btReceiverThread?.fullString
         serialLogger?.movementMethod = ScrollingMovementMethod()
-        connectionState?.text = savedInstanceState?.getCharSequence("connectionState")
-        btnConnect?.text = savedInstanceState?.getCharSequence("connectBtnLabel")
+        if (savedInstanceState != null) {
+            connectionState?.text = savedInstanceState.getCharSequence("connectionState")
+            btnConnect?.text = savedInstanceState.getCharSequence("connectBtnLabel")
+        }
+        else
+        {
+            if((activity as MainActivity).btSocket?.isConnected == true)
+            {
+                connectionState?.text = (activity as MainActivity).resources.getString(R.string.bt_connected)
+                btnConnect?.text = (activity as MainActivity).resources.getString(R.string.bt_btn_disconnect)
+            }
+            else
+            {
+                connectionState?.text = (activity as MainActivity).resources.getString(R.string.bt_connecting)
+                btnConnect?.text = (activity as MainActivity).resources.getString(R.string.bt_btn_connect)
+            }
+        }
 
 
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
