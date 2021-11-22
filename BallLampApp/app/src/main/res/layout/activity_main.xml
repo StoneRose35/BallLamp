@@ -16,8 +16,8 @@
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navigator"
-        android:layout_width="407dp"
-        android:layout_height="66dp"
+        android:layout_width="0dp"
+        android:layout_height="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
