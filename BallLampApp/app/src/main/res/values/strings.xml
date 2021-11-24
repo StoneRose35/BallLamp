@@ -30,6 +30,7 @@
     <string name="navig_animation">Animation</string>
 
     <string name="tv_anim_descr">Total Length: %1$s, Size: %2$s bytes</string>
+    <string name="cs_duration">%1$2f</string>
 
 
     <string name="napa_alert_duration_title">Butbut</string>

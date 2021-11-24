@@ -3,7 +3,6 @@ package ch.sr35.balllampapp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
@@ -14,15 +13,13 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
          * (custom ViewHolder).
          */
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-            val lampSelectorLower: LampSelectorView
-            val lampSelectorUpper:LampSelectorView
-            val timefield: TextView
+            val lampSelectorLower: LampSelectorView = view.findViewById(R.id.lampSelectorViewLower)
+            val lampSelectorUpper:LampSelectorView = view.findViewById(R.id.lampSelectorViewUpper)
+            val timefield: TextView = view.findViewById(R.id.timeView)
+            var duration: Double = 0.0
 
             init {
                 // Define click listener for the ViewHolder's View.
-                lampSelectorLower = view.findViewById(R.id.lampSelectorViewLower)
-                lampSelectorUpper = view.findViewById(R.id.lampSelectorViewUpper)
-                timefield = view.findViewById(R.id.timeView)
                 lampSelectorLower.editable = false
                 lampSelectorUpper.editable = false
             }
@@ -53,7 +50,8 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
                         el.steps[position].color
                 }
             }
-            viewHolder.timefield.text = (dataSet.lampAnimations[0].steps[position].duration/30.0).toString()
+            viewHolder.duration = dataSet.lampAnimations[0].steps[position].duration/30.0
+            viewHolder.timefield.text = viewHolder.duration.toString()
 
         }
 

@@ -36,7 +36,7 @@ class MainActivity : AppCompatActivity() {
 
 
     private var csInstanceState: Fragment.SavedState? = null
-    private var alInstanceState: Fragment.SavedState? = null
+    var alInstanceState: Fragment.SavedState? = null
     var csFragment: ColorSelect = ColorSelect()
     var alFragment: AnimationList = AnimationList()
 
@@ -94,15 +94,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
-    private fun setFragment(fragment: Fragment)
+    fun setFragment(fragment: Fragment)
     {
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.main_frame,fragment)
             commit()
         }
     }
-
 
     override fun onPause() {
         super.onPause()

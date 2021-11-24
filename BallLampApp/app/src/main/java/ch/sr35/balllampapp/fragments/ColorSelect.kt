@@ -1,6 +1,7 @@
 package ch.sr35.balllampapp.fragments
 
 import android.os.Bundle
+import android.text.Editable
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -27,7 +28,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var mainClr: SimpleIntColor = SimpleIntColor(0,0,0)
     var lampBallSelectorUpper: LampSelectorView? = null
     var lampBallSelectorLower: LampSelectorView? = null
-
+    var duration: Double = 0.0
     var serialLogger: TextView? = null
     private var btnConnect: Button? = null
 
@@ -66,6 +67,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         lampBallSelectorLower =view. findViewById(R.id.lampSelectorLower)
         btnConnect = view.findViewById(R.id.btnConnect)
         val durField = view.findViewById<EditText>(R.id.editTextDuration)
+        durField.setText(resources.getString(R.string.cs_duration,duration))
 
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
@@ -96,10 +98,10 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         }
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
-            var doubleDuration = -1.0
+
             val txtVal = durField.text
             try {
-                doubleDuration = txtVal.toString().toDouble()
+                duration = txtVal.toString().toDouble()
             } catch (e: NumberFormatException) {
                 val alertDialog: AlertDialog? =
                     context?.let { it1 -> AlertDialog.Builder(it1).create() }
@@ -110,20 +112,20 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
                 ) { dialog, _ -> dialog.cancel() }
                 alertDialog?.show()
             }
-            if (doubleDuration >= 0.0) {
+            if (duration >= 0.0) {
                 for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
 
                     if (la.index < 10 && lampBallSelectorUpper != null) {
                         val newstep = Step(
                             lampBallSelectorUpper!!.triangleColors[la.index].clone(),
-                            (doubleDuration * 30).toLong(),
+                            (duration * 30).toLong(),
                             InterpolationType.LINEAR
                         )
                         la.value.steps.add(newstep)
                     } else {
                         val newstep = Step(
                             lampBallSelectorLower!!.triangleColors[la.index - 10].clone(),
-                            (doubleDuration * 30).toLong(),
+                            (duration * 30).toLong(),
                             InterpolationType.LINEAR
                         )
                         la.value.steps.add(newstep)
