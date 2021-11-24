@@ -41,12 +41,12 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
             // contents of the view with that element
             for (el in dataSet.lampAnimations) {
                 if (el.lampNr < 10) {
-                    viewHolder.lampSelectorUpper.triangleColors[el.lampNr.toInt()] =
+                    viewHolder.lampSelectorUpper.lampData.colors[el.lampNr.toInt()] =
                         el.steps[position].color
                 }
                 else
                 {
-                    viewHolder.lampSelectorLower.triangleColors[el.lampNr.toInt()-10] =
+                    viewHolder.lampSelectorLower.lampData.colors[el.lampNr.toInt()-10] =
                         el.steps[position].color
                 }
             }

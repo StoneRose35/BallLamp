@@ -11,9 +11,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PersistableBundle
 
 import android.widget.*
+import androidx.activity.viewModels
 import androidx.fragment.app.Fragment
+import ch.sr35.balllampapp.backend.FrameViewModel
+import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.fragments.AnimationList
 import ch.sr35.balllampapp.fragments.ColorSelect
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -35,10 +39,11 @@ class MainActivity : AppCompatActivity() {
     var btReceiverThread: BluetoothReceiverThread? = null
 
 
-    private var csInstanceState: Fragment.SavedState? = null
+    var csInstanceState: Fragment.SavedState? = null
     var alInstanceState: Fragment.SavedState? = null
     var csFragment: ColorSelect = ColorSelect()
     var alFragment: AnimationList = AnimationList()
+    val frameViewModel: FrameViewModel by viewModels()
 
 
 
@@ -50,7 +55,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
+        frameViewModel.animationFrame.value?.duration=0.4
 
+        setFragment(csFragment)
         val bottomNavigationView = findViewById<BottomNavigationView>(R.id.navigator)
         bottomNavigationView.setOnNavigationItemSelectedListener {
             when(it.itemId){
@@ -73,10 +80,30 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
-        supportFragmentManager.beginTransaction().apply {
-            setFragment(csFragment)
-            commit()
-        }
+        frameViewModel.animationFrame.value?.editedStep=null
+        /*
+        frameViewModel.animationFrame.observe(this,{
+                af ->
+            if (af.editedStep != null) {
+                for (la in alFragment.animation.lampAnimations.withIndex())
+                {
+                    if (la.index < 10) {
+                        if (af.lampdataUpper?.colors != null) {
+                            la.value.steps[af.editedStep!!].color =
+                                af.lampdataUpper?.colors!![la.index]
+                        }
+                    }
+                    else
+                    {
+                        if (af.lampDataLower?.colors != null) {
+                            la.value.steps[af.editedStep!!].color =
+                                af.lampdataUpper?.colors!![la.index-10]
+                        }
+                    }
+                }
+            }
+        })*/
+
         val btReceiver = BTReceiver(this)
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
@@ -96,11 +123,13 @@ class MainActivity : AppCompatActivity() {
 
     fun setFragment(fragment: Fragment)
     {
+
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.main_frame,fragment)
             commit()
         }
     }
+
 
     override fun onPause() {
         super.onPause()
@@ -180,12 +209,16 @@ class MainActivity : AppCompatActivity() {
             btSocket?.outputStream?.write(str.toByteArray())
         }
     }
+
+    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
+        super.onSaveInstanceState(outState, outPersistentState)
+
+    }
 }
 
 
 class RGBSeekBarChangeListener(private var csFragment: ColorSelect, private var clr: Int) : SeekBar.OnSeekBarChangeListener
 {
-
     override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
         if (fromUser) {
             when (clr) {
@@ -203,6 +236,10 @@ class RGBSeekBarChangeListener(private var csFragment: ColorSelect, private var 
 
             csFragment.lampBallSelectorUpper?.setColorForSelected(csFragment.mainClr)
             csFragment.lampBallSelectorLower?.setColorForSelected(csFragment.mainClr)
+
+            csFragment.frameViewModel.animationFrame.value?.lampDataLower = csFragment.lampBallSelectorLower?.lampData
+            csFragment.frameViewModel.animationFrame.value?.lampdataUpper = csFragment.lampBallSelectorUpper?.lampData
+
 
             val lampsUpper = csFragment.lampBallSelectorUpper?.getSelectedString()
             val lampsLower = csFragment.lampBallSelectorLower?.getSelectedString()

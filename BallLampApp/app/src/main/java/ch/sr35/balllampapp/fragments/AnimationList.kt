@@ -5,15 +5,19 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import ch.sr35.balllampapp.*
 import ch.sr35.balllampapp.backend.CommandDispatcher
+import ch.sr35.balllampapp.backend.FrameViewModel
 
 
 class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
     var animation: Animation = Animation(ArrayList())
+    val frameViewModel: FrameViewModel by activityViewModels()
 
     init {
         for (i in 0..19) {
@@ -29,16 +33,38 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         animation.mappingUpper = resources.getIntArray(R.array.lampMappingUpper)
         animation.mappingLower = resources.getIntArray(R.array.lampMappingLower)
 
-        val animationListAdapter = AnimationListAdapter(animation)
 
+        val af = frameViewModel.animationFrame.value
+            if (af?.editedStep != null) {
+                for (la in animation.lampAnimations.withIndex())
+                {
+                    if (la.index < 10) {
+                        if (af.lampdataUpper?.colors != null) {
+                            la.value.steps[af.editedStep!!].color =
+                                af.lampdataUpper?.colors!![la.index]
+                        }
+                    }
+                    else
+                    {
+                        if (af.lampDataLower?.colors != null) {
+                            la.value.steps[af.editedStep!!].color =
+                                af.lampDataLower?.colors!![la.index-10]
+                        }
+                    }
+                    la.value.steps[af.editedStep!!].duration =
+                        (af.duration?.times(30.0))?.toLong() ?: 0
+                }
+
+            }
+
+        val animationListAdapter = AnimationListAdapter(animation)
         val recyclerView: RecyclerView = view.findViewById(R.id.recycleViewer)
         recyclerView.adapter = animationListAdapter
 
+
         val touchHelperCallback = object: ItemTouchHelper.SimpleCallback(
-                ItemTouchHelper.UP
-            .or(ItemTouchHelper.DOWN)
-            .or(ItemTouchHelper.LEFT)
-            .or(ItemTouchHelper.RIGHT), ItemTouchHelper.RIGHT){
+            ItemTouchHelper.UP.or(ItemTouchHelper.DOWN),
+            ItemTouchHelper.RIGHT.or(ItemTouchHelper.LEFT)){
             override fun onMove(
                 recyclerView: RecyclerView,
                 viewHolder: RecyclerView.ViewHolder,
@@ -49,7 +75,6 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-                //TODO("Not yet implemented")
                 when(direction)
                 {
                     ItemTouchHelper.RIGHT -> {
@@ -57,19 +82,27 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                             la.steps.removeAt(viewHolder.adapterPosition)
                         }
                         animationListAdapter.notifyItemRemoved(viewHolder.adapterPosition)
+                        setDurationAndSize()
                     }
                     ItemTouchHelper.LEFT -> {
                         // move to edit screen, fill duration and colors
                         val mainAct = (activity as MainActivity)
-                        mainAct.alInstanceState = mainAct.supportFragmentManager.saveFragmentInstanceState(mainAct.alFragment)
-                        mainAct.csFragment.lampBallSelectorUpper?.lampData = (viewHolder as AnimationListAdapter.ViewHolder).lampSelectorUpper.lampData
-                        mainAct.csFragment.lampBallSelectorLower?.lampData = viewHolder.lampSelectorLower.lampData
-                        mainAct.csFragment.duration = viewHolder.duration
+                        frameViewModel.animationFrame.value?.lampDataLower = (viewHolder as AnimationListAdapter.ViewHolder).lampSelectorLower.lampData
+                        frameViewModel.animationFrame.value?.lampdataUpper = viewHolder.lampSelectorUpper.lampData
+                        frameViewModel.animationFrame.value?.duration = viewHolder.duration
+                        frameViewModel.animationFrame.value?.editedStep = viewHolder.adapterPosition
                         mainAct.setFragment(mainAct.csFragment)
 
-                        (activity as MainActivity).supportFragmentManager.beginTransaction()
                     }
                 }
+            }
+
+            override fun getMovementFlags(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder
+            ): Int {
+                return makeMovementFlags(ItemTouchHelper.UP.or(ItemTouchHelper.DOWN),
+                    ItemTouchHelper.LEFT.or(ItemTouchHelper.RIGHT))
             }
         }
 
@@ -98,10 +131,18 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 cmdDispatcher.start()
             }
         }
-        val textViewAnimDescr = view.findViewById<TextView>(R.id.textViewAnimationDescription)
+        setDurationAndSize()
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+    }
+
+    private fun setDurationAndSize(){
+        val textViewAnimDescr = view?.findViewById<TextView>(R.id.textViewAnimationDescription)
         val durationString = String.format("%.2f",animation.getTotalDurationInSeconds())
         val byteSizeString = String.format("%d",animation.getByteSize())
         val txt = resources.getString(R.string.tv_anim_descr,durationString,byteSizeString)
-        textViewAnimDescr.text = txt
+        textViewAnimDescr?.text = txt
     }
 }

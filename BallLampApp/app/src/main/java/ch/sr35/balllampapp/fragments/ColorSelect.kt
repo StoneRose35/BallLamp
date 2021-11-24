@@ -1,7 +1,7 @@
 package ch.sr35.balllampapp.fragments
 
+import android.graphics.Color
 import android.os.Bundle
-import android.text.Editable
 import android.text.method.ScrollingMovementMethod
 import android.view.LayoutInflater
 import android.view.View
@@ -14,8 +14,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import ch.sr35.balllampapp.*
+import ch.sr35.balllampapp.backend.FrameViewModel
 import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.backend.SimpleIntColor
 
@@ -31,6 +34,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var duration: Double = 0.0
     var serialLogger: TextView? = null
     private var btnConnect: Button? = null
+    val frameViewModel: FrameViewModel by activityViewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +49,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         {
             lampBallSelectorUpper?.lampData=ldUpper
         }
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,11 +68,11 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         lbl = view.findViewById(R.id.textViewLblLower)
         connectionState = view.findViewById(R.id.textViewConnectionState)
         serialLogger = view.findViewById(R.id.serialOut)
+
         lampBallSelectorUpper = view.findViewById(R.id.lampSelectorUpper)
-        lampBallSelectorLower =view. findViewById(R.id.lampSelectorLower)
+        lampBallSelectorLower = view.findViewById(R.id.lampSelectorLower)
         btnConnect = view.findViewById(R.id.btnConnect)
-        val durField = view.findViewById<EditText>(R.id.editTextDuration)
-        durField.setText(resources.getString(R.string.cs_duration,duration))
+
 
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
@@ -96,13 +101,45 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
             (activity as MainActivity).initConnection()
         }
+        val durField = view.findViewById<EditText>(R.id.editTextDuration)
+
+        durField.doOnTextChanged { text, _, _, _ ->
+            try {
+                duration = text.toString().toDouble()
+                frameViewModel.animationFrame.value?.duration = duration
+                durField.setBackgroundColor(Color.WHITE)
+            } catch (e: java.lang.NumberFormatException)
+            {
+                duration = -1.0
+                durField.setBackgroundColor(Color.RED)
+            }
+        }
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
 
-            val txtVal = durField.text
-            try {
-                duration = txtVal.toString().toDouble()
-            } catch (e: NumberFormatException) {
+            if (duration >= 0.0) {
+                frameViewModel.animationFrame.value?.editedStep = null
+                for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
+
+                    if (la.index < 10 && lampBallSelectorUpper != null) {
+                        val newstep = Step(
+                            lampBallSelectorUpper!!.lampData.colors[la.index].clone(),
+                            (duration * 30).toLong(),
+                            InterpolationType.LINEAR
+                        )
+                        la.value.steps.add(newstep)
+                    } else {
+                        val newstep = Step(
+                            lampBallSelectorLower!!.lampData.colors[la.index - 10].clone(),
+                            (duration * 30).toLong(),
+                            InterpolationType.LINEAR
+                        )
+                        la.value.steps.add(newstep)
+
+                    }
+                }
+            } else
+            {
                 val alertDialog: AlertDialog? =
                     context?.let { it1 -> AlertDialog.Builder(it1).create() }
                 alertDialog?.setTitle(resources.getString(R.string.napa_alert_duration_title))
@@ -112,39 +149,24 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
                 ) { dialog, _ -> dialog.cancel() }
                 alertDialog?.show()
             }
-            if (duration >= 0.0) {
-                for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
 
-                    if (la.index < 10 && lampBallSelectorUpper != null) {
-                        val newstep = Step(
-                            lampBallSelectorUpper!!.triangleColors[la.index].clone(),
-                            (duration * 30).toLong(),
-                            InterpolationType.LINEAR
-                        )
-                        la.value.steps.add(newstep)
-                    } else {
-                        val newstep = Step(
-                            lampBallSelectorLower!!.triangleColors[la.index - 10].clone(),
-                            (duration * 30).toLong(),
-                            InterpolationType.LINEAR
-                        )
-                        la.value.steps.add(newstep)
-                    }
-                }
-            }
         }
 
         initButtons()
 
-        val ldLower = savedInstanceState?.getParcelable<LampSelectorData>("lampLowerData")
-        val ldUpper = savedInstanceState?.getParcelable<LampSelectorData>("lampUpperData")
-        if (ldLower != null)
-        {
-            lampBallSelectorLower?.lampData=ldLower
+        val ldLower = frameViewModel.animationFrame.value?.lampDataLower
+        if (ldLower != null) {
+            lampBallSelectorLower?.lampData = ldLower
         }
-        if (ldUpper != null)
-        {
-            lampBallSelectorUpper?.lampData=ldUpper
+        val ldUpper = frameViewModel.animationFrame.value?.lampdataUpper
+        if (ldUpper != null) {
+            lampBallSelectorUpper?.lampData = ldUpper
+        }
+
+        if (frameViewModel.animationFrame.value != null){
+            val durationDisplay = resources.getString(R.string.cs_duration).format(frameViewModel.animationFrame.value!!.duration)
+            durField.setText(durationDisplay)
+            durField.invalidate()
         }
 
     }
@@ -191,7 +213,11 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         (activity as MainActivity).sendString("RGB(${clr.red},${clr.green},${clr.blue},0-19)\r")
         lampBallSelectorLower?.setColorForAll(siclr)
         lampBallSelectorUpper?.setColorForAll(siclr)
+
+        frameViewModel.animationFrame.value?.lampdataUpper = lampBallSelectorUpper?.lampData
+        frameViewModel.animationFrame.value?.lampDataLower = lampBallSelectorLower?.lampData
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

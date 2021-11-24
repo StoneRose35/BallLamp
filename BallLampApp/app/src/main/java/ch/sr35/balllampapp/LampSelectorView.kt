@@ -5,8 +5,6 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
-import android.os.Parcel
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.view.MotionEvent
 import android.view.View
@@ -24,7 +22,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
     private var centerX: Double = 0.0
     private var centerY: Double = 0.0
     var editable: Boolean = true
-    var triangleColors: Array<SimpleIntColor> =
+    private var triangleColors: Array<SimpleIntColor> =
         Array(10) { SimpleIntColor(255, 255, 255) }
     private var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
     var triangleSelectedEventListener: TriangleSelectedEventListener? = null
@@ -42,7 +40,6 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             return LampSelectorData(triangleColors,triangleSelected)
         }
         set(ld) {
-            //lampData = ld
             for (clr in ld.colors.withIndex())
             {
                 triangleColors[clr.index] = clr.value.clone()

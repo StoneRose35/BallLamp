@@ -27,6 +27,10 @@ class SimpleIntColor(var r: Int, var g: Int, var b: Int): Parcelable {
         return false
     }
 
+    override fun toString(): String {
+        return ("R: $r, G: $g, B: $b")
+    }
+
 
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeInt(r)
