@@ -24,14 +24,15 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
     var editable: Boolean = true
     private var triangleColors: Array<SimpleIntColor> =
         Array(10) { SimpleIntColor(255, 255, 255) }
-    private var triangleSelected: Array<Boolean> = Array<Boolean>(10){false}
+    private var triangleSelected: Array<Boolean> = Array(10){false}
     var triangleSelectedEventListener: TriangleSelectedEventListener? = null
     var mappingTable: IntArray? = null
 
-    var path: Path = Path()
+    private var path: Path = Path()
+    private var triangle: Triangle = Triangle(Vertex(0.0,0.0), Vertex(0.0,1.0), Vertex(1.0,0.0))
     private var blackLine: Paint = Paint()
     private var whiteLine: Paint = Paint()
-    var filler: Paint = Paint()
+    private var filler: Paint = Paint()
 
 
 
@@ -77,6 +78,10 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         return res
     }
 
+    fun getSelectedCount(): Int{
+        return triangleSelected.count { el->el}
+    }
+
     override fun onDraw(canvas: Canvas?) {
 
         super.onDraw(canvas)
@@ -105,8 +110,16 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             coord2 = toXYCoordinates(outerRadius,phi0 + PI/5.0)
 
 
-            var triangle = Triangle(Vertex(0.0+ centerX,0.0+centerY), Vertex(coord[0]+centerX,coord[1]+centerY), Vertex(coord1[0]+centerX, coord1[1]+centerY))
-            path = Path()
+            //var triangle = Triangle(Vertex(0.0+ centerX,0.0+centerY), Vertex(coord[0]+centerX,coord[1]+centerY), Vertex(coord1[0]+centerX, coord1[1]+centerY))
+            triangle.a.x = 0.0+ centerX
+            triangle.a.y = 0.0+centerY
+            triangle.b.x = coord[0]+centerX
+            triangle.b.y = coord[1]+centerY
+            triangle.c.x = coord1[0]+centerX
+            triangle.c.y = coord1[1]+centerY
+
+            //path = Path()
+            path.reset()
             path.moveTo(centerX.toFloat(),centerY.toFloat())
             path.lineTo(centerX.toFloat() +coord[0].toFloat(),centerY.toFloat() + coord[1].toFloat())
             path.lineTo(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat() +coord1[1].toFloat())
@@ -120,7 +133,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
 
             if(triangleSelected[triangleCntr] )
             {
-                var centerPt = triangle.centerCoordinates()
+                val centerPt = triangle.centerCoordinates()
                 filler.color = Color.argb(255, 255 - triangleColors[triangleCntr].r,
                     255 - triangleColors[triangleCntr].g,
                     255 - triangleColors[triangleCntr].b)
@@ -128,13 +141,20 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             }
 
             triangleCntr++
-            triangle = Triangle(Vertex(coord[0]+centerX,coord[1]+centerY), Vertex(coord1[0]+centerX,coord1[1]+centerY), Vertex(coord2[0]+centerX, coord2[1]+centerY))
-            path = Path()
+            //triangle = Triangle(Vertex(coord[0]+centerX,coord[1]+centerY), Vertex(coord1[0]+centerX,coord1[1]+centerY), Vertex(coord2[0]+centerX, coord2[1]+centerY))
+            triangle.a.x = coord[0]+centerX
+            triangle.a.y = coord[1]+centerY
+            triangle.b.x = coord1[0]+centerX
+            triangle.b.y = coord1[1]+centerY
+            triangle.c.x = coord2[0]+centerX
+            triangle.c.y = coord2[1]+centerY
+            //path = Path()
+            path.reset()
             path.moveTo(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat() + coord[1].toFloat())
             path.lineTo(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat() +coord1[1].toFloat())
             path.lineTo(centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() +coord2[1].toFloat())
             path.close()
-            //path.lineTo(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat() + coord[0].toFloat())
+
             filler.style = Paint.Style.FILL
             path.fillType = Path.FillType.EVEN_ODD
             filler.color = Color.argb(255,triangleColors[triangleCntr].r, triangleColors[triangleCntr].g,triangleColors[triangleCntr].b)
@@ -164,7 +184,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
 
             if(triangleSelected[triangleCntr] )
             {
-                var centerPt = triangle.centerCoordinates()
+                val centerPt = triangle.centerCoordinates()
                 filler.color = Color.argb(255, 255 - triangleColors[triangleCntr].r,
                     255 - triangleColors[triangleCntr].g,
                     255 - triangleColors[triangleCntr].b)
@@ -198,9 +218,6 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         super.onSizeChanged(w, h, oldw, oldh)
     }
 
-    override fun performClick(): Boolean {
-        return super.performClick()
-    }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val xcoord= event?.x?.toDouble()
@@ -213,7 +230,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             var coord1: DoubleArray
             var coord2: DoubleArray
             var triangle: Triangle
-            var triangleCntr: Int = 0
+            var triangleCntr = 0
             if (xcoord != null && ycoord != null) {
                 for (i in 0..4) {
                     phi0 = i * 2.0 * PI / 5.0
@@ -229,7 +246,9 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
                     if (triangle.isInTriangle(Vertex(xcoord, ycoord))) {
                         triangleSelected[triangleCntr] = !triangleSelected[triangleCntr]
                         invalidate()
-                        triangleSelectedEventListener?.onSelected(triangleCntr)
+                        if (getSelectedCount() == 1) {
+                            triangleSelectedEventListener?.onFirstSelected(triangleColors[triangleCntr])
+                        }
                     }
                     triangleCntr++
                     triangle = Triangle(
@@ -240,7 +259,10 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
                     if (triangle.isInTriangle(Vertex(xcoord, ycoord))) {
                         triangleSelected[triangleCntr] = !triangleSelected[triangleCntr]
                         invalidate()
-                        triangleSelectedEventListener?.onSelected(triangleCntr)
+
+                        if (getSelectedCount() == 1) {
+                            triangleSelectedEventListener?.onFirstSelected(triangleColors[triangleCntr])
+                        }
 
                     }
                     triangleCntr++
@@ -253,7 +275,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
 
     private fun toXYCoordinates(r: Double, phi: Double): DoubleArray
     {
-        var res: DoubleArray=DoubleArray(2)
+        val res=DoubleArray(2)
         res[0] = r* sin(phi)
         res[1] = r* cos(phi)
         return res
@@ -261,10 +283,9 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
 
 
 
-
 }
 
 interface TriangleSelectedEventListener
 {
-    fun onSelected(triangleNr: Int)
+    fun onFirstSelected(clr: SimpleIntColor)
 }

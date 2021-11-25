@@ -70,14 +70,30 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         lbl = view.findViewById(R.id.textViewLblLower)
         connectionState = view.findViewById(R.id.textViewConnectionState)
         serialLogger = view.findViewById(R.id.serialOut)
+        btnConnect = view.findViewById(R.id.btnConnect)
 
         lampBallSelectorUpper = view.findViewById(R.id.lampSelectorUpper)
         lampBallSelectorLower = view.findViewById(R.id.lampSelectorLower)
-        btnConnect = view.findViewById(R.id.btnConnect)
-
-
         lampBallSelectorUpper?.mappingTable = resources.getIntArray(R.array.lampMappingUpper)
         lampBallSelectorLower?.mappingTable = resources.getIntArray(R.array.lampMappingLower)
+        lampBallSelectorUpper?.triangleSelectedEventListener=object: TriangleSelectedEventListener {
+            override fun onFirstSelected(clr: SimpleIntColor) {
+                if (lampBallSelectorLower?.getSelectedCount() == 0) {
+                    view.findViewById<SeekBar>(R.id.amountRed).progress = clr.r
+                    view.findViewById<SeekBar>(R.id.amountGreen).progress = clr.g
+                    view.findViewById<SeekBar>(R.id.amountBlue).progress = clr.b
+                }
+            }
+        }
+        lampBallSelectorLower?.triangleSelectedEventListener=object: TriangleSelectedEventListener {
+            override fun onFirstSelected(clr: SimpleIntColor) {
+                if (lampBallSelectorUpper?.getSelectedCount() == 0) {
+                    view.findViewById<SeekBar>(R.id.amountRed).progress = clr.r
+                    view.findViewById<SeekBar>(R.id.amountGreen).progress = clr.g
+                    view.findViewById<SeekBar>(R.id.amountBlue).progress = clr.b
+                }
+            }
+        }
 
         serialLogger?.text = (activity as MainActivity).btReceiverThread?.fullString
         serialLogger?.movementMethod = ScrollingMovementMethod()
