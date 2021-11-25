@@ -4,9 +4,16 @@
     android:id="@+id/navigation_menu"
     >
 
-    <item android:title="@string/navig_color_select"
+    <item
         android:id="@+id/nav_color_select"
-        />
-    <item android:title="@string/navig_animation"
-        android:id="@+id/nav_animation_view"/>
+        android:icon="@drawable/ic_app_icon_color_select_normal"
+        android:title="@string/navig_color_select"
+        android:visible="true"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/nav_animation_view"
+        android:icon="@drawable/ic_app_icon_animation_list_normal"
+        android:visible="true"
+        android:title="@string/navig_animation"
+        app:showAsAction="ifRoom" />
 </menu>

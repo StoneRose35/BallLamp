@@ -12,9 +12,15 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.PersistableBundle
+import android.view.Menu
+import android.view.MenuItem
+import android.widget.Button
+import android.widget.SeekBar
+import android.widget.TextView
 
-import android.widget.*
+
 import androidx.activity.viewModels
+import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import ch.sr35.balllampapp.backend.FrameViewModel
 import ch.sr35.balllampapp.backend.LampSelectorData
@@ -58,51 +64,13 @@ class MainActivity : AppCompatActivity() {
         frameViewModel.animationFrame.value?.duration=0.4
 
         setFragment(csFragment)
-        val bottomNavigationView = findViewById<BottomNavigationView>(R.id.navigator)
-        bottomNavigationView.setOnNavigationItemSelectedListener {
-            when(it.itemId){
-                R.id.nav_color_select-> {
-                    if (supportFragmentManager.fragments.contains(alFragment)) {
-                        alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
-                        csFragment.setInitialSavedState(csInstanceState)
-                        setFragment(csFragment)
-                    }
-                }
+        var toolbar: Toolbar = findViewById(R.id.toolbar)
+        setSupportActionBar(findViewById(R.id.toolbar))
+        toolbar.showOverflowMenu()
 
-                R.id.nav_animation_view-> {
-                    if (supportFragmentManager.fragments.contains(csFragment)) {
-                        csInstanceState = supportFragmentManager.saveFragmentInstanceState(csFragment)
-                        alFragment.setInitialSavedState(alInstanceState)
-                        setFragment(alFragment)
-                    }
-                }
-            }
-            true
-        }
 
         frameViewModel.animationFrame.value?.editedStep=null
-        /*
-        frameViewModel.animationFrame.observe(this,{
-                af ->
-            if (af.editedStep != null) {
-                for (la in alFragment.animation.lampAnimations.withIndex())
-                {
-                    if (la.index < 10) {
-                        if (af.lampdataUpper?.colors != null) {
-                            la.value.steps[af.editedStep!!].color =
-                                af.lampdataUpper?.colors!![la.index]
-                        }
-                    }
-                    else
-                    {
-                        if (af.lampDataLower?.colors != null) {
-                            la.value.steps[af.editedStep!!].color =
-                                af.lampdataUpper?.colors!![la.index-10]
-                        }
-                    }
-                }
-            }
-        })*/
+
 
         val btReceiver = BTReceiver(this)
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
@@ -119,6 +87,27 @@ class MainActivity : AppCompatActivity() {
             csFragment.connectionState?.text = resources.getString(R.string.bt_connected)
             csFragment.view?.findViewById<Button>(R.id.btnConnect)?.text = resources.getString(R.string.bt_btn_disconnect)
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId)
+        {
+            R.id.nav_color_select -> {
+                if (supportFragmentManager.fragments.contains(alFragment)) {
+                    alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
+                    csFragment.setInitialSavedState(csInstanceState)
+                    setFragment(csFragment)
+                }
+            }
+            R.id.nav_animation_view -> {
+                if (supportFragmentManager.fragments.contains(csFragment)) {
+                    csInstanceState = supportFragmentManager.saveFragmentInstanceState(csFragment)
+                    alFragment.setInitialSavedState(alInstanceState)
+                    setFragment(alFragment)
+                }
+            }
+        }
+        return true
     }
 
     fun setFragment(fragment: Fragment)
@@ -143,7 +132,11 @@ class MainActivity : AppCompatActivity() {
         {
             btReceiverThread?.start()
         }
+    }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.navigation_items,menu)
+        return true
     }
 
     fun initConnection()

@@ -65,6 +65,8 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
             RGBSeekBarChangeListener(this, COLOR_BLUE)
         )
 
+
+
         lbl = view.findViewById(R.id.textViewLblLower)
         connectionState = view.findViewById(R.id.textViewConnectionState)
         serialLogger = view.findViewById(R.id.serialOut)
