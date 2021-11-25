@@ -94,6 +94,7 @@ class MainActivity : AppCompatActivity() {
         {
             R.id.nav_color_select -> {
                 if (supportFragmentManager.fragments.contains(alFragment)) {
+                    frameViewModel.animationFrame.value?.editedStep = null
                     alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
                     csFragment.setInitialSavedState(csInstanceState)
                     setFragment(csFragment)

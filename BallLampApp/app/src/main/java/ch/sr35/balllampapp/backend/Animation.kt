@@ -117,7 +117,13 @@ class LampAnimation(var lampNr: Byte,var steps: ArrayList<Step>,var repeating: B
 {
     fun getByteSize(): Int
     {
-        return steps.stream().distinct().mapToInt{ e->e.getByteSize()}.sum() + 24
+        if (steps.isNotEmpty()) {
+            return steps.distinct().stream().mapToInt { e -> e.getByteSize() }.sum() + 24
+        }
+        else
+        {
+            return 24
+        }
     }
 
     fun getTotalDurationInSeconds(): Double
@@ -129,19 +135,20 @@ class LampAnimation(var lampNr: Byte,var steps: ArrayList<Step>,var repeating: B
 class Step(var color: SimpleIntColor, var duration: Long, var interpolation: InterpolationType) {
 
     override fun equals(other: Any?): Boolean {
-        if (other is Step)
-        {
-            return other.color == color
-        }
-        else
-        {
-            return false
+        return if (other is Step) {
+            other.color == color
+        } else {
+            false
         }
     }
 
     fun getByteSize(): Int
     {
         return 20
+    }
+
+    override fun hashCode(): Int {
+        return color.hashCode()
     }
 }
 

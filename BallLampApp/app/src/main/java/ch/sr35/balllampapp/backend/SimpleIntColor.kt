@@ -27,6 +27,10 @@ class SimpleIntColor(var r: Int, var g: Int, var b: Int): Parcelable {
         return false
     }
 
+    override fun hashCode(): Int {
+        return r*256*256 +g*256 + b
+    }
+
     override fun toString(): String {
         return ("R: $r, G: $g, B: $b")
     }
