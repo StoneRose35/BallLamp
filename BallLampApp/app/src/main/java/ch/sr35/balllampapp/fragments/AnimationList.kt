@@ -69,8 +69,16 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                return false
-                //TODO("Not yet implemented")
+                var p1 = viewHolder.adapterPosition
+                var p2 = target.adapterPosition
+                for (la in animation.lampAnimations)
+                {
+                    var swap = la.steps[p2]
+                    la.steps[p2] = la.steps[p1]
+                    la.steps[p1] = swap
+                }
+                recyclerView.adapter?.notifyItemMoved(p1,p2)
+                return true
             }
 
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -91,7 +99,6 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                         frameViewModel.animationFrame.value?.duration = viewHolder.duration
                         frameViewModel.animationFrame.value?.editedStep = viewHolder.adapterPosition
                         mainAct.setFragment(mainAct.csFragment)
-
                     }
                 }
             }
