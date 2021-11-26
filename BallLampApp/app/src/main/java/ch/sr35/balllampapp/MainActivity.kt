@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -23,10 +22,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import ch.sr35.balllampapp.backend.FrameViewModel
-import ch.sr35.balllampapp.backend.LampSelectorData
 import ch.sr35.balllampapp.fragments.AnimationList
 import ch.sr35.balllampapp.fragments.ColorSelect
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.io.IOException
 import java.io.InputStream
 
@@ -45,11 +42,11 @@ class MainActivity : AppCompatActivity() {
     var btReceiverThread: BluetoothReceiverThread? = null
 
 
-    var csInstanceState: Fragment.SavedState? = null
-    var alInstanceState: Fragment.SavedState? = null
+    private var csInstanceState: Fragment.SavedState? = null
+    private var alInstanceState: Fragment.SavedState? = null
     var csFragment: ColorSelect = ColorSelect()
     var alFragment: AnimationList = AnimationList()
-    val frameViewModel: FrameViewModel by viewModels()
+    private val frameViewModel: FrameViewModel by viewModels()
 
 
 
@@ -64,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         frameViewModel.animationFrame.value?.duration=0.4
 
         setFragment(csFragment)
-        var toolbar: Toolbar = findViewById(R.id.toolbar)
+        val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(findViewById(R.id.toolbar))
         toolbar.showOverflowMenu()
 
@@ -204,10 +201,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onSaveInstanceState(outState: Bundle, outPersistentState: PersistableBundle) {
-        super.onSaveInstanceState(outState, outPersistentState)
-
-    }
 }
 
 
