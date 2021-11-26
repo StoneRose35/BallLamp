@@ -9,8 +9,7 @@ import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import ch.sr35.balllampapp.*
-import ch.sr35.balllampapp.backend.CommandDispatcher
-import ch.sr35.balllampapp.backend.FrameViewModel
+import ch.sr35.balllampapp.backend.*
 
 
 class AnimationList: Fragment(R.layout.fragment_animation_list) {

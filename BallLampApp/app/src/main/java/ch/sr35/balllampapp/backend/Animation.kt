@@ -1,42 +1,50 @@
-package ch.sr35.balllampapp
+package ch.sr35.balllampapp.backend
 
-import ch.sr35.balllampapp.backend.SimpleIntColor
+import android.os.Parcel
+import android.os.Parcelable
 
 const val FRAMERATE = 30.0
 
-class Animation(var lampAnimations: ArrayList<LampAnimation>) {
+class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
 
     var mappingLower: IntArray? = null
     var mappingUpper: IntArray? = null
+
+    constructor(): this(ArrayList<LampAnimation>(1))
+
+    constructor(parcel: Parcel) : this() {
+        mappingLower = parcel.createIntArray()
+        mappingUpper = parcel.createIntArray()
+        parcel.createTypedArrayList(LampAnimation)
+    }
+
+
+
     fun toCommandList(): Array<String>
     {
-        var cmdList: ArrayList<String> = ArrayList<String>()
+        val cmdList: ArrayList<String> = ArrayList()
         var currentColor = SimpleIntColor(0,0,0)
         var summedDuration: Long = 0
         var lastDuration: Long = 0
         var currentInterpolationType: InterpolationType = InterpolationType.CONSTANT
-        var cnt = 0
+        //var cnt = 0
         var sameClrCnt = 0
 
 
         for (la in lampAnimations)
         {
-            var lampidx: Int
-            if (la.lampNr < 10)
-            {
-                lampidx = mappingUpper?.get(la.lampNr.toInt())!!
+            val lampidx: Int = if (la.lampNr < 10) {
+                mappingUpper?.get(la.lampNr.toInt())!!
+            } else {
+                mappingLower?.get(la.lampNr.toInt()-10)!!
             }
-            else
-            {
-                lampidx = mappingLower?.get(la.lampNr.toInt()-10)!!
-            }
-            cnt = 0
-            var preliminaryStepList = ArrayList<String>()
+            var cnt = 0
+            val preliminaryStepList = ArrayList<String>()
             for (el in la.steps.withIndex())
             {
                 if (el.index == 0)
                 {
-                    currentColor = el.value.color
+                    currentColor = el.value.color!!
                     summedDuration = el.value.duration
                     lastDuration = el.value.duration
                     currentInterpolationType = el.value.interpolation
@@ -55,7 +63,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
                         }
                         preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$lastDuration,$interpolationType,${lampidx},${cnt})\r")
                         cnt++
-                        currentColor = el.value.color
+                        currentColor = el.value.color!!
                         summedDuration = el.value.duration
                         lastDuration = el.value.duration
                         currentInterpolationType = el.value.interpolation
@@ -80,7 +88,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
                 preliminaryStepList.add("ISTEP(${currentColor.r},${currentColor.g},${currentColor.b},$lastDuration,$interpolationType,${lampidx},${cnt})\r")
                 cnt++
             }
-            var repeatingInt = if (la.repeating && cnt > 1)  1 else 0
+            val repeatingInt = if (la.repeating && cnt > 1)  1 else 0
 
             cmdList.add("INTERP(${lampidx},$cnt,$repeatingInt)\r")
             cmdList.addAll(preliminaryStepList)
@@ -107,22 +115,45 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>) {
             }
             else
             {
-                la.steps.add(0,Step(SimpleIntColor(0,0,0), (seconds*30).toLong(),InterpolationType.CONSTANT))
+                la.steps.add(0,
+                    Step(SimpleIntColor(0,0,0), (seconds*30).toLong(), InterpolationType.CONSTANT)
+                )
             }
         }
     }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeIntArray(mappingLower)
+        parcel.writeIntArray(mappingUpper)
+        parcel.writeTypedArray(lampAnimations.toTypedArray(),0)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Animation> {
+        override fun createFromParcel(parcel: Parcel): Animation {
+            return Animation(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Animation?> {
+            return arrayOfNulls(size)
+        }
+    }
+
 }
 
-class LampAnimation(var lampNr: Byte,var steps: ArrayList<Step>,var repeating: Boolean)
+class LampAnimation(var lampNr: Byte, var steps: ArrayList<Step>, var repeating: Boolean): Parcelable
 {
     fun getByteSize(): Int
     {
-        if (steps.isNotEmpty()) {
-            return steps.distinct().stream().mapToInt { e -> e.getByteSize() }.sum() + 24
+        return if (steps.isNotEmpty()) {
+            steps.distinct().stream().mapToInt { e -> e.getByteSize() }.sum() + 24
         }
         else
         {
-            return 24
+            24
         }
     }
 
@@ -130,9 +161,58 @@ class LampAnimation(var lampNr: Byte,var steps: ArrayList<Step>,var repeating: B
     {
         return steps.stream().mapToLong { e->e.duration }.sum()/ FRAMERATE
     }
+
+    companion object CREATOR :Parcelable.Creator<LampAnimation> {
+        override fun createFromParcel(source: Parcel?): LampAnimation {
+            val lampNr = source?.readByte()
+            val steps = source?.createTypedArrayList(Step)
+            val repeating = source?.readByte()
+            return if (lampNr != null && steps != null && repeating != null) {
+                if (repeating > 0) {
+                    LampAnimation(lampNr,steps,true)
+                }else {
+                    LampAnimation(lampNr,steps,false)
+                }
+            } else {
+                LampAnimation(0,ArrayList(1),false)
+            }
+        }
+
+        override fun newArray(size: Int): Array<LampAnimation> {
+            return Array(size) { LampAnimation(0, ArrayList(1),false) }
+        }
+
+    }
+
+    override fun describeContents(): Int {
+        TODO("Not yet implemented")
+    }
+
+    override fun writeToParcel(dest: Parcel?, flags: Int) {
+        dest?.writeByte(lampNr)
+        dest?.writeTypedArray(steps.toTypedArray(),0)
+        if (repeating) {
+            dest?.writeByte(1)
+        } else
+        {
+            dest?.writeByte(0)
+        }
+    }
 }
 
-class Step(var color: SimpleIntColor, var duration: Long, var interpolation: InterpolationType) {
+class Step(var color: SimpleIntColor?, var duration: Long, var interpolation: InterpolationType): Parcelable {
+
+    constructor(parcel: Parcel) : this(
+        parcel.readParcelable(SimpleIntColor::class.java.classLoader),
+        parcel.readLong(),
+        InterpolationType.LINEAR
+    ) {
+        val interpolationType = parcel.readString()
+        if (interpolationType != null)
+        {
+            interpolation = InterpolationType.valueOf(interpolationType)
+        }
+    }
 
     override fun equals(other: Any?): Boolean {
         return if (other is Step) {
@@ -149,6 +229,25 @@ class Step(var color: SimpleIntColor, var duration: Long, var interpolation: Int
 
     override fun hashCode(): Int {
         return color.hashCode()
+    }
+
+    override fun writeToParcel(parcel: Parcel, flags: Int) {
+        parcel.writeParcelable(color, flags)
+        parcel.writeLong(duration)
+    }
+
+    override fun describeContents(): Int {
+        return 0
+    }
+
+    companion object CREATOR : Parcelable.Creator<Step> {
+        override fun createFromParcel(parcel: Parcel): Step {
+            return Step(parcel)
+        }
+
+        override fun newArray(size: Int): Array<Step?> {
+            return arrayOfNulls(size)
+        }
     }
 }
 

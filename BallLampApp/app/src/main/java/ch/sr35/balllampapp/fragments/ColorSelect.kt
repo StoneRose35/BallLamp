@@ -18,9 +18,7 @@ import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import ch.sr35.balllampapp.*
-import ch.sr35.balllampapp.backend.FrameViewModel
-import ch.sr35.balllampapp.backend.LampSelectorData
-import ch.sr35.balllampapp.backend.SimpleIntColor
+import ch.sr35.balllampapp.backend.*
 
 
 class ColorSelect : Fragment(R.layout.fragment_color_select) {

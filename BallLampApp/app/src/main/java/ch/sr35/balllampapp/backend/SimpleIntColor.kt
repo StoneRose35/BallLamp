@@ -55,7 +55,7 @@ class SimpleIntColor(var r: Int, var g: Int, var b: Int): Parcelable {
             return arrayOfNulls(size)
         }
 
-        var rg = Random(32)
+        private var rg = Random(32)
         fun randomColor(): SimpleIntColor
         {
 

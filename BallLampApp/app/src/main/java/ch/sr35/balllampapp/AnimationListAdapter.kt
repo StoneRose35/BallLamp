@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import ch.sr35.balllampapp.backend.Animation
 
 class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter<AnimationListAdapter.ViewHolder>(){
 
@@ -42,12 +43,12 @@ class AnimationListAdapter(private val dataSet: Animation): RecyclerView.Adapter
             for (el in dataSet.lampAnimations) {
                 if (el.lampNr < 10) {
                     viewHolder.lampSelectorUpper.lampData.colors[el.lampNr.toInt()] =
-                        el.steps[position].color
+                        el.steps[position].color!!
                 }
                 else
                 {
                     viewHolder.lampSelectorLower.lampData.colors[el.lampNr.toInt()-10] =
-                        el.steps[position].color
+                        el.steps[position].color!!
                 }
             }
             viewHolder.duration = dataSet.lampAnimations[0].steps[position].duration/30.0

@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.PersistableBundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -108,15 +109,6 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
-    fun setFragment(fragment: Fragment)
-    {
-
-        supportFragmentManager.beginTransaction().apply {
-            replace(R.id.main_frame,fragment)
-            commit()
-        }
-    }
-
 
     override fun onPause() {
         super.onPause()
@@ -135,6 +127,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.navigation_items,menu)
         return true
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putParcelable("anim",alFragment.animation)
     }
 
     fun initConnection()
@@ -187,6 +184,15 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+    }
+
+    fun setFragment(fragment: Fragment)
+    {
+
+        supportFragmentManager.beginTransaction().apply {
+            replace(R.id.main_frame,fragment)
+            commit()
+        }
     }
 
     fun sendString(str: String)
