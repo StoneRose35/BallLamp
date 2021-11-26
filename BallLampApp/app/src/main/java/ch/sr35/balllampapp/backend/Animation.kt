@@ -2,6 +2,8 @@ package ch.sr35.balllampapp.backend
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.util.*
+import kotlin.collections.ArrayList
 
 const val FRAMERATE = 30.0
 
@@ -10,12 +12,20 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
     var mappingLower: IntArray? = null
     var mappingUpper: IntArray? = null
 
-    constructor(): this(ArrayList<LampAnimation>(1))
+    constructor(): this(ArrayList<LampAnimation>(0))
 
     constructor(parcel: Parcel) : this() {
-        mappingLower = parcel.createIntArray()
-        mappingUpper = parcel.createIntArray()
-        parcel.createTypedArrayList(LampAnimation)
+        mappingLower = IntArray(10)
+        parcel.readIntArray(mappingLower!!)
+        mappingUpper = IntArray(10)
+        parcel.readIntArray(mappingUpper!!)
+        val lampAnimationsSize = parcel.readInt()
+        val lampAnimationsArray = Array(lampAnimationsSize){ LampAnimation(1, ArrayList(1),false) }
+        parcel.readTypedArray(lampAnimationsArray,LampAnimation.CREATOR)
+        for (q in lampAnimationsArray)
+        {
+            lampAnimations.add(q)
+        }
     }
 
 
@@ -125,6 +135,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeIntArray(mappingLower)
         parcel.writeIntArray(mappingUpper)
+        parcel.writeInt(lampAnimations.size)
         parcel.writeTypedArray(lampAnimations.toTypedArray(),0)
     }
 
@@ -234,6 +245,7 @@ class Step(var color: SimpleIntColor?, var duration: Long, var interpolation: In
     override fun writeToParcel(parcel: Parcel, flags: Int) {
         parcel.writeParcelable(color, flags)
         parcel.writeLong(duration)
+        parcel.writeString(interpolation.name)
     }
 
     override fun describeContents(): Int {
