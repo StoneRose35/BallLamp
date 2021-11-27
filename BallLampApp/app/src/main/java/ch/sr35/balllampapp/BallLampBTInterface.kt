@@ -8,17 +8,17 @@ import java.util.*
 
 
 const val DEVICE_NAME = "BallLamp"
-val appUuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+val appUuid: UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
 
 
-class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
+class BTReceiver(private var mainActivity: MainActivity ): BroadcastReceiver()
 {
     override fun onReceive(context: Context?, intent: Intent?) {
         if (intent?.action == BluetoothAdapter.ACTION_STATE_CHANGED)
         {
             val state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,0)
             if (state == BluetoothAdapter.STATE_ON) {
-                mainActivity.csFragment.connectionState?.text = "Bluetooth Radio On"
+                mainActivity.csFragment.connectionState?.text = mainActivity.resources.getString(R.string.bt_radio_on)
                 mainActivity.connectionInitActive = true
                 mainActivity.initConnection()
             }
@@ -28,7 +28,7 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
             val discoveredDevice = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
             if( discoveredDevice?.name== DEVICE_NAME)
             {
-                mainActivity.csFragment.connectionState?.text = "discovered $DEVICE_NAME"
+                mainActivity.csFragment.connectionState?.text = mainActivity.resources.getString(R.string.bt_discovered_device, DEVICE_NAME)
                 mainActivity.btAdapter?.cancelDiscovery()
                 discoveredDevice.createBond()
             }
@@ -43,17 +43,14 @@ class BTReceiver(var mainActivity: MainActivity ): BroadcastReceiver()
                 try {
                     val connectorThread = BluetoothConnectionThread(mainActivity)
                     connectorThread.start()
-                    mainActivity.csFragment.connectionState?.text = "Connecting"
+                    mainActivity.csFragment.connectionState?.text = mainActivity.resources.getString(R.string.bt_connecting)
 
                 } catch (e: IOException)
                 {
                     mainActivity.btSocket = null
-                    mainActivity.csFragment.connectionState?.text = "Connection Timeout"
+                    mainActivity.csFragment.connectionState?.text = mainActivity.resources.getString(R.string.bt_timeout)
                 }
-
-
             }
         }
     }
-
 }

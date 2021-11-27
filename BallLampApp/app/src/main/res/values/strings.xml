@@ -15,13 +15,15 @@
     <string name="switch_start_animation">Animation On</string>
 
     <string name="bt_switch_on">Switching on Bluetooth</string>
+    <string name="bt_discovered_device">Discovered %1$s</string>
+    <string name="bt_radio_on">Bluetooth radio on</string>
     <string name="bt_discovery">Discovering..</string>
     <string name="bt_disconnected">Disconnected</string>
     <string name="bt_connected">Connected!</string>
     <string name="bt_connecting">Connecting</string>
     <string name="bt_btn_connect">Connect</string>
     <string name="bt_btn_disconnect">Disconnect</string>
-    <string name="bt_timeout">Connection Timout, try again..</string>
+    <string name="bt_timeout">Connection Timeout</string>
 
     <string name="lbl_lower">Lower</string>
     <string name="lbl_upper">Upper</string>
@@ -31,7 +33,6 @@
 
     <string name="tv_anim_descr">Total Length: %1$s, Size: %2$s bytes</string>
     <string name="cs_duration">%1$2f</string>
-
 
     <string name="napa_alert_duration_title">Butbut</string>
     <string name="napa_alert_duration_message">Ey bubut eyy sie haben ned geseikket wie lange tut geyyen</string>

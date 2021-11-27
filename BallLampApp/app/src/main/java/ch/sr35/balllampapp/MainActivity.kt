@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.PersistableBundle
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -22,6 +21,7 @@ import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import ch.sr35.balllampapp.backend.Animation
 import ch.sr35.balllampapp.backend.FrameViewModel
 import ch.sr35.balllampapp.fragments.AnimationList
 import ch.sr35.balllampapp.fragments.ColorSelect
@@ -60,6 +60,14 @@ class MainActivity : AppCompatActivity() {
 
         setContentView(R.layout.activity_main)
         frameViewModel.animationFrame.value?.duration=0.4
+
+
+        val restoredAnimation = savedInstanceState?.getParcelable<Animation>("anim")
+        if (restoredAnimation != null)
+        {
+            alFragment.animation = restoredAnimation
+        }
+
 
         setFragment(csFragment)
         val toolbar: Toolbar = findViewById(R.id.toolbar)
@@ -117,10 +125,15 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        btReceiverThread?.isRunning=true
-        if (btReceiverThread?.isAlive != true)
+        if (btSocket?.isConnected == true) {
+            btReceiverThread?.isRunning = true
+            if (btReceiverThread?.isAlive != true) {
+                btReceiverThread?.start()
+            }
+        }else
         {
-            btReceiverThread?.start()
+            connectionInitActive = true
+            initConnection()
         }
     }
 
@@ -162,7 +175,7 @@ class MainActivity : AppCompatActivity() {
                                 btSocket = null
                             } catch (e2: IllegalThreadStateException)
                             {
-
+                                btSocket = null
                             }
                         }
                     }
@@ -308,17 +321,24 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
                     caller.btSocket?.inputStream!!,
                     caller.csFragment.serialLogger!!
                 )
-                caller.btReceiverThread?.start()
+            caller.btReceiverThread?.start()
 
-                caller.sendString("API\r")
-                caller.findViewById<Button>(R.id.btnConnect).text = caller.resources.getString(R.string.bt_btn_disconnect)
-                caller.connectionInitActive=true
+            caller.sendString("API\r")
+            caller.findViewById<Button>(R.id.btnConnect).text = caller.resources.getString(R.string.bt_btn_disconnect)
             }
         }catch (e: IOException) {
             caller.btSocket = null
+            handler.post {
+                caller.csFragment.connectionState?.text = caller.resources.getString(R.string.bt_timeout)
+            }
         } catch (e2: IllegalThreadStateException)
         {
-
+            caller.btSocket = null
+            handler.post {
+                caller.csFragment.connectionState?.text =
+                    caller.resources.getString(R.string.bt_timeout)
+            }
         }
+        caller.connectionInitActive=true
     }
 }
