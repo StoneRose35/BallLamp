@@ -258,12 +258,24 @@ int main(void)
 */
 
 
+
 	startInterpolators(&interpolators);
+
+	/**
+	 * set initial color upon start
+	 */
+	for (uint8_t c=0;c<N_LAMPS;c++)
+	{
+		lamps[c].rgb.r = 245;
+		lamps[c].rgb.g = 140;
+		lamps[c].rgb.b = 40;
+	}
+
 
 	setSendState(SEND_STATE_RTS);
 
 
-	printf("BallLamp v0.1 running\r\n");
+	printf("BallLamp v1.0 running\r\n");
 
     /* Loop forever */
 	for(;;)
@@ -279,16 +291,6 @@ int main(void)
 		{
 			context = (1 << CONTEXT_USB);
 			processInputBuffer(&usbInput);
-			/*
-			while(usbCommBuffer.inputBufferCnt > 0)
-			{
-				char* consoleBfr;
-
-				consoleBfr = onCharacterReception(&usbConsole,usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt-1]);
-				printf(consoleBfr);
-				usbCommBuffer.inputBufferCnt--;
-			}
-			*/
 			task &= ~(1 << TASK_USB_CONSOLE);
 		}
 
@@ -296,16 +298,6 @@ int main(void)
 		{
 			context = (1 << CONTEXT_BT);
 			processInputBuffer(&btInput);
-			/*
-			while(btCommBuffer.inputBufferCnt > 0)
-			{
-				char* consoleBfr;
-
-				consoleBfr = onCharacterReception(&btConsole,btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt-1]);
-				printf(consoleBfr);
-				btCommBuffer.inputBufferCnt--;
-			}
-			*/
 			task &= ~(1 << TASK_BT_CONSOLE);
 		}
 		/*
