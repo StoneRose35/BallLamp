@@ -9,6 +9,13 @@
 #define TYPES_H_
 
 #ifdef STM32
+#define ARM_PLATFORM
+#endif
+#ifdef RPI_PICO
+#define ARM_PLATFORM
+#endif
+
+#ifdef ARM_PLATFORM
 typedef unsigned int uint32_t;
 typedef int int32_t;
 typedef unsigned short uint16_t;

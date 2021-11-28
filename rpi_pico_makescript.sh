@@ -17,4 +17,4 @@ arm-none-eabi-objcopy -Oihex ./out/balllamp.elf balllamp.hex
 arm-none-eabi-objcopy -Obinary ./out/balllamp.elf balllamp.bin
 arm-none-eabi-objdump -h ./out/balllamp.elf >./out/balllamp.dis
 arm-none-eabi-objdump -d ./out/balllamp.elf >>balllamp.dis
-./elf2uf2/elf2uf2 ./out/blink.elf ./out/blink.uf2
+./elf2uf2/elf2uf2 ./out/balllamp.elf ./out/balllamp.uf2
