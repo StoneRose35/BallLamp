@@ -1,19 +1,19 @@
 
-#define PPB_BASE _u(0xe0000000)
-#define M0PLUS_VTOR_OFFSET _u(0x0000ed08)
-
 .syntax unified
 .cpu cortex-m0plus
 .thumb
 
-.section .vectors, "ax"
-.align 2
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/m0plus.h"
 
-.global __vectors //, __VECTOR_TABLE
-//__VECTOR_TABLE:
+.section .startup2, "ax"
+
+
+
+.global __vectors 
 __vectors:
 .word __StackTop
-.word _reset_handler
+.word _start_c_runtime
 .word isr_nmi
 .word isr_hardfault
 .word isr_invalid // Reserved, should never fire
@@ -60,6 +60,7 @@ __vectors:
 .word isr_irq29
 .word isr_irq30
 .word isr_irq31
+
 
 /* standard isr declarations as weak function */
 .macro std_isr name
@@ -117,26 +118,49 @@ std_isr isr_irq30
 std_isr isr_irq31
 
 
-.section .reset, "ax"
-
-.type _entry_point,%function
-.thumb_func
-.global _entry_point
-_entry_point:
-    movs r0, #0
-    // set the interrupt vector table to address 0 (the very beginning)
-    ldr r1, =0xe000ed08 //=(PPB_BASE + M0PLUS_VTOR_OFFSET)
-    str r0, [r1]
-    
-    // load the stack top ( __StackTop( from address 0 (in r0) and the reset handler (_reset_handler) address into r2
-    ldmia r0!, {r1, r2}
-    msr msp, r1 // set the stack pointer to stack top
-    bx r2 // jump/branch to _reset_handler
+// set the vector offset table register
+ldr r0, =__vectors
+ldr r1,=PPB_BASE+M0PLUS_VTOR_OFFSET
+str r0,[r1]
 
 
-.type _reset_handler,%function
-.thumb_func
-_reset_handler:
-    ldr r1, =main
-    blx r1
+.global _start_c_runtime
+_start_c_runtime:
 
+
+
+
+// Zero out the BSS
+ldr r1, =__bss_start__
+ldr r2, =__bss_end__
+movs r0, #0
+b bss_fill_test
+bss_fill_loop:
+stm r1!, {r0}
+bss_fill_test:
+cmp r1, r2
+bne bss_fill_loop
+
+// copy initialized data from  the end of the text section to the data section
+ldr r4, =data_section_addresses
+ldm r4!,{r1-r3}
+b data_cpy
+
+data_cpy_loop:
+ldm r1!, {r0}
+stm r2!, {r0}
+data_cpy:
+cmp r2, r3 
+blo data_cpy_loop
+
+
+// jump off to main
+ldr r1,=main
+blx r1
+
+        
+        // data table addresses used to copy data from flash to ram     
+data_section_addresses:
+.word __etext
+.word __data_start__
+.word __data_end__

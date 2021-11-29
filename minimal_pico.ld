@@ -4,11 +4,7 @@ MEMORY
 {
     FLASH(rx) : ORIGIN = 0x10000000, LENGTH = 8192k  /* 8MB on rp2040 feather */
     RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k
-   /* SCRATCH_X(rwx) : ORIGIN = 0x20040000, LENGTH = 4k
-    SCRATCH_Y(rwx) : ORIGIN = 0x20041000, LENGTH = 4k */
 }
-
-ENTRY(_entry_point)
 
 
 SECTIONS
@@ -24,10 +20,18 @@ SECTIONS
         KEEP (*(.boot2))
         __boot2_end__ = .;
     } > FLASH
+    
+    .boot2_code : {
+    	*(.boot2_code*)
+    } > FLASH
 
     ASSERT(__boot2_end__ - __boot2_start__ == 256,
         "ERROR: Pico second stage bootloader must be 256 bytes in size") 
         
+    .startup2 : {
+    	KEEP(*(.startup2*))
+    } > FLASH
+    
     .text : {
         KEEP (*(.vectors))
         KEEP (*(.reset))
@@ -52,6 +56,11 @@ SECTIONS
         *(.ARM.exidx* .gnu.linkonce.armexidx.*)
     } > FLASH
     __exidx_end = .;
+    
+    
+    . = ALIGN(4);
+    
+    __etext = .;
     
     .data : {
         __data_start__ = .;
@@ -96,6 +105,15 @@ SECTIONS
         /* All data end */
         __data_end__ = .;
     } > RAM AT> FLASH
+    
+   .bss  : {
+        . = ALIGN(4);
+        __bss_start__ = .;
+        *(SORT_BY_ALIGNMENT(SORT_BY_NAME(.bss*)))
+        *(COMMON)
+        . = ALIGN(4);
+        __bss_end__ = .;
+    } > RAM
     
     
     __StackTop = . + 0x800;
