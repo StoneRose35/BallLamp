@@ -26,7 +26,7 @@ bs2_code.bin: bs2_code.elf
 	$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
 
 bootstage2.S: bs2_code.bin
-	$(PAD_CKECKSUM) ./out/bs2_code.bin ./out/bootstage2.S
+	$(PAD_CKECKSUM) -s 0xffffffff ./out/bs2_code.bin ./out/bootstage2.S
 
 pico_startup2.o: 
 	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_startup2.S -o ./out/pico_startup2.o 
