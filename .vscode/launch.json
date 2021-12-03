@@ -14,9 +14,9 @@
                 "interface/picoprobe.cfg",
                 "target/rp2040.cfg"
             ],
-            "svdFile": "~/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
-            "runToMain": true,
-            "searchDir": ["~/pico/openocd/tcl"]
+            "svdFile": "/home/philipp/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
+            "runToEntryPoint": "_start_c_runtime",
+            "searchDir": ["home/philipp/pico/openocd/tcl"]
         }
     ]
 }

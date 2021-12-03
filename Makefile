@@ -11,31 +11,36 @@ LARGS=-nostdlib -Xlinker --gc-sections -Xlinker -print-memory-usage -T ./minimal
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 
-all: clean main_uf2 
+all: clean bs2_code_size main_uf2 
 
 clean:
-	rm -f ./out/*
+	@rm -f ./out/*
 
 bs2_code.o:
-	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_code.S -o ./out/bs2_code.o
+	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_code.S -o ./out/bs2_code.o
 
 bs2_code.elf: bs2_code.o
-	$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_code.o
+	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_code.o
 
 bs2_code.bin: bs2_code.elf
-	$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
+	@$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
+
+bs2_code_size: bs2_code.bin
+	@echo '**********************************'
+	@echo '* Boot Stage 2 Code is' `ls -l ./out/bs2_code.bin | cut -d ' ' -f5` 'bytes' 
+	@echo '**********************************'
 
 bootstage2.S: bs2_code.bin
-	$(PAD_CKECKSUM) -s 0xffffffff ./out/bs2_code.bin ./out/bootstage2.S
+	@$(PAD_CKECKSUM) -s 0xffffffff ./out/bs2_code.bin ./out/bootstage2.S
 
 pico_startup2.o: 
-	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_startup2.S -o ./out/pico_startup2.o 
+	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_startup2.S -o ./out/pico_startup2.o 
 
 bootstage2.o: bootstage2.S
-	$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
+	@$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
 
 minimal_main.o:
-	$(CC) $(CARGS) $(OPT) -c ./Src/minimal_main.c -o ./out/minimal_main.o
+	@$(CC) $(CARGS) $(OPT) -c ./Src/minimal_main.c -o ./out/minimal_main.o
 
 deassemble: 
 	$(CC) $(CARGS) $(OPT) -S ./Src/minimal_main.c -o ./out/minimal_main.S
@@ -44,7 +49,7 @@ main_elf: bootstage2.o pico_startup2.o minimal_main.o
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/minimal_main.o ./out/bootstage2.o ./out/pico_startup2.o 
 
 main_bin: main_elf
-	$(OBJCPY) $(CPYARGS) ./out/$(PROJECT).elf ./out/$(PROJECT).bin
+	@$(OBJCPY) $(CPYARGS) ./out/$(PROJECT).elf ./out/$(PROJECT).bin
 
 main_uf2: main_elf
-	$(ELF2UF2) ./out/$(PROJECT).elf ./out/$(PROJECT).uf2
+	$(ELF2UF2) -v ./out/$(PROJECT).elf ./out/$(PROJECT).uf2

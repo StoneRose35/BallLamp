@@ -21,6 +21,7 @@ SECTIONS
         __boot2_end__ = .;
     } > FLASH
     
+    /* used for pre-compiling the 256 bytes of the boot stage 2 code*/
     .boot2_code : {
     	*(.boot2_code*)
     } > FLASH
@@ -104,7 +105,7 @@ SECTIONS
         . = ALIGN(4);
         /* All data end */
         __data_end__ = .;
-    } > RAM AT> FLASH
+    } > RAM  AT> FLASH
     
    .bss  : {
         . = ALIGN(4);
