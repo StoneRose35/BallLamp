@@ -25,59 +25,6 @@
 
 // TODO: properly set up QSPI for flash access
 
-
-
-// try to switch on GPIO 13 directly from memory
-    //switch on GPIO
-/*
-//*RESETS &= ~(1 << 5);
-ldr r4, =RESETS
-ldr r3, =0xFFFFFFFF - (1 << 5) // 0xFFFFDFFF
-ldr r2, [r4]
-ands r2, r3
-str r1,[r4]
-
-
-//while ((*RESETS_DONE & (1 << 5)) != 0)
-r_done:
-    ldr r4, =RESETS_DONE
-    ldr r3,[r4]
-    ldr r1,=(1 << 5)
-    tst r3,r1
-    bne r_done
- 
-//*GPIO_OE &= ~(1 << LED_PIN);
-ldr r5,=GPIO_OE
-ldr r3,[r5]
-ldr r1,=(0xFFFFFFFF-(1 << LED_PIN))
-ands r3,r1
-str r3,[r5]
-
-//*GPIO_OUT &= ~(1 << LED_PIN);
-ldr r4,=GPIO_OUT
-ldr r3,[r4]
-ldr r1, =(0xFFFFFFFF-(1 << LED_PIN)) 
-ands r3,r1
-str r1,[r4]
-
-//*GPIO13_CNTR |=  5; // function 5 (SIO)
-ldr r4,=GPIO13_CNTR
-ldr r3,[r4]
-adds r3,#5
-str r3,[r4]
-
-//*GPIO_OE |= (1 << LED_PIN);
-ldr r3,[r5]
-ldr r4,=(1 << LED_PIN)
-orrs r3,r4
-str r3,[r5]
-
-// switch on led
-ldr r4,=GPIO_OUT_SET
-ldr r3,=(1 << LED_PIN)
-str r3,[r4]
-
-*/
 /* trying to initialize  the xip flash using default single channel spi mode*/
 
 
@@ -94,9 +41,12 @@ str r3,[r4]
 
 #define SSI_TMOD (8)
 #define SSI_DFS_32 (16) 
-#define PICO_FLASH_SPI_CLKDIV 4
+#define PICO_FLASH_SPI_CLKDIV 8
 #define XIP_CMD 24
 #define ADDR_L 2
+
+
+push {lr}
 
 // disable ssi
 ldr r3, =SSI_ENR
@@ -128,6 +78,7 @@ str r4, [r3]
 ldr r3, =SSI_ENR
 movs r4, #1
 str r4,[r3]
+
 
 
 // jump off to second stage bootloader, which is at the 0x100-boundary from XIP (0x1000 0000)

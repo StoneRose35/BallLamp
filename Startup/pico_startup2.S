@@ -6,6 +6,23 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/m0plus.h"
 
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/io_bank0.h"
+#include "hardware/regs/resets.h"
+#include "hardware/regs/sio.h"
+#include "hardware/regs/ssi.h"
+
+#define GPIO13_CNTR (IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET)
+#define RESETS (RESETS_BASE + RESETS_RESET_OFFSET)
+#define RESETS_DONE (RESETS_BASE + RESETS_RESET_DONE_OFFSET)
+
+#define GPIO_OE (SIO_BASE + SIO_GPIO_OE_OFFSET)
+#define GPIO_OUT (SIO_BASE + SIO_GPIO_OUT_OFFSET)
+#define GPIO_OUT_SET (SIO_BASE + SIO_GPIO_OUT_SET_OFFSET)
+
+#define LED_PIN (13)
+
+
 .section .startup2, "ax"
 
 
@@ -118,14 +135,70 @@ std_isr isr_irq30
 std_isr isr_irq31
 
 
+
+
+
+.global _start_c_runtime
+.type _start_c_runtime,%function
+_start_c_runtime:
+
 // set the vector offset table register
 ldr r0, =__vectors
 ldr r1,=PPB_BASE+M0PLUS_VTOR_OFFSET
 str r0,[r1]
 
 
-.global _start_c_runtime
-_start_c_runtime:
+
+// try to switch on GPIO 13 directly from memory
+    //switch on GPIO
+/*
+//*RESETS &= ~(1 << 5);
+ldr r4, =RESETS
+ldr r3, =0xFFFFFFFF - (1 << 5) // 0xFFFFDFFF
+ldr r2, [r4]
+ands r2, r3
+str r1,[r4]
+
+
+//while ((*RESETS_DONE & (1 << 5)) != 0)
+r_done:
+    ldr r4, =RESETS_DONE
+    ldr r3,[r4]
+    ldr r1,=(1 << 5)
+    tst r3,r1
+    beq r_done
+ 
+//*GPIO_OE &= ~(1 << LED_PIN);
+ldr r5,=GPIO_OE
+ldr r3,[r5]
+ldr r1,=(0xFFFFFFFF-(1 << LED_PIN))
+ands r3,r1
+str r3,[r5]
+
+//*GPIO_OUT &= ~(1 << LED_PIN);
+ldr r4,=GPIO_OUT
+ldr r3,[r4]
+ldr r1, =(0xFFFFFFFF-(1 << LED_PIN)) 
+ands r3,r1
+str r1,[r4]
+
+//*GPIO13_CNTR |=  5; // function 5 (SIO)
+ldr r4,=GPIO13_CNTR
+ldr r3,[r4]
+adds r3,#5
+str r3,[r4]
+
+//*GPIO_OE |= (1 << LED_PIN);
+ldr r3,[r5]
+ldr r4,=(1 << LED_PIN)
+orrs r3,r4
+str r3,[r5]
+
+// switch on led
+ldr r4,=GPIO_OUT_SET
+ldr r3,=(1 << LED_PIN)
+str r3,[r4]
+*/
 
 
 
@@ -143,7 +216,10 @@ bne bss_fill_loop
 
 // copy initialized data from  the end of the text section to the data section
 ldr r4, =data_section_addresses
-ldm r4!,{r1-r3}
+ldr r1,[r4]
+ldr r2,[r4,#4]
+ldr r3,[r4,#8]
+//ldm r4!,{r1-r3}
 b data_cpy
 
 data_cpy_loop:
@@ -154,12 +230,14 @@ cmp r2, r3
 blo data_cpy_loop
 
 
+
 // jump off to main
 ldr r1,=main
-blx r1
+bx r1
 
         
         // data table addresses used to copy data from flash to ram     
+.align 4
 data_section_addresses:
 .word __etext
 .word __data_start__

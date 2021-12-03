@@ -117,7 +117,7 @@ SECTIONS
     } > RAM
     
     
-    __StackTop = . + 0x800;
+    __StackTop = 0x20040000; /* . + 0x800; */
     
  }
 
