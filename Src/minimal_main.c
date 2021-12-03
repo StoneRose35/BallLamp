@@ -19,7 +19,7 @@ typedef unsigned int uint32_t;
 volatile int testarray[256];
 volatile unsigned int answer_to_all_questions_of_the_universe = 42;
 void blinkSetup();
-void delay(uint32_t val);
+void _sr35_delay(uint32_t val);
 
 int main()
 {
@@ -29,20 +29,11 @@ int main()
 	{
 
 		char a=0;
-		while (a!= 0xFF)
-		{
-			a = a+3;
-			testarray[a]=a+2;
-			if (a == 5 && answer_to_all_questions_of_the_universe < 50)
-			{
-				testarray[0] = testarray[64];
-			}
-		}
 
 		*GPIO_OUT |= (1 << LED_PIN);
-		delay(125000000);
-		*GPIO_OUT &= (1 << LED_PIN);
-		delay(125000000);
+		_sr35_delay(650000UL);
+		*GPIO_OUT &= ~(1 << LED_PIN);
+		_sr35_delay(650000UL);
 		
 	}	
 }
@@ -51,7 +42,7 @@ void blinkSetup()
 {
     //switch on GPIO
     *RESETS &= ~(1 << 5);
-	while ((*RESETS_DONE & (1 << 5)) != 0)
+	while ((*RESETS_DONE & (1 << 5)) == 0)
 	{
 
 	}
@@ -59,17 +50,9 @@ void blinkSetup()
 	*GPIO_OE &= ~(1 << LED_PIN);
 	*GPIO_OUT &= ~(1 << LED_PIN);
 
-    *GPIO13_CNTR |=  5; // function 5 (SIO)
+    *GPIO13_CNTR =  5; // function 5 (SIO)
 
 	*GPIO_OE |= (1 << LED_PIN);
 
-}
-
-void delay(uint32_t val)
-{
-	while(val > 0)
-	{
-		val--;
-	}
 }
 

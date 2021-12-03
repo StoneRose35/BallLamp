@@ -1,38 +1,10 @@
 
 #include "hardware/regs/addressmap.h"
-#include "hardware/regs/io_bank0.h"
-#include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/ssi.h"
 
-#define GPIO13_CNTR (IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET)
-#define RESETS (RESETS_BASE + RESETS_RESET_OFFSET)
-#define RESETS_DONE (RESETS_BASE + RESETS_RESET_DONE_OFFSET)
-
-#define GPIO_OE (SIO_BASE + SIO_GPIO_OE_OFFSET)
-#define GPIO_OUT (SIO_BASE + SIO_GPIO_OUT_OFFSET)
-#define GPIO_OUT_SET (SIO_BASE + SIO_GPIO_OUT_SET_OFFSET)
-
-#define LED_PIN (13)
-
-.syntax unified
-.cpu cortex-m0plus
-.thumb
-
-.section .boot_code2, "ax"
-.align 2
-
-
-// TODO: properly set up QSPI for flash access
-
-/* trying to initialize  the xip flash using default single channel spi mode*/
-
-
-
 #define CMD_READ 0x03
 
-
-// set xip registers
 #define SSI_ENR (XIP_SSI_BASE + SSI_SSIENR_OFFSET)
 #define SSI_BAUDR (XIP_SSI_BASE + SSI_BAUDR_OFFSET)
 #define SSI_CNTR0 (XIP_SSI_BASE + SSI_CTRLR0_OFFSET)
@@ -45,6 +17,18 @@
 #define XIP_CMD 24
 #define ADDR_L 2
 
+
+.syntax unified
+.cpu cortex-m0plus
+.thumb
+
+.section .boot_code2, "ax"
+.align 2
+
+
+// TODO: properly set up QSPI for flash access
+
+/* trying to initialize  the xip flash using default single channel spi mode*/
 
 push {lr}
 
