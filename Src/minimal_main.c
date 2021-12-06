@@ -20,20 +20,27 @@ volatile int testarray[256];
 volatile unsigned int answer_to_all_questions_of_the_universe = 42;
 void blinkSetup();
 void _sr35_delay(uint32_t val);
+void _boot_stage_2();
 
 int main()
 {
+	char a=0;
+
 	blinkSetup();
+
 
 	while(1)
 	{
 
-		char a=0;
-
 		*GPIO_OUT |= (1 << LED_PIN);
-		_sr35_delay(650000UL);
+		_sr35_delay(6500000UL);
 		*GPIO_OUT &= ~(1 << LED_PIN);
-		_sr35_delay(650000UL);
+		_sr35_delay(6500000UL);
+		a++;
+		if (a == 10)
+		{
+			//_boot_stage_2();
+		}
 		
 	}	
 }

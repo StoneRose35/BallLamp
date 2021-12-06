@@ -16,11 +16,14 @@ all: clean bs2_code_size main_uf2
 clean:
 	@rm -f ./out/*
 
-bs2_code.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_code.S -o ./out/bs2_code.o
+bs2_std.o:
+	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_std.S -o ./out/bs2_std.o
 
-bs2_code.elf: bs2_code.o
-	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_code.o
+bs2_fast_qspi.o:
+	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi.S -o ./out/bs2_fast_qspi.o
+
+bs2_code.elf: bs2_std.o bs2_fast_qspi.o
+	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_std.o
 
 bs2_code.bin: bs2_code.elf
 	@$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
@@ -45,8 +48,8 @@ minimal_main.o:
 deassemble: 
 	$(CC) $(CARGS) $(OPT) -S ./Src/minimal_main.c -o ./out/minimal_main.S
 
-main_elf: bootstage2.o pico_startup2.o minimal_main.o
-	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/minimal_main.o ./out/bootstage2.o ./out/pico_startup2.o 
+main_elf: bootstage2.o pico_startup2.o minimal_main.o bs2_fast_qspi.o
+	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/minimal_main.o ./out/bootstage2.o ./out/pico_startup2.o ./out/bs2_fast_qspi.o
 
 main_bin: main_elf
 	@$(OBJCPY) $(CPYARGS) ./out/$(PROJECT).elf ./out/$(PROJECT).bin

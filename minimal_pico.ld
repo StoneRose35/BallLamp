@@ -104,8 +104,13 @@ SECTIONS
         *(.jcr)
         . = ALIGN(4);
         /* All data end */
-        __data_end__ = .;
     } > RAM  AT> FLASH
+
+    . = ALIGN(4);
+    .ram_exec : {
+        *(.ram_exec)
+        __data_end__ = .;
+    } > RAM AT> FLASH
     
    .bss  : {
         . = ALIGN(4);

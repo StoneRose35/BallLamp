@@ -13,9 +13,10 @@
 
 #define SSI_TMOD (8)
 #define SSI_DFS_32 (16) 
-#define PICO_FLASH_SPI_CLKDIV 8
+#define PICO_FLASH_SPI_CLKDIV 2
 #define XIP_CMD 24
 #define ADDR_L 2
+#define INSTR_L 8
 
 
 .syntax unified
@@ -53,7 +54,7 @@ str r4,[r3]
 ldr r3, =SSI_SPI_CNTR0
 ldr r4, =((0x03 << XIP_CMD) | (6 << ADDR_L))
 
-// dummy read
+// read one data frame at the time
 ldr r3, =SSI_CNTR1
 movs r4, #0x0
 str r4, [r3]
