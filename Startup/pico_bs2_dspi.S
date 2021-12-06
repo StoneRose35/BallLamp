@@ -1,9 +1,10 @@
-
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/ssi.h"
+#include "hardware/regs/pads_qspi.h"
 
 #define CMD_READ 0x03
+#define CMD_READ_DOUBLE 0x3b
 
 #define SSI_ENR (XIP_SSI_BASE + SSI_SSIENR_OFFSET)
 #define SSI_BAUDR (XIP_SSI_BASE + SSI_BAUDR_OFFSET)
@@ -11,14 +12,17 @@
 #define SSI_CNTR1 (XIP_SSI_BASE + SSI_CTRLR1_OFFSET)
 #define SSI_SPI_CNTR0 (XIP_SSI_BASE + SSI_SPI_CTRLR0_OFFSET)
 
-#define PICO_FLASH_SPI_CLKDIV 2
 
+#define PICO_FLASH_SPI_CLKDIV 4
+
+//register offsets 
+#define XIP_CMD 24
+#define ADDR_L 2
+#define INSTR_L 8
 #define SSI_TMOD 8
 #define SSI_DFS_32 16 
 #define SSI_FRF 21
 #define SSI_WAIT_CYCLES 11
-#define ADDR_L 2
-#define INSTR_L 8
 #define TRANS_TYPE 0
 #define XIP_CMD 24
 
@@ -31,11 +35,24 @@
 .align 2
 
 
-// TODO: properly set up QSPI for flash access
-
 /* trying to initialize  the xip flash using default single channel spi mode*/
 
 push {lr}
+
+    // Set pad configuration:
+    // - SCLK 8mA drive, no slew limiting
+    // - SDx disable input Schmitt to reduce delay
+
+    ldr r3, =PADS_QSPI_BASE
+    movs r0, #(2 << PADS_QSPI_GPIO_QSPI_SCLK_DRIVE_LSB | PADS_QSPI_GPIO_QSPI_SCLK_SLEWFAST_BITS)
+    str r0, [r3, #PADS_QSPI_GPIO_QSPI_SCLK_OFFSET]
+    ldr r0, [r3, #PADS_QSPI_GPIO_QSPI_SD0_OFFSET]
+    movs r1, #PADS_QSPI_GPIO_QSPI_SD0_SCHMITT_BITS
+    bics r0, r1
+    str r0, [r3, #PADS_QSPI_GPIO_QSPI_SD0_OFFSET]
+    str r0, [r3, #PADS_QSPI_GPIO_QSPI_SD1_OFFSET]
+    str r0, [r3, #PADS_QSPI_GPIO_QSPI_SD2_OFFSET]
+    str r0, [r3, #PADS_QSPI_GPIO_QSPI_SD3_OFFSET]
 
 // disable ssi
 ldr r3, =SSI_ENR
@@ -51,12 +68,13 @@ str r4,[r3]
 
 // set SSI_CNTR0
 ldr r3, =SSI_CNTR0
-ldr r4, =((31 << SSI_DFS_32) | (3 << SSI_TMOD))
+ldr r4, =((31 << SSI_DFS_32) | (3 << SSI_TMOD) | (1 << SSI_FRF))
 str r4,[r3]
 
 // set SSI_SPI_CNTR0
 ldr r3, =SSI_SPI_CNTR0
-ldr r4, =((0x03 << XIP_CMD) | (6 << ADDR_L))
+ldr r4, =((CMD_READ_DOUBLE << XIP_CMD) | (6 << ADDR_L) | (8 << SSI_WAIT_CYCLES) | (2 << INSTR_L))
+str r4,[r3]
 
 // read one data frame at the time
 ldr r3, =SSI_CNTR1
@@ -80,7 +98,3 @@ msr msp, r2
 ldr r1, =(XIP_BASE + 0x104) 
 ldr r2,[r1]
 bx r2
-
-
-
-
