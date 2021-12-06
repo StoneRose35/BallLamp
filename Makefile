@@ -26,7 +26,7 @@ bs2_fast_qspi.o:
 	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi.S -o ./out/bs2_fast_qspi.o
 
 bs2_code.elf: bs2_std.o bs2_fast_qspi.o bs2_dspi.o
-	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_dspi.o
+	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_fast_qspi.o
 
 bs2_code.bin: bs2_code.elf
 	@$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin

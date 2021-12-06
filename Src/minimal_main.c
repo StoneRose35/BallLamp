@@ -36,12 +36,7 @@ int main()
 		_sr35_delay(6500000UL);
 		*GPIO_OUT &= ~(1 << LED_PIN);
 		_sr35_delay(6500000UL);
-		a++;
-		if (a == 10)
-		{
-			//_boot_stage_2();
-		}
-		
+		a++;		
 	}	
 }
 

@@ -168,8 +168,8 @@ blo data_cpy_loop2
 */
 
 // test jump to _boot_stage_2
-ldr r1, =_boot_stage_2
-blx r1
+//ldr r1, =_boot_stage_2
+//blx r1
 
 
 // jump off to main
