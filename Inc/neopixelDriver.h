@@ -4,7 +4,7 @@
  *  Created on: Jul 27, 2021
  *      Author: philipp
  */
-#ifdef STM32
+
 
 #include "types.h"
 #include "system.h"
@@ -12,7 +12,7 @@
 #ifndef LED_TIMER_H_
 #define LED_TIMER_H_
 
-
+#ifdef STM32
 typedef struct {
 	volatile uint32_t CR1;
 	volatile uint32_t CR2;
@@ -183,6 +183,9 @@ typedef struct {
 #define FLASH ((FlashTypeDef*)0x40022000UL)
 #define I2C1 ((I2CTypeDef*)0x4000400UL)
 
+#endif
+
+#ifdef HARDWARE
 void initTimer();
 void decompressRgbArray(RGBStream * frame,uint8_t length);
 void sendToLed();
@@ -204,7 +207,6 @@ extern uint8_t * rawdata_ptr;
 #define SEND_STATE_SENDING 2
 #define SEND_STATE_SENT 3
 #define SEND_STATE_BUFFER_UNDERRUN 4
-
-#endif /* LED_TIMER_H_ */
+#endif
 
 #endif

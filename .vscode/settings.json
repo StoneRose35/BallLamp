@@ -1,3 +1,7 @@
 {
-    "cortex-debug.registerUseNaturalFormat": false
+    "cortex-debug.registerUseNaturalFormat": false,
+    "files.associations": {
+        "stdio.h": "c",
+        "taskmanagerutils.h": "c"
+    }
 }

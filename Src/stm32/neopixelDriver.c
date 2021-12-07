@@ -193,29 +193,5 @@ void setSendState(uint8_t s)
 	sendState = s;
 }
 
-void i2cInit()
-{
-	RCC->APB1ENR |= (1 << I2C1EN);
-
-	I2C1->TIMINGR = 0x00101D2D; // taken from the handy configurator: standard mode without analog filter
-
-	// enable gpio b
-	RCC->AHBENR |= (1 << IOPBEN);
-
-	// alternate function 4 for pb6 und pb7
-    GPIOB->AFRL |= (4 << 24) | (4 << 28);
-
-	// open drain from pb6 and pb7
-	GPIOB->OTYPER |= (1 << 6) | (1 << 7);
-
-	// enable i2c1 event interrupt
-	*NVIC_ISER0 |= (1 << 31);
-
-	//set address
-	I2C1->OAR1 |= (I2C_ADDRESS << 1) | (1 << OA1EN);
-
-	I2C1->CR1 |= (1 << 2) | (1 << 0); // enable i2c1
-
-}
 
 #endif

@@ -5,12 +5,12 @@
  *      Author: philipp
  */
 
-
+#include "systemChoice.h"
 #include "taskManagerUtils.h"
 #include "intFunctions.h"
 #include <string.h>
 #include <stdlib.h>
-#ifndef STM32
+#ifndef HARDWARE
 #include <stdio.h>
 #else
 #include "uart.h"

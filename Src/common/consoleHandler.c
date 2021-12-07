@@ -254,6 +254,8 @@ void clearOutBuffer(Console console)
 	}
 }
 
+
+//TODO replace with /wrap rpi2040 rom functions
 void copyCommand(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfr)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)

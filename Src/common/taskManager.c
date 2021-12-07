@@ -4,13 +4,12 @@
  *  Created on: 16.09.2021
  *      Author: philipp
  */
-
+#include "systemChoice.h"
 #include "taskManager.h"
-#include "neopixelDriver.h"
 #include "system.h"
 #include "memoryAccess.h"
 #include "flash.h"
-#ifdef STM32
+#ifdef HARDWARE
 #include "uart.h"
 #else
 #include <stdio.h>

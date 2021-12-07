@@ -4,11 +4,12 @@
  *  Created on: 03.11.2021
  *      Author: philipp
  */
+#include "systemChoice.h"
 
 #ifndef BUFFEREDINPUTSTRUCTS_H_
 #define BUFFEREDINPUTSTRUCTS_H_
 
-#ifndef STM32
+#ifndef HARDWARE
 #include <stdint.h>
 #endif
 

@@ -4,7 +4,8 @@
  *  Created on: Aug 22, 2021
  *      Author: philipp
  */
-#ifdef STM32
+#include "systemChoice.h"
+#ifdef HARDWARE
 
 #ifndef SYSTEMCLOCK_H_
 #define SYSTEMCLOCK_H_

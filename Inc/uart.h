@@ -4,16 +4,19 @@
  *  Created on: 29.08.2021
  *      Author: philipp
  */
-#ifdef STM32
+#include "systemChoice.h"
+#include "types.h"
 
+#ifdef HARDWARE
 #ifndef UART_H_
 #define UART_H_
 
-#include "types.h"
+
 
 #define BAUD_RATE_USB 57600
 #define BAUD_RATE_BT 9600
 
+#ifdef STM32
 typedef struct
 {
 	reg CR1;
@@ -35,6 +38,10 @@ typedef struct
 
 #define UART1 ((UartTypeDef*)0x40013800UL)
 #define UART2 ((UartTypeDef*)0x40004400UL)
+#endif
+
+#ifdef RP2040_FEATHER
+#endif
 
 
 void initUart();
