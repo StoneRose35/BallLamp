@@ -2,6 +2,7 @@
     "cortex-debug.registerUseNaturalFormat": false,
     "files.associations": {
         "stdio.h": "c",
-        "taskmanagerutils.h": "c"
+        "taskmanagerutils.h": "c",
+        "xosc.h": "c"
     }
 }

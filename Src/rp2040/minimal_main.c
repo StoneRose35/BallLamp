@@ -4,6 +4,7 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
+#include <stdlib.h>
 
 #define GPIO13_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
@@ -21,6 +22,7 @@ volatile unsigned int answer_to_all_questions_of_the_universe = 42;
 void blinkSetup();
 void _sr35_delay(uint32_t val);
 void _boot_stage_2();
+void * dynamicArray;
 
 int main()
 {
@@ -28,6 +30,7 @@ int main()
 
 	blinkSetup();
 
+	dynamicArray=malloc(24*sizeof(int));
 
 	while(1)
 	{

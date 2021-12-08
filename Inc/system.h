@@ -26,8 +26,8 @@
 
 #define I2C_ADDRESS (15)
 #define FLASH_PAGE_SIZE 2048
-
 #endif
+
 
 
 

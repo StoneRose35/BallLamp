@@ -6,6 +6,10 @@ MEMORY
     RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k
 }
 
+_estack = ORIGIN(RAM) + LENGTH(RAM);
+_heap_size_min = 0x1000; /* 4k of heap size minimum */
+_stack_size_min = 0x400; /* 1k of protected minimum stack */
+
 
 SECTIONS
 {
@@ -103,7 +107,6 @@ SECTIONS
 
         *(.jcr)
         . = ALIGN(4);
-        /* All data end */
     } > RAM  AT> FLASH
 
     . = ALIGN(4);
@@ -120,9 +123,15 @@ SECTIONS
         . = ALIGN(4);
         __bss_end__ = .;
     } > RAM
-    
-    
-    __StackTop = 0x20040000; /* . + 0x800; */
-    
+
+  ._user_heap_stack :
+  {
+    . = ALIGN(4);
+    PROVIDE ( _end = . );
+    . = . + _heap_size_min;
+    . = ALIGN(4);
+  } > RAM
+
+   /* __StackTop = 0x20040000; /* highest stack pointer is at the very end of the regular ram block */
  }
 

@@ -1,17 +1,23 @@
 
 
-PROJECT=minimal_pico
+PROJECT=pico_lamp
 CC=arm-none-eabi-gcc
 OBJCPY=arm-none-eabi-objcopy
 ELF2UF2=./tools/elf2uf2
 OPT=-O3
+SPECS=-specs="nano.specs" 
 PAD_CKECKSUM=./tools/pad_checksum
 CARGS=-fno-builtin -g -DRP2040_FEATHER -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -I./Inc/RpiPico -I./Inc
-LARGS=-g -Xlinker --gc-sections -Xlinker -print-memory-usage -T ./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" 
+LARGS=-g -Xlinker --gc-sections -Xlinker -print-memory-usage -T ./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" $(SPECS)
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
+BOOTLOADER=bs2_fast_qspi
 
-all: clean_objs bs2_code_size main_uf2 
+all: clean_objs bs2_code_size $(PROJECT).uf2 
+
+RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
+
+all_rp2040: $(RP2040_OBJS)
 
 clean_objs:
 	@rm -f ./out/*
@@ -21,27 +27,27 @@ clean: clean_objs
 	@rm -f ./tools/pioasm
 
 # compile tools (elf2uf2)
-elf2uf2_tool:
-	@g++ ./tools/src/main.cpp -o ./tools/elf2uf2
+tools/elf2uf2:
+	g++ ./tools/src/main.cpp -o ./tools/elf2uf2
 
 # boot stage code variants for the rp2040 feather
 bs2_std.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_std.S -o ./out/bs2_std.o
+	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_std.S -o ./out/bs2_std.o
 
 bs2_dspi.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_dspi.S -o ./out/bs2_dspi.o
+	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_dspi.S -o ./out/bs2_dspi.o
 
 bs2_fast_qspi.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi.S -o ./out/bs2_fast_qspi.o
+	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi.S -o ./out/bs2_fast_qspi.o
 
 
 # generating the boot stage2 assembly file
 # via a full roundtrip Assembly -> .o (declared above) -> .elf -> .bin -> Assembly (data declaration with crc32 checksum) 
-bs2_code.elf: bs2_std.o bs2_fast_qspi.o bs2_dspi.o
-	@$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/bs2_fast_qspi.o
+bs2_code.elf: $(BOOTLOADER).o
+	$(CC) $(LARGS_BS2) -o ./out/bs2_code.elf ./out/$(BOOTLOADER).o
 
 bs2_code.bin: bs2_code.elf
-	@$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
+	$(OBJCPY) $(CPYARGS) ./out/bs2_code.elf ./out/bs2_code.bin
 
 bs2_code_size: bs2_code.bin
 	@echo '**********************************'
@@ -49,28 +55,29 @@ bs2_code_size: bs2_code.bin
 	@echo '**********************************'
 
 bootstage2.S: bs2_code.bin
-	@$(PAD_CKECKSUM) -s 0xffffffff ./out/bs2_code.bin ./out/bootstage2.S
+	$(PAD_CKECKSUM) -s 0xffffffff ./out/bs2_code.bin ./out/bootstage2.S
 
 # rp2040 feather startup stage
 pico_startup2.o: 
-	@$(CC) $(CARGS) $(OPT) -c ./Startup/pico_startup2.S -o ./out/pico_startup2.o 
+	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_startup2.S -o ./out/pico_startup2.o 
 
 bootstage2.o: bootstage2.S
-	@$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
-
-minimal_main.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Src/rp2040/minimal_main.c -o ./out/minimal_main.o
+	$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
 
 # common libs
 taskManager.o:
 	@$(CC) $(CARGS) $(OPT) -c ./Src/common/taskManager.c -o ./out/taskManager.o
 
-# main linking and generating flashable content
-main_elf: bootstage2.o pico_startup2.o minimal_main.o bs2_fast_qspi.o
-	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/minimal_main.o ./out/bootstage2.o ./out/pico_startup2.o ./out/bs2_fast_qspi.o
+# rp2040 specific libs
+out/%.o: Src/rp2040/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
-main_bin: main_elf
+# main linking and generating flashable content
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040
+	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o
+
+$(PROJECT).bin: $(PROJECT).elf
 	@$(OBJCPY) $(CPYARGS) ./out/$(PROJECT).elf ./out/$(PROJECT).bin
 
-main_uf2: elf2uf2_tool main_elf 
+$(PROJECT).uf2: tools/elf2uf2 $(PROJECT).elf 
 	$(ELF2UF2) -v ./out/$(PROJECT).elf ./out/$(PROJECT).uf2

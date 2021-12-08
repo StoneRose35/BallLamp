@@ -10,7 +10,7 @@
 
 .global __vectors 
 __vectors:
-.word __StackTop
+.word _estack
 .word _start_c_runtime
 .word isr_nmi
 .word isr_hardfault
@@ -151,22 +151,6 @@ data_cpy:
 cmp r2, r3 
 blo data_cpy_loop
 
-/* 
-// copy ram_exec context to ram
-ldr r1,[r4,#12]
-ldr r2,[r4,#16]
-ldr r3,[r4,#20]
-//ldm r4!,{r1-r3}
-b data_cpy2
-
-data_cpy_loop2:
-ldm r1!, {r0}
-stm r2!, {r0}
-data_cpy2:
-cmp r2, r3 
-blo data_cpy_loop2
-*/
-
 // test jump to _boot_stage_2
 //ldr r1, =_boot_stage_2
 //blx r1
@@ -198,9 +182,3 @@ data_section_addresses:
 .word __etext
 .word __data_start__
 .word __data_end__
-//.word __edata
-//.word __ram_exec_start__
-//.word __ram_exec_end__
-
-
-
