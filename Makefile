@@ -28,7 +28,20 @@ clean: clean_objs
 
 # compile tools (elf2uf2)
 tools/elf2uf2:
-	g++ ./tools/src/main.cpp -o ./tools/elf2uf2
+	g++ ./tools/elf2uf2_src/main.cpp -o ./tools/elf2uf2
+
+PIOASM_SRC_DIR := tools/pioasm_src/
+PIOASM_GEN_DIR := $(PIOASM_SRC_DIR)gen/
+
+tools/pioasm_src/gen/lexer.cpp: 
+	flex -o ./tools/pioasm_src/gen/lexer.cpp ./tools/pioasm_src/lexer.ll 
+
+tools/pioasm_src/gen/parser.cpp:
+	bison --defines=./tools/pioasm_src/gen/parser.hpp -o ./tools/pioasm_src/gen/parser.cpp ./tools/pioasm_src/parser.yy
+
+tools/pioasm: tools/pioasm_src/gen/parser.cpp tools/pioasm_src/gen/lexer.cpp
+	g++ -DYY_NO_UNISTD_H -Itools/pioasm_src -Itools/pioasm_src/gen -Wno-psabi -o ./tools/pioasm ./tools/pioasm_src/*.cpp ./tools/pioasm_src/gen/*.cpp 
+
 
 # boot stage code variants for the rp2040 feather
 bs2_std.o:

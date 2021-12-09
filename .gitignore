@@ -6,3 +6,5 @@
 /Stm32Debug/
 /out/*
 /tools/elf2uf2
+/tools/pioasm
+/tools/pioasm_src/gen/*
