@@ -7,7 +7,7 @@ ELF2UF2=./tools/elf2uf2
 OPT=-O3
 SPECS=-specs="nano.specs" 
 PAD_CKECKSUM=./tools/pad_checksum
-CARGS=-fno-builtin -g -DRP2040_FEATHER -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -I./Inc/RpiPico -I./Inc
+CARGS=-fno-builtin -g -DRP2040_FEATHER -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -I./Inc/RpiPico -I./Inc -I./Inc/gen
 LARGS=-g -Xlinker --gc-sections -Xlinker -print-memory-usage -T ./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" $(SPECS)
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
@@ -21,6 +21,7 @@ all_rp2040: $(RP2040_OBJS)
 
 clean_objs:
 	@rm -f ./out/*
+	@rm -f ./Inc/gen/*
 
 clean: clean_objs
 	@rm -f ./tools/elf2uf2
@@ -84,6 +85,12 @@ taskManager.o:
 # rp2040 specific libs
 out/%.o: Src/rp2040/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
+Src/rp2040/neopixelDriver.c: Inc/gen/pioprogram.h
+
+# pio assembler
+Inc/gen/pioprogram.h:
+	./tools/pioasm -o c-sdk ./Src/rp2040/ws2812.pio ./Inc/gen/pioprogram.h
 
 # main linking and generating flashable content
 $(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040

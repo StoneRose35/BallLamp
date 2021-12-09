@@ -183,6 +183,11 @@ typedef struct {
 #define FLASH ((FlashTypeDef*)0x40022000UL)
 #define I2C1 ((I2CTypeDef*)0x4000400UL)
 
+// if timer 2 is not running, i.e. data transfer is over
+#define READY_TO_SEND (TIM2->CR1 & 1) != 1
+// data has been sent, now just waiting for the remaining time to elapse
+#define WAIT_STATE TIM2->ARR > WS2818_CNT
+
 #endif
 
 #ifdef HARDWARE
@@ -196,10 +201,7 @@ extern uint32_t clr_cnt;
 extern uint32_t bit_cnt;
 extern uint8_t * rawdata_ptr;
 
-// if timer 2 is not running, i.e. data transfer is over
-#define READY_TO_SEND (TIM2->CR1 & 1) != 1
-// data has been sent, now just waiting for the remaining time to elapse
-#define WAIT_STATE TIM2->ARR > WS2818_CNT
+
 
 #define SEND_STATE_INITIAL 0
 #define SEND_STATE_DATA_READY 5
