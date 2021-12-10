@@ -24,6 +24,7 @@
     <string name="bt_btn_connect">Connect</string>
     <string name="bt_btn_disconnect">Disconnect</string>
     <string name="bt_timeout">Connection Timeout</string>
+    <string name="bt_connection_error">Connection Error</string>
 
     <string name="lbl_lower">Lower</string>
     <string name="lbl_upper">Upper</string>

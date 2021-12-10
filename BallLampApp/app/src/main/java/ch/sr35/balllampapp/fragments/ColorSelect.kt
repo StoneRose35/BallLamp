@@ -33,6 +33,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var serialLogger: TextView? = null
     private var btnConnect: Button? = null
     val frameViewModel: FrameViewModel by activityViewModels()
+    var durationField: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +50,24 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         }
 
     }
+
+    override fun onResume() {
+        super.onResume()
+        durationField?.setText(resources.getString(R.string.cs_duration).format(duration!!))
+
+        durationField?.doOnTextChanged { text, _, _, _ ->
+            try {
+                duration = text.toString().toDouble()
+                frameViewModel.animationFrame.value?.duration = duration
+                durationField?.setBackgroundColor(Color.WHITE)
+            } catch (e: java.lang.NumberFormatException)
+            {
+                duration = -1.0
+                durationField!!.setBackgroundColor(Color.RED)
+            }
+        }
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -117,19 +136,9 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
             (activity as MainActivity).initConnection()
         }
-        val durField = view.findViewById<EditText>(R.id.editTextDuration)
 
-        durField.doOnTextChanged { text, _, _, _ ->
-            try {
-                duration = text.toString().toDouble()
-                frameViewModel.animationFrame.value?.duration = duration
-                durField.setBackgroundColor(Color.WHITE)
-            } catch (e: java.lang.NumberFormatException)
-            {
-                duration = -1.0
-                durField.setBackgroundColor(Color.RED)
-            }
-        }
+        durationField = view.findViewById(R.id.editTextDuration)
+        duration = frameViewModel.animationFrame.value?.duration!!
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
 
@@ -177,12 +186,6 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         val ldUpper = frameViewModel.animationFrame.value?.lampdataUpper
         if (ldUpper != null) {
             lampBallSelectorUpper?.lampData = ldUpper
-        }
-
-        if (frameViewModel.animationFrame.value != null){
-            val durationDisplay = resources.getString(R.string.cs_duration).format(frameViewModel.animationFrame.value!!.duration)
-            durField.setText(durationDisplay)
-            durField.invalidate()
         }
 
     }

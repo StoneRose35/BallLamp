@@ -165,19 +165,15 @@ class MainActivity : AppCompatActivity() {
                         connectionInitActive = false
                     } else {
                         connectionInitActive = false
-                        btSocket = btDevice.createRfcommSocketToServiceRecord(appUuid)
-                        if (!connectorThread.isAlive)
+                        try {
+                            btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(appUuid)
+                            val connectionThread = BluetoothConnectionThread(this)
+                            connectionThread.start()
+                        } catch (e: IOException)
                         {
-                            try {
-                                connectorThread.start()
-                                csFragment.connectionState?.text = resources.getString(R.string.bt_connecting)
-                            } catch (e: IOException) {
-                                btSocket = null
-                            } catch (e2: IllegalThreadStateException)
-                            {
-                                btSocket = null
-                            }
+                            csFragment.connectionState?.text = resources.getString(R.string.bt_timeout)
                         }
+                        connectionInitActive=true
                     }
                 }
             }
@@ -216,7 +212,13 @@ class MainActivity : AppCompatActivity() {
         }
         else
         {
-            btSocket?.outputStream?.write(str.toByteArray())
+            try {
+                btSocket?.outputStream?.write(str.toByteArray())
+            }
+            catch (e: IOException)
+            {
+                csFragment.connectionState?.text = resources.getString(R.string.bt_connection_error)
+            }
         }
     }
 
@@ -328,8 +330,23 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
             }
         }catch (e: IOException) {
             caller.btSocket = null
-            handler.post {
-                caller.csFragment.connectionState?.text = caller.resources.getString(R.string.bt_timeout)
+            try {
+                val createRfcommSocket =
+                    caller.btSocket?.remoteDevice?.javaClass?.getDeclaredMethod(
+                        "createRfcommSocket",
+                        Int::class.java
+                    )
+                val fbSocket = createRfcommSocket?.invoke(
+                    caller.btSocket?.remoteDevice,
+                    1)
+                caller.btSocket =  (fbSocket as? BluetoothSocket)
+                caller.btSocket?.connect()
+            } catch (e3: Exception) {
+                caller.btSocket?.close()
+                caller.btSocket = null
+                handler.post {
+                    caller.csFragment.connectionState?.text = caller.resources.getString(R.string.bt_timeout)
+                }
             }
         } catch (e2: IllegalThreadStateException)
         {
