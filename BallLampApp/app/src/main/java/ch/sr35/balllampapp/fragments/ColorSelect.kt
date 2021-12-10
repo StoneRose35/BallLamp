@@ -53,7 +53,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
     override fun onResume() {
         super.onResume()
-        durationField?.setText(resources.getString(R.string.cs_duration).format(duration!!))
+        durationField?.setText(resources.getString(R.string.cs_duration).format(duration))
 
         durationField?.doOnTextChanged { text, _, _, _ ->
             try {
@@ -134,7 +134,13 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
 
         view.findViewById<Button>(R.id.btnConnect)?.setOnClickListener {
-            (activity as MainActivity).initConnection()
+            if (btnConnect?.text == resources.getString(R.string.bt_btn_disconnect))
+            {
+                (activity as MainActivity).removeConnection()
+            } else
+            {
+                (activity as MainActivity).initConnection()
+            }
         }
 
         durationField = view.findViewById(R.id.editTextDuration)

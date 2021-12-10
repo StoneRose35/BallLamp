@@ -37,6 +37,7 @@ class MainActivity : AppCompatActivity() {
 
 
     var btSocket: BluetoothSocket? = null
+    var btDevice: BluetoothDevice? = null
     var btAdapter: BluetoothAdapter? = null
     var connectionInitActive: Boolean = true
     private val connectorThread: BluetoothConnectionThread = BluetoothConnectionThread(this)
@@ -82,6 +83,7 @@ class MainActivity : AppCompatActivity() {
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
         registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
         registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+
 
         if (btSocket?.isConnected == false || btSocket==null)
         {
@@ -130,10 +132,6 @@ class MainActivity : AppCompatActivity() {
             if (btReceiverThread?.isAlive != true) {
                 btReceiverThread?.start()
             }
-        }else
-        {
-            connectionInitActive = true
-            initConnection()
         }
     }
 
@@ -149,7 +147,6 @@ class MainActivity : AppCompatActivity() {
 
     fun initConnection()
     {
-        if (btSocket?.isConnected != true) {
 
             if (connectionInitActive) {
                 if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
@@ -157,7 +154,7 @@ class MainActivity : AppCompatActivity() {
                     connectionInitActive = false
                     startActivity(btOnIntent)
                 } else {
-                    val btDevice =
+                    btDevice =
                         btAdapter?.bondedDevices?.firstOrNull { e -> e.name == DEVICE_NAME }
                     if (btDevice == null) {
 
@@ -166,9 +163,10 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         connectionInitActive = false
                         try {
-                            btSocket = btDevice.createInsecureRfcommSocketToServiceRecord(appUuid)
-                            val connectionThread = BluetoothConnectionThread(this)
-                            connectionThread.start()
+                            if (!connectorThread.isAlive)
+                            {
+                                connectorThread.start()
+                            }
                         } catch (e: IOException)
                         {
                             csFragment.connectionState?.text = resources.getString(R.string.bt_timeout)
@@ -177,23 +175,26 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
-        }else
-        {
-            btReceiverThread?.isRunning = false
-            while (btReceiverThread?.isAlive == true)
-            {
-                Thread.sleep(10)
-            }
-            btSocket?.inputStream?.close()
-            btSocket?.outputStream?.close()
-            btSocket?.close()
-
-            findViewById<Button>(R.id.btnConnect).text = resources.getString(R.string.bt_btn_connect)
-            csFragment.connectionState?.text = resources.getString(R.string.bt_disconnected)
-
         }
 
+    fun removeConnection()
+    {
+        btReceiverThread?.isRunning = false
+        while (btReceiverThread?.isAlive == true)
+        {
+            Thread.sleep(10)
+        }
+        btSocket?.inputStream?.close()
+        btSocket?.outputStream?.close()
+        btSocket?.close()
+
+        findViewById<Button>(R.id.btnConnect).text = resources.getString(R.string.bt_btn_connect)
+        csFragment.connectionState?.text = resources.getString(R.string.bt_disconnected)
     }
+
+
+
+
 
     fun setFragment(fragment: Fragment)
     {
@@ -288,20 +289,23 @@ class BluetoothReceiverThread(private var inputStream: InputStream,private var l
     override fun run() {
         while(isRunning)
         {
-            val bytesAvailable = inputStream.available()
-            if(bytesAvailable > 0)
-            {
-                val b = ByteArray(bytesAvailable)
-                inputStream.read(b)
-                fullString  += b.decodeToString()
-                handler.post {
-                    logger.text = fullString
+            try {
+                val bytesAvailable = inputStream.available()
+                if (bytesAvailable > 0) {
+                    val b = ByteArray(bytesAvailable)
+                    inputStream.read(b)
+                    fullString += b.decodeToString()
+                    handler.post {
+                        logger.text = fullString
+                    }
+
                 }
-
+                sleep(100)
+            } catch (e: IOException)
+            {
+                isRunning = false
             }
-            sleep(100)
         }
-
     }
 }
 
@@ -315,21 +319,26 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
     {
 
         try {
+            caller.btSocket = caller.btDevice?.createInsecureRfcommSocketToServiceRecord(appUuid)
             caller.btSocket?.connect()
+
+            while(caller.btSocket?.isConnected != true)
+            {
+                sleep(10)
+            }
             handler.post {
                 caller.csFragment.connectionState?.text = caller.resources.getString(R.string.bt_connected)
-
                 caller.btReceiverThread = BluetoothReceiverThread(
                     caller.btSocket?.inputStream!!,
                     caller.csFragment.serialLogger!!
                 )
-            caller.btReceiverThread?.start()
+                caller.btReceiverThread?.start()
+                caller.sendString("API\r")
+                caller.findViewById<Button>(R.id.btnConnect).text =
+                    caller.resources.getString(R.string.bt_btn_disconnect)
 
-            caller.sendString("API\r")
-            caller.findViewById<Button>(R.id.btnConnect).text = caller.resources.getString(R.string.bt_btn_disconnect)
             }
         }catch (e: IOException) {
-            caller.btSocket = null
             try {
                 val createRfcommSocket =
                     caller.btSocket?.remoteDevice?.javaClass?.getDeclaredMethod(
@@ -341,6 +350,25 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
                     1)
                 caller.btSocket =  (fbSocket as? BluetoothSocket)
                 caller.btSocket?.connect()
+                while(caller.btSocket?.isConnected != true)
+                {
+                    sleep(10)
+                }
+                handler.post {
+                    caller.csFragment.connectionState?.text =
+                        caller.resources.getString(R.string.bt_connected)
+
+                    caller.btReceiverThread = BluetoothReceiverThread(
+                        caller.btSocket?.inputStream!!,
+                        caller.csFragment.serialLogger!!
+                    )
+                    caller.btReceiverThread?.start()
+
+                    caller.sendString("API\r")
+                    caller.findViewById<Button>(R.id.btnConnect).text =
+                        caller.resources.getString(R.string.bt_btn_disconnect)
+
+                }
             } catch (e3: Exception) {
                 caller.btSocket?.close()
                 caller.btSocket = null
