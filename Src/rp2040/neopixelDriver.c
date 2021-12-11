@@ -14,12 +14,15 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
+#include "hardware/regs/dma.h"
 #include "system.h"
 
 #define NEOPIXEL_PIN 27
 
 #define PIO_CTRL ((volatile uint32_t*)PIO0_BASE+PIO_CTRL_OFFSET)
 #define PIO_INSTR_MEM ((volatile uint16_t*)PIO0_BASE+PIO_INSTR_MEM0_OFFSET)
+#define PIO_INTE ((volatile uint32_t*)PIO0_BASE + PIO_IRQ0_INTE_OFFSET)
+#define PIO_IRQ ((volatile uint32_t*)PIO0_BASE + PIO_IRQ_OFFSET)
 
 #define PIO_SM0_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET)
 #define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET)
@@ -29,15 +32,18 @@
 #define PIO_SM1_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET)
 #define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET)
 #define PIO_SM1_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM1_CLKDIV_OFFSET)
+#define PIO_SM1_TXF ((volatile uint32_t*)PIO0_BASE+PIO_TXF1_OFFSET)
 
-
+#define DMA_CH0_WRITE_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_WRITE_ADDR_OFFSET)
+#define DMA_CH0_READ_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_READ_ADDR_OFFSET)
+#define DMA_CH0_CTRL_TRIG ((volatile uint32_t*)DMA_BASE+DMA_CH0_CTRL_TRIG_OFFSET)
+#define DMA_CH0_TRANS_COUNT ((volatile uint32_t*)DMA_BASE+DMA_CH0_TRANS_COUNT_OFFSET)
+#define DMA_INTE0 ((volatile uint32_t*)DMA_BASE+DMA_INTE0_OFFSET)
+#define DMA_INTS0 ((volatile uint32_t*)DMA_BASE+DMA_INTS0_OFFSET)
 
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
-
-
-
 
 
 volatile uint8_t sendState=SEND_STATE_INITIAL;
@@ -45,15 +51,40 @@ volatile uint8_t sendState=SEND_STATE_INITIAL;
 // framerate timer irq function
 // should update sendState every frame to notify the mainloop that a new  color info should be sent
 // and should also update sendState once clocking in the colors is done a.k.a. when decompressArray can be called earliest
-void TIM2_IRQHandler()
+void isr_pio0_irq0_irq7()
 {
-
+	if((*PIO_IRQ & (1 << 0)) == (1 << 0)) // got irq 0, a frame has passed
+	{
+		if (sendState != SEND_STATE_DATA_READY)
+		{
+			sendState = SEND_STATE_BUFFER_UNDERRUN;
+		}
+		else
+		{
+			*PIO_IRQ |= (1 << 0);
+			sendState = SEND_STATE_RTS;
+		}
+	}
 }
 
+
+
 // function to be called to switch off clocking out colors 
-void DMA1_CH2_IRQHandler()
+// this happens when the dma has transferred the necessary color information
+// for all lamps 
+void isr_dma_irq0_irq11()
 {
 
+	if ((*DMA_INTS0 & (1<<0))==(1 << 0)) // if from channel 0
+	{
+		// clear interrupt
+		*DMA_INTS0 |= (1<<0);
+
+		// disable dma
+		*DMA_CH0_CTRL_TRIG &= ~(1 << 0);
+
+		sendState = SEND_STATE_SENT;
+	}
 	return;
 }
 
@@ -88,6 +119,21 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
  */
 void initTimer()
 {
+	/**
+	 * @brief DMA Setup
+	 * 
+	 */
+	// read from the raw data array in memory
+	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
+	//place data into the TX fifo of PIO0's SM0
+	*DMA_CH0_WRITE_ADDR = PIO0_BASE+PIO_TXF0_OFFSET;
+	//increase read address at each transfer, select DREQ0 (DREQ_PIO0_TX0) as data sed request
+	*DMA_CH0_CTRL_TRIG |= (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | (0 << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB);
+	//define the number of data sent
+	*DMA_CH0_TRANS_COUNT = 3*N_LAMPS;
+	//generate interrupt upon completion of the data transfer which happens on channel 0
+	*DMA_INTE0 |= (1 << 0);
+
 	/* 
 	 * PIO Setup
 	*/
@@ -118,8 +164,7 @@ void initTimer()
 	*PIO_SM0_PINCTRL |= (1 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB) 
 	| (NEOPIXEL_PIN << PIO_SM1_PINCTRL_SIDESET_BASE_LSB);
 
-	// set counter, based on 130Mhz/(800kHz*10) -> 16.25, rounded down to 16
-	// we're not using the factional parts to avoid glitches in the clock
+	// set counter, based on 128Mhz/(800kHz*10) -> 16
 	*PIO_SM0_CLKDIV = 16 << PIO_SM0_CLKDIV_INT_LSB;
 
 	// start PIO 0, state machine 0
@@ -141,8 +186,11 @@ void initTimer()
 		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
 	}
 
-	// slowing down clock so that 30 Hz can be reached within 32-bit down-couting
-	*PIO_SM1_CLKDIV = 16 << PIO_SM0_CLKDIV_INT_LSB;
+	// write the appropriate wait value to the transmit fifo
+	*PIO_SM1_TXF = 4400000;*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
+
+	//enable interrupt from pio0 sm1
+	*PIO_INTE |= (1 << PIO_IRQ0_INTS_SM1_LSB);
 
 	// start PIO 0, state machine 1
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
@@ -153,7 +201,11 @@ void initTimer()
  * */
 void sendToLed()
 {
+	// reset address
+	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
 
+	// enable dma
+	*DMA_CH0_CTRL_TRIG |= (1 << 0);
 }
 
 uint8_t getSendState()

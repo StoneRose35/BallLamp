@@ -28,8 +28,9 @@ typedef struct {
 
 #define PLL_SYS ((PllType*)PLL_SYS_BASE)
 
-#define POSTDIV1 16
-#define POSTDIV2 12
+#define POSTDIV1 4
+#define POSTDIV2 3
+#define FEEDBK 128
 
 
 
@@ -47,8 +48,8 @@ void setupClock()
 	//lauch PLL
 	//refdiv 1
 	PLL_SYS->cs |= (1 << 0) ;
-	//vco runs at 12MHz*130 =1560 MHz
-	PLL_SYS->fbdiv = 130;
+	//vco runs at 12MHz*FEEDBK
+	PLL_SYS->fbdiv = FEEDBK;
 
 	// wwitch on pll itself and vco
 	PLL_SYS->pwr &= ~((1 << PLL_PWR_PD_LSB) | (1 << PLL_PWR_VCOPD_LSB));

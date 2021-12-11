@@ -20,6 +20,8 @@ typedef char int8_t;
 typedef short int16_t;
 typedef volatile uint32_t reg;
 typedef uint32_t ptr;
+typedef unsigned int uint;
+
 #else
 #include <stdint.h>
 typedef unsigned long ptr;
