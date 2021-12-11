@@ -19,13 +19,18 @@
 #define NEOPIXEL_PIN 27
 
 #define PIO_CTRL ((volatile uint32_t*)PIO0_BASE+PIO_CTRL_OFFSET)
+#define PIO_INSTR_MEM ((volatile uint16_t*)PIO0_BASE+PIO_INSTR_MEM0_OFFSET)
+
 #define PIO_SM0_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET)
 #define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET)
-#define PIO_SM1_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET)
-#define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET)
 #define PIO_SM0_PINCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_PINCTRL_OFFSET)
 #define PIO_SM0_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM0_CLKDIV_OFFSET)
-#define PIO_INSTR_MEM ((volatile uint16_t*)PIO0_BASE+PIO_INSTR_MEM0_OFFSET)
+
+#define PIO_SM1_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET)
+#define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET)
+#define PIO_SM1_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM1_CLKDIV_OFFSET)
+
+
 
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
@@ -86,6 +91,8 @@ void initTimer()
 	/* 
 	 * PIO Setup
 	*/
+	uint8_t instr_mem_cnt = 0;
+	uint8_t instr_offset = 0;
 
 	// enable the PIO0 block
     *RESETS &= ~(1 << RESETS_RESET_PIO0_LSB);
@@ -96,33 +103,49 @@ void initTimer()
 
     // enable side-set, set wrap top and wrap bottom
 	*PIO_SM0_EXECCTRL |= (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( ws2812_wrap_target << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( ws2812_wrap << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( ws2812_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( ws2812_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 8 bits of have been shifted out, enable autopull
 	*PIO_SM0_SHIFTCTRL |= (8 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(1 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
 	// fill in instructions
 	for(uint8_t c=0;c < ws2812_program.length;c++){
-		*(PIO_INSTR_MEM + c) = *(ws2812_program.instructions + c);
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
 	}
 
     // set one sideset pin, base to the neopixel output pin
 	*PIO_SM0_PINCTRL |= (1 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB) 
 	| (NEOPIXEL_PIN << PIO_SM1_PINCTRL_SIDESET_BASE_LSB);
 
+	// set counter, based on 130Mhz/(800kHz*10) -> 16.25, rounded down to 16
+	// we're not using the factional parts to avoid glitches in the clock
+	*PIO_SM0_CLKDIV = 16 << PIO_SM0_CLKDIV_INT_LSB;
+
 	// start PIO 0, state machine 0
-	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB);
+	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
 
 	/*
 	 * configure state machine 1 which serves as a frame timer
 	*/
-	// enable side-set, set wrap top and wrap bottom
+	// disable side-set, set wrap top and wrap bottom
 	*PIO_SM1_EXECCTRL |= (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( frame_timer_wrap_target << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( frame_timer_wrap << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( frametimer_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( frametimer_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
+	//  do pull after 32 bits of have been shifted out, disable autopull
+	*PIO_SM0_SHIFTCTRL |= (32 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
+	// fill in instructions
+	for(uint8_t c=0;c < ws2812_program.length;c++){
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
+	}
+
+	// slowing down clock so that 30 Hz can be reached within 32-bit down-couting
+	*PIO_SM1_CLKDIV = 16 << PIO_SM0_CLKDIV_INT_LSB;
+
+	// start PIO 0, state machine 1
+	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array

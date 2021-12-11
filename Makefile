@@ -34,10 +34,16 @@ tools/elf2uf2:
 PIOASM_SRC_DIR := tools/pioasm_src/
 PIOASM_GEN_DIR := $(PIOASM_SRC_DIR)gen/
 
-tools/pioasm_src/gen/lexer.cpp: 
+tools/pioasm_src/gen:
+	mkdir ./tools/pioasm_src/gen
+
+Inc/gen:
+	mkdir ./Inc/gen
+
+tools/pioasm_src/gen/lexer.cpp: tools/pioasm_src/gen
 	flex -o ./tools/pioasm_src/gen/lexer.cpp ./tools/pioasm_src/lexer.ll 
 
-tools/pioasm_src/gen/parser.cpp:
+tools/pioasm_src/gen/parser.cpp: tools/pioasm_src/gen tools/pioasm_src/gen/lexer.cpp
 	bison --defines=./tools/pioasm_src/gen/parser.hpp -o ./tools/pioasm_src/gen/parser.cpp ./tools/pioasm_src/parser.yy
 
 tools/pioasm: tools/pioasm_src/gen/parser.cpp tools/pioasm_src/gen/lexer.cpp
@@ -89,7 +95,7 @@ out/%.o: Src/rp2040/%.c
 Src/rp2040/neopixelDriver.c: Inc/gen/pioprogram.h
 
 # pio assembler
-Inc/gen/pioprogram.h:
+Inc/gen/pioprogram.h: Inc/gen tools/pioasm
 	./tools/pioasm -o c-sdk ./Src/rp2040/ws2812.pio ./Inc/gen/pioprogram.h
 
 # main linking and generating flashable content
