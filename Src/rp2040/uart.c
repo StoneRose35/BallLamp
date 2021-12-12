@@ -13,40 +13,11 @@
 #include "consoleHandler.h"
 #include "bufferedInputHandler.h"
 
-
-
 #include "hardware/regs/addressmap.h"
 #include"hardware/regs/uart.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/m0plus.h"
-
-#define UART_UARTIBRD ((volatile uint32_t*)UART0_BASE+UART_UARTIBRD_OFFSET)
-#define UART_UARTFBRD ((volatile uint32_t*)UART0_BASE+UART_UARTFBRD_OFFSET)
-#define UART_UARTCR ((volatile uint32_t*)UART0_BASE+UART_UARTCR_OFFSET)
-#define UART_UARTLCR_H ((volatile uint32_t*)UART0_BASE+UART_UARTLCR_H_OFFSET)
-#define UART_RX_PIN_CNTR ((volatile uint32_t*)IO_BANK0_BASE + IO_BANK0_GPIO1_CTRL_OFFSET)
-#define UART_TX_PIN_CNTR ((volatile uint32_t*)IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET)
-#define UART_UARTIMSC ((volatile uint32_t*)UART0_BASE+UART_UARTIMSC_OFFSET)
-#define UART_UARTCR ((volatile uint32_t*)UART0_BASE+UART_UARTCR_OFFSET)
-#define UART_UARTDR ((volatile uint32_t*)UART0_BASE+UART_UARTDR_OFFSET)
-#define UART_UARTRIS ((volatile uint32_t*)UART0_BASE+UART_UARTRIS_OFFSET)
-
-#define UARTBT_UARTIBRD ((volatile uint32_t*)UART1_BASE+UART_UARTIBRD_OFFSET)
-#define UARTBT_UARTFBRD ((volatile uint32_t*)UART1_BASE+UART_UARTFBRD_OFFSET)
-#define UARTBT_UARTCR ((volatile uint32_t*)UART1_BASE+UART_UARTCR_OFFSET)
-#define UARTBT_UARTLCR_H ((volatile uint32_t*)UART1_BASE+UART_UARTLCR_H_OFFSET)
-#define UARTBT_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO9_CTRL_OFFSET))
-#define UARTBT_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO8_CTRL_OFFSET))
-#define UARTBT_UARTIMSC ((volatile uint32_t*)UART1_BASE+UART_UARTIMSC_OFFSET)
-#define UARTBT_UARTCR ((volatile uint32_t*)UART1_BASE+UART_UARTCR_OFFSET)
-#define UARTBT_UARTDR ((volatile uint32_t*)UART1_BASE+UART_UARTDR_OFFSET)
-#define UARTBT_UARTRIS ((volatile uint32_t*)UART1_BASE+UART_UARTRIS_OFFSET)
-
-#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
-#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
-
-#define NVIC_ISER ((volatile uint32_t*)PPB_BASE + M0PLUS_NVIC_ISER_OFFSET)
 
 
 extern uint32_t task;

@@ -20,37 +20,6 @@
 #include "hardware/regs/m0plus.h"
 
 
-#define NEOPIXEL_PIN 27
-
-#define PIO_CTRL ((volatile uint32_t*)PIO0_BASE+PIO_CTRL_OFFSET)
-#define PIO_INSTR_MEM ((volatile uint16_t*)PIO0_BASE+PIO_INSTR_MEM0_OFFSET)
-#define PIO_INTE ((volatile uint32_t*)PIO0_BASE + PIO_IRQ0_INTE_OFFSET)
-#define PIO_IRQ ((volatile uint32_t*)PIO0_BASE + PIO_IRQ_OFFSET)
-
-#define PIO_SM0_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET)
-#define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET)
-#define PIO_SM0_PINCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_PINCTRL_OFFSET)
-#define PIO_SM0_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM0_CLKDIV_OFFSET)
-
-#define PIO_SM1_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET)
-#define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET)
-#define PIO_SM1_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM1_CLKDIV_OFFSET)
-#define PIO_SM1_TXF ((volatile uint32_t*)PIO0_BASE+PIO_TXF1_OFFSET)
-
-#define DMA_CH0_WRITE_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_WRITE_ADDR_OFFSET)
-#define DMA_CH0_READ_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_READ_ADDR_OFFSET)
-#define DMA_CH0_CTRL_TRIG ((volatile uint32_t*)DMA_BASE+DMA_CH0_CTRL_TRIG_OFFSET)
-#define DMA_CH0_TRANS_COUNT ((volatile uint32_t*)DMA_BASE+DMA_CH0_TRANS_COUNT_OFFSET)
-#define DMA_INTE0 ((volatile uint32_t*)DMA_BASE+DMA_INTE0_OFFSET)
-#define DMA_INTS0 ((volatile uint32_t*)DMA_BASE+DMA_INTS0_OFFSET)
-
-#define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
-#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
-#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
-
-#define NVIC_ISER ((volatile uint32_t*)PPB_BASE + M0PLUS_NVIC_ISER_OFFSET)
-
-
 volatile uint8_t sendState=SEND_STATE_INITIAL;
 
 // framerate timer irq function

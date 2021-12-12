@@ -187,6 +187,86 @@ typedef struct {
 #define READY_TO_SEND (TIM2->CR1 & 1) != 1
 // data has been sent, now just waiting for the remaining time to elapse
 #define WAIT_STATE TIM2->ARR > WS2818_CNT
+#endif
+
+#ifdef RP2040_FEATHER
+
+#define NEOPIXEL_PIN 27
+
+#define PIO_CTRL ((volatile uint32_t*)PIO0_BASE+PIO_CTRL_OFFSET)
+#define PIO_INSTR_MEM ((volatile uint16_t*)PIO0_BASE+PIO_INSTR_MEM0_OFFSET)
+#define PIO_INTE ((volatile uint32_t*)PIO0_BASE + PIO_IRQ0_INTE_OFFSET)
+#define PIO_IRQ ((volatile uint32_t*)PIO0_BASE + PIO_IRQ_OFFSET)
+
+#define PIO_SM0_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET)
+#define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET)
+#define PIO_SM0_PINCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM0_PINCTRL_OFFSET)
+#define PIO_SM0_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM0_CLKDIV_OFFSET)
+
+#define PIO_SM1_EXECCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET)
+#define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET)
+#define PIO_SM1_CLKDIV ((volatile uint32_t*)PIO0_BASE+PIO_SM1_CLKDIV_OFFSET)
+#define PIO_SM1_TXF ((volatile uint32_t*)PIO0_BASE+PIO_TXF1_OFFSET)
+
+#define DMA_CH0_WRITE_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_WRITE_ADDR_OFFSET)
+#define DMA_CH0_READ_ADDR ((volatile uint32_t*)DMA_BASE+DMA_CH0_READ_ADDR_OFFSET)
+#define DMA_CH0_CTRL_TRIG ((volatile uint32_t*)DMA_BASE+DMA_CH0_CTRL_TRIG_OFFSET)
+#define DMA_CH0_TRANS_COUNT ((volatile uint32_t*)DMA_BASE+DMA_CH0_TRANS_COUNT_OFFSET)
+#define DMA_INTE0 ((volatile uint32_t*)DMA_BASE+DMA_INTE0_OFFSET)
+#define DMA_INTS0 ((volatile uint32_t*)DMA_BASE+DMA_INTS0_OFFSET)
+
+#define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
+#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
+#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
+
+#define NVIC_ISER ((volatile uint32_t*)PPB_BASE + M0PLUS_NVIC_ISER_OFFSET)
+
+
+#define XOSC_STARTUP ((volatile uint32_t*)XOSC_BASE+XOSC_STARTUP_OFFSET)
+#define XOSC_CTRL_ENABLE ((volatile uint32_t*)XOSC_BASE+XOSC_CTRL_OFFSET)
+#define XOSC_STATUS ((volatile uint32_t*)XOSC_BASE+XOSC_STATUS_OFFSET)
+
+#define CLK_SYS_CTRL ((volatile uint32_t*)CLOCKS_BASE+CLOCKS_CLK_SYS_CTRL_OFFSET)
+#define CLK_REF_CTRL ((volatile uint32_t*)CLOCKS_BASE+CLOCKS_CLK_REF_CTRL_OFFSET)
+
+typedef struct {
+	volatile uint32_t cs;
+	volatile uint32_t pwr;
+	volatile uint32_t fbdiv;
+	volatile uint32_t prim;
+} PllType;
+
+#define PLL_SYS ((PllType*)PLL_SYS_BASE)
+
+#define POSTDIV1 4
+#define POSTDIV2 3
+#define FEEDBK 128
+
+#define UART_UARTIBRD ((volatile uint32_t*)UART0_BASE+UART_UARTIBRD_OFFSET)
+#define UART_UARTFBRD ((volatile uint32_t*)UART0_BASE+UART_UARTFBRD_OFFSET)
+#define UART_UARTCR ((volatile uint32_t*)UART0_BASE+UART_UARTCR_OFFSET)
+#define UART_UARTLCR_H ((volatile uint32_t*)UART0_BASE+UART_UARTLCR_H_OFFSET)
+#define UART_RX_PIN_CNTR ((volatile uint32_t*)IO_BANK0_BASE + IO_BANK0_GPIO1_CTRL_OFFSET)
+#define UART_TX_PIN_CNTR ((volatile uint32_t*)IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET)
+#define UART_UARTIMSC ((volatile uint32_t*)UART0_BASE+UART_UARTIMSC_OFFSET)
+#define UART_UARTCR ((volatile uint32_t*)UART0_BASE+UART_UARTCR_OFFSET)
+#define UART_UARTDR ((volatile uint32_t*)UART0_BASE+UART_UARTDR_OFFSET)
+#define UART_UARTRIS ((volatile uint32_t*)UART0_BASE+UART_UARTRIS_OFFSET)
+
+#define UARTBT_UARTIBRD ((volatile uint32_t*)UART1_BASE+UART_UARTIBRD_OFFSET)
+#define UARTBT_UARTFBRD ((volatile uint32_t*)UART1_BASE+UART_UARTFBRD_OFFSET)
+#define UARTBT_UARTCR ((volatile uint32_t*)UART1_BASE+UART_UARTCR_OFFSET)
+#define UARTBT_UARTLCR_H ((volatile uint32_t*)UART1_BASE+UART_UARTLCR_H_OFFSET)
+#define UARTBT_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO9_CTRL_OFFSET))
+#define UARTBT_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO8_CTRL_OFFSET))
+#define UARTBT_UARTIMSC ((volatile uint32_t*)UART1_BASE+UART_UARTIMSC_OFFSET)
+#define UARTBT_UARTCR ((volatile uint32_t*)UART1_BASE+UART_UARTCR_OFFSET)
+#define UARTBT_UARTDR ((volatile uint32_t*)UART1_BASE+UART_UARTDR_OFFSET)
+#define UARTBT_UARTRIS ((volatile uint32_t*)UART1_BASE+UART_UARTRIS_OFFSET)
+
+#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
+#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
+
 
 #endif
 
