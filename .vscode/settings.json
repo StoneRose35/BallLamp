@@ -6,5 +6,6 @@
         "xosc.h": "c",
         "io_bank0.h": "c",
         "uart.h": "c"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

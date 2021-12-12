@@ -5,7 +5,7 @@
             "cwd": "${workspaceRoot}",
             "name": "Launch via Picoprobe",
             "preLaunchTask": "Build using make",
-            "executable": "./out/minimal_pico.elf",
+            "executable": "./out/pico_lamp.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
@@ -17,7 +17,7 @@
             ],
             "svdFile": "/home/philipp/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
             "runToEntryPoint": "main",
-            "searchDir": ["home/philipp/pico/openocd/tcl"]
+            "searchDir": ["/home/philipp/pico/openocd/tcl"]
         }
     ]
 }

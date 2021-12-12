@@ -137,8 +137,11 @@ void printf(const char* data)
 void initUart()
 {
 	// power on uart
-    *RESETS &= ~(1 << RESETS_RESET_UART0_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_UART0_LSB)) == 0);
+	if ((*RESETS & (1 << RESETS_RESET_UART0_LSB))!=0)
+	{
+		*RESETS &= ~(1 << RESETS_RESET_UART0_LSB);
+		while ((*RESETS_DONE & (1 << RESETS_RESET_UART0_LSB)) == 0);
+	}
 
 	// wire up the GPIO to UART
 	*UART_RX_PIN_CNTR = 2;
@@ -170,8 +173,11 @@ void initUart()
 void initBTUart()
 {
 	// power on uart
-    *RESETS &= ~(1 << RESETS_RESET_UART1_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_UART1_LSB)) == 0);
+	if ((*RESETS & (1 << RESETS_RESET_UART1_LSB))!=0)
+	{
+    	*RESETS &= ~(1 << RESETS_RESET_UART1_LSB);
+		while ((*RESETS_DONE & (1 << RESETS_RESET_UART1_LSB)) == 0);
+	}
 
 	// wire up the GPIO to UART
 	*UARTBT_RX_PIN_CNTR = 2;

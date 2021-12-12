@@ -10,6 +10,7 @@
 #include "hardware/regs/xosc.h"
 #include "hardware/regs/clocks.h"
 #include "hardware/regs/pll.h"
+#include "hardware/regs/resets.h"
 
 #include "neopixelDriver.h"
 #include "types.h"
@@ -17,14 +18,20 @@
 
 void setupClock()
 {
+	
+
 	// explicitely define startup delay cycles
 	// 281 results from (12MHz * 6ms)/256
 	*XOSC_STARTUP = 281;
-	*XOSC_CTRL_ENABLE = XOSC_CTRL_ENABLE_VALUE_ENABLE | XOSC_CTRL_FREQ_RANGE_VALUE_1_15MHZ;
+	*XOSC_CTRL_ENABLE = (XOSC_CTRL_ENABLE_VALUE_ENABLE << XOSC_CTRL_ENABLE_LSB)  | XOSC_CTRL_FREQ_RANGE_VALUE_1_15MHZ;
 	while ((*XOSC_STATUS | (1 << XOSC_STATUS_STABLE_LSB))==0);
 
 	// switch to XOSC for ref 
 	*CLK_REF_CTRL |= (0x02 << 0);
+
+	// de-reset sys pll
+	*RESETS &= ~(1 << RESETS_RESET_PLL_SYS_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_PLL_SYS_LSB)) == 0);
 
 	//lauch PLL
 	//refdiv 1
@@ -38,8 +45,8 @@ void setupClock()
 	//wait until lock is achieved
 	while((PLL_SYS->cs & (1 << PLL_CS_LOCK_LSB))==0);
 
-	// system clock runs at 1560MHz/12 =130 MHz
-	PLL_SYS->prim = (2 << POSTDIV1) | (6 << POSTDIV2);
+	// system clock runs at f_vco/postdiv1/postdiv2
+	PLL_SYS->prim = (POSTDIV1 << PLL_PRIM_POSTDIV1_LSB) | (POSTDIV2 << PLL_PRIM_POSTDIV2_LSB);
 
 	// enable post divider
 	PLL_SYS->pwr &= ~(1 << PLL_PWR_POSTDIVPD_LSB);

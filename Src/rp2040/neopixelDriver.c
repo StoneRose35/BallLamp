@@ -97,12 +97,16 @@ void initTimer()
 	 * @brief DMA Setup
 	 * 
 	 */
+
+	// enable the dma block
+    *RESETS &= ~(1 << RESETS_RESET_DMA_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_DMA_LSB)) == 0);
 	// read from the raw data array in memory
 	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
 	//place data into the TX fifo of PIO0's SM0
 	*DMA_CH0_WRITE_ADDR = PIO0_BASE+PIO_TXF0_OFFSET;
 	//increase read address at each transfer, select DREQ0 (DREQ_PIO0_TX0) as data sed request
-	*DMA_CH0_CTRL_TRIG |= (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | (0 << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB);
+	*DMA_CH0_CTRL_TRIG |= (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | (1 << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB);
 	//define the number of data sent
 	*DMA_CH0_TRANS_COUNT = 3*N_LAMPS;
 	//generate interrupt upon completion of the data transfer which happens on channel 0
@@ -122,7 +126,7 @@ void initTimer()
 	*NEOPIXEL_PIN_CNTR =  6; 
 
     // enable side-set, set wrap top and wrap bottom
-	*PIO_SM0_EXECCTRL |= (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
+	*PIO_SM0_EXECCTRL = (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
 	| ( ws2812_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( ws2812_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
@@ -148,7 +152,7 @@ void initTimer()
 	 * configure state machine 1 which serves as a frame timer
 	*/
 	// disable side-set, set wrap top and wrap bottom
-	*PIO_SM1_EXECCTRL |= (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
+	*PIO_SM1_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
 	| ( frametimer_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( frametimer_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
@@ -156,8 +160,8 @@ void initTimer()
 	*PIO_SM0_SHIFTCTRL |= (32 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
 	// fill in instructions
-	for(uint8_t c=0;c < ws2812_program.length;c++){
-		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
+	for(uint8_t c=0;c < frametimer_program.length;c++){
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(frametimer_program.instructions + c);
 	}
 
 	// write the appropriate wait value to the transmit fifo
