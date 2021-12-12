@@ -7,15 +7,18 @@
 #ifdef RP2040_FEATHER
 
 #include "neopixelDriver.h"
+#include "system.h"
+
+#include "gen/pioprogram.h"
 #include "hardware/regs/pio.h"
 #include "hardware/pio.h"
 #include "hardware/regs/addressmap.h"
-#include "gen/pioprogram.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/dma.h"
-#include "system.h"
+#include "hardware/regs/m0plus.h"
+
 
 #define NEOPIXEL_PIN 27
 
@@ -44,6 +47,8 @@
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
+
+#define NVIC_ISER ((volatile uint32_t*)PPB_BASE + M0PLUS_NVIC_ISER_OFFSET)
 
 
 volatile uint8_t sendState=SEND_STATE_INITIAL;
@@ -187,13 +192,16 @@ void initTimer()
 	}
 
 	// write the appropriate wait value to the transmit fifo
-	*PIO_SM1_TXF = 4400000;*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
+	*PIO_SM1_TXF = 4400000;
 
 	//enable interrupt from pio0 sm1
 	*PIO_INTE |= (1 << PIO_IRQ0_INTS_SM1_LSB);
 
 	// start PIO 0, state machine 1
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
+
+	// enable interrupts 7 and 11
+	*NVIC_ISER = (1 << 7) | (1 << 11);
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array

@@ -8,7 +8,7 @@ OPT=-O3
 SPECS=-specs="nano.specs" 
 PAD_CKECKSUM=./tools/pad_checksum
 CARGS=-fno-builtin -g -DRP2040_FEATHER -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -I./Inc/RpiPico -I./Inc -I./Inc/gen
-LARGS=-g -Xlinker --gc-sections -Xlinker -print-memory-usage -T ./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" $(SPECS)
+LARGS=-g -Xlinker -print-memory-usage -T./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" --specs=nosys.specs -Xlinker --gc-sections -static --specs=nano.specs
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 BOOTLOADER=bs2_fast_qspi

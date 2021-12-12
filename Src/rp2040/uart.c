@@ -14,10 +14,12 @@
 #include "bufferedInputHandler.h"
 
 
+
 #include "hardware/regs/addressmap.h"
 #include"hardware/regs/uart.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/io_bank0.h"
+#include "hardware/regs/m0plus.h"
 
 #define UART_UARTIBRD ((volatile uint32_t*)UART0_BASE+UART_UARTIBRD_OFFSET)
 #define UART_UARTFBRD ((volatile uint32_t*)UART0_BASE+UART_UARTFBRD_OFFSET)
@@ -43,6 +45,8 @@
 
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
+
+#define NVIC_ISER ((volatile uint32_t*)PPB_BASE + M0PLUS_NVIC_ISER_OFFSET)
 
 
 extern uint32_t task;
@@ -183,7 +187,8 @@ void initUart()
 	// enable receive and transmit
 	*UART_UARTCR |= (1 << UART_UARTCR_RXE_LSB) | (1 << UART_UARTCR_TXE_LSB) | (1 << UART_UARTCR_UARTEN_LSB);
 
-
+	// enable interrupts in the nvic
+	*NVIC_ISER = (1 << 20);
 
 }
 
@@ -214,6 +219,9 @@ void initBTUart()
 
 	// enable receive and transmit
 	*UARTBT_UARTCR |= (1 << UART_UARTCR_RXE_LSB) | (1 << UART_UARTCR_TXE_LSB) | (1 << UART_UARTCR_UARTEN_LSB);
+
+	// enable interrupts in the nvic
+	*NVIC_ISER = (1 << 21);
 }
 
 #endif

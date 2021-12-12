@@ -24,7 +24,7 @@ void _sr35_delay(uint32_t val);
 void _boot_stage_2();
 void * dynamicArray;
 
-int main()
+int notmain()
 {
 	char a=0;
 

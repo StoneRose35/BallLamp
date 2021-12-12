@@ -131,8 +131,6 @@ int main(void)
 	initUart();
 	initBTUart();
 
-	enableInterrupts();
-
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 	printf("initializing color interpolators\r\n");
 
