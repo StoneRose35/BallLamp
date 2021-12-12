@@ -16,8 +16,11 @@ BOOTLOADER=bs2_fast_qspi
 all: clean_objs bs2_code_size $(PROJECT).uf2 
 
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
+COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 
 all_rp2040: $(RP2040_OBJS)
+
+all_common: $(COMMON_OBJS)
 
 clean_objs:
 	@rm -f ./out/*
@@ -85,8 +88,8 @@ bootstage2.o: bootstage2.S
 	$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
 
 # common libs
-taskManager.o:
-	@$(CC) $(CARGS) $(OPT) -c ./Src/common/taskManager.c -o ./out/taskManager.o
+out/%.o: Src/common/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 # rp2040 specific libs
 out/%.o: Src/rp2040/%.c
@@ -99,7 +102,7 @@ Inc/gen/pioprogram.h: Inc/gen tools/pioasm
 	./tools/pioasm -o c-sdk ./Src/rp2040/ws2812.pio ./Inc/gen/pioprogram.h
 
 # main linking and generating flashable content
-$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o
 
 $(PROJECT).bin: $(PROJECT).elf

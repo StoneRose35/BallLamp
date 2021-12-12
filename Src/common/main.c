@@ -1,4 +1,6 @@
-#ifdef STM32
+#include "systemChoice.h"
+
+#ifdef HARDWARE
 /**
  ******************************************************************************
  * @file           : main.c
@@ -128,6 +130,8 @@ int main(void)
 	initTimer();
 	initUart();
 	initBTUart();
+
+	enableInterrupts();
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 	printf("initializing color interpolators\r\n");

@@ -3,6 +3,7 @@
     "files.associations": {
         "stdio.h": "c",
         "taskmanagerutils.h": "c",
-        "xosc.h": "c"
+        "xosc.h": "c",
+        "io_bank0.h": "c"
     }
 }
