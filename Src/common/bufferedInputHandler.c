@@ -8,7 +8,7 @@
 #include "bufferedInputHandler.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
-#ifndef STM32
+#ifndef HARDWARE
 #include <stdio.h>
 #endif
 

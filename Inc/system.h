@@ -26,8 +26,13 @@
 
 #define I2C_ADDRESS (15)
 #define FLASH_PAGE_SIZE 2048
+#define FLASH_PAGE_SIZE_BIT 11
 #endif
 
+#ifdef RP2040_FEATHER
+#define FLASH_PAGE_SIZE 4096
+#define FLASH_PAGE_SIZE_BIT 12
+#endif
 
 
 

@@ -35,32 +35,42 @@ uint16_t saveHeader(uint16_t * data,uint32_t size)
 	return retcode;
 }
 
-/*save a stream "data" of length "size" at the beginning of the "filesystem" flash section
- * offset denotes the offset from the start in bytes, data from the filesystem start to the offset is retained while writing
- * */
 uint16_t saveData(uint16_t * data,uint32_t size,uint32_t offset)
 {
 	uint16_t retcode=0;
-	uint8_t sizeInPages = (uint8_t)(((size+offset) >> 11) + 1); // /2k
-	uint16_t* flashHeader=(uint16_t*)malloc(offset);
+	uint8_t sizeInPages = (uint8_t)((size+offset) >> FLASH_PAGE_SIZE_BIT); 
+	uint8_t firstPage = (uint8_t)(offset >> FLASH_PAGE_SIZE_BIT);
+	uint32_t dataCnt=0;
+	uint32_t flashCnt=0;
+	uint32_t pageOffset=0;
+	uint16_t pageBuffer[FLASH_PAGE_SIZE>>2];
 
-	for(uint8_t c=0;c<offset>>1;c++)
-	{
-		*(flashHeader+c)=*((uint16_t*)(getFilesystemStart())+c);
-	}
+	ptr fsStart = getFilesystemStart();
+
 	for (uint8_t c=0;c<sizeInPages;c++)
 	{
-		retcode += erasePage(c);
+		if(c==0)
+		{
+			pageOffset = (offset - ((offset >> FLASH_PAGE_SIZE_BIT)<<FLASH_PAGE_SIZE_BIT))>>FLASH_PAGE_SIZE_BIT; 
+		}
+		else
+		{
+			pageOffset=0;
+		}
+		for (uint16_t c2=0;c2<FLASH_PAGE_SIZE>>1;c2++)
+		{
+			if(dataCnt < size && c2 > pageOffset)
+			{
+				pageBuffer[c2] = *(data+dataCnt++);
+			}
+			else
+			{
+				pageBuffer[c2] = *((uint16_t*)fsStart + flashCnt++);
+			}
+		}
+		erasePage(c);
+		programPage(c,pageBuffer,FLASH_PAGE_SIZE>>1);
 	}
 
-	for(uint8_t c=0;c<offset;c+=2)
-	{
-		retcode += programHalfword(*(flashHeader+(c>>1)),getFilesystemStart() + c);
-	}
-	for (uint32_t c2=0;c2<size;c2+=2)
-	{
-		retcode += programHalfword(*(data+(c2>>1)),getFilesystemStart()+c2+offset);
-	}
-	free(flashHeader);
-	return retcode;
+	return 0;
 }

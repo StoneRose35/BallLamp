@@ -114,6 +114,15 @@ SECTIONS
         *(.ram_exec)
         __data_end__ = .;
     } > RAM AT> FLASH
+
+  .filesystem :
+  {
+      . = ALIGN(4K);
+      __filesystem_start = .;
+      LONG(0) /* compatibility: here the baud rate has been placed, its not read, therefore filll the place with 0  */
+      KEEP(*(.filesysdata))
+      __filesystem_end = .;
+  } >FLASH
     
    .bss  : {
         . = ALIGN(4);

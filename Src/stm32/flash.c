@@ -72,6 +72,21 @@ uint8_t programHalfword(uint16_t hwrd,ptr addr)
 	return errcode;
 }
 
+uint8_t programPage(uint8_t pagenr,uint16_t* data,uint16_t cnt)
+{
+	uint8_t errcode = 0;
+	ptr flashOffset = getFileSystemStart() + pagenr << FLASH_PAGE_SIZE_BIT;
+	for(uint16_t c=0;c<cnt;c++)
+	{
+		errcode = programHalfword(*(data+c),flashOffset + (c<<1));
+		if(errcode> 0)
+		{
+			return errcode;
+		}
+	}
+	return errcode;
+}
+
 
 
 #endif
