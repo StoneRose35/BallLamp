@@ -52,7 +52,7 @@ void isr_uart1_irq21()
 
 uint8_t sendCharAsyncUsb()
 {
-	if (usbCommBuffer.outputBufferWriteCnt < usbCommBuffer.outputBufferReadCnt && ((*UART_UARTRIS & (1 << UART_UARTRIS_TXRIS_LSB)) == (1 << UART_UARTRIS_TXRIS_LSB)))
+	if (usbCommBuffer.outputBufferWriteCnt < usbCommBuffer.outputBufferReadCnt && ((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
 	{
 		*UART_UARTDR = *(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
 		usbCommBuffer.outputBufferWriteCnt++;
@@ -136,12 +136,11 @@ void printf(const char* data)
  * */
 void initUart()
 {
-	// power on uart
-	if ((*RESETS & (1 << RESETS_RESET_UART0_LSB))!=0)
-	{
-		*RESETS &= ~(1 << RESETS_RESET_UART0_LSB);
-		while ((*RESETS_DONE & (1 << RESETS_RESET_UART0_LSB)) == 0);
-	}
+	// power on uart, first switch it off explicitely
+	*RESETS |= (1 << RESETS_RESET_UART0_LSB); 
+	*RESETS &= ~(1 << RESETS_RESET_UART0_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_UART0_LSB)) == 0);
+
 
 	// wire up the GPIO to UART
 	*UART_RX_PIN_CNTR = 2;
@@ -152,8 +151,11 @@ void initUart()
 
 	// clock is 132MHz / (16*57600)
 	// resulting in 143.2291666, becoming 143 and floor(0.2291666*64)=14
-	*UART_UARTIBRD = 143;
-	*UART_UARTFBRD = 14;
+
+	// clock is 120MHz / (16*57600)
+	// resulting in 130.208333333, becoming 130 and floor(0.2291666*64+0.5)=13
+	*UART_UARTIBRD = 130;
+	*UART_UARTFBRD = 13;
 
 	// set word length to 8 bits
 	*UART_UARTLCR_H |= (3 << UART_UARTLCR_H_WLEN_LSB);
@@ -173,11 +175,10 @@ void initUart()
 void initBTUart()
 {
 	// power on uart
-	if ((*RESETS & (1 << RESETS_RESET_UART1_LSB))!=0)
-	{
-    	*RESETS &= ~(1 << RESETS_RESET_UART1_LSB);
-		while ((*RESETS_DONE & (1 << RESETS_RESET_UART1_LSB)) == 0);
-	}
+	*RESETS |= (1 << RESETS_RESET_UART1_LSB); 
+	*RESETS &= ~(1 << RESETS_RESET_UART1_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_UART1_LSB)) == 0)
+
 
 	// wire up the GPIO to UART
 	*UARTBT_RX_PIN_CNTR = 2;
@@ -188,8 +189,11 @@ void initBTUart()
 
 	// clock is 132MHz / (16*57600)
 	// resulting in 143.2291666, becoming 143 and floor(0.2291666*64)=14
-	*UARTBT_UARTIBRD = 143;
-	*UARTBT_UARTFBRD = 14;
+
+	// clock is 120MHz / (16*57600)
+	// resulting in 130.208333333, becoming 130 and floor(0.2291666*64+0.5)=13
+	*UARTBT_UARTIBRD = 130;
+	*UARTBT_UARTFBRD = 13;
 
 	// set word length to 8 bits
 	*UARTBT_UARTLCR_H |= (3 << UART_UARTLCR_H_WLEN_LSB);

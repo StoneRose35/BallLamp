@@ -29,6 +29,7 @@ void setupClock()
 	// switch to XOSC for ref 
 	*CLK_REF_CTRL |= (0x02 << 0);
 
+	
 	// de-reset sys pll
 	*RESETS &= ~(1 << RESETS_RESET_PLL_SYS_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PLL_SYS_LSB)) == 0);
@@ -53,6 +54,10 @@ void setupClock()
 
 	// switch system clock to pll (src to aux which is sys pll by default)
 	*CLK_SYS_CTRL |= (0x01 << 0);
+
+	// enable peripheral clock
+	*CLK_PERI_CTRL |= (1 << CLOCKS_CLK_PERI_CTRL_ENABLE_LSB);
+	
 }
 
 #endif

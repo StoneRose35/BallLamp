@@ -6,11 +6,12 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/m0plus.h"
 
-.section .startup2, "ax"
+.section .vectors, "ax"
+.align 2
 
 .global __vectors 
 __vectors:
-.word _estack
+.word __StackTop
 .word _start_c_runtime
 .word isr_nmi
 .word isr_hardfault
@@ -116,14 +117,16 @@ std_isr isr_irq30
 std_isr isr_irq31
 
 
-.global _start_c_runtime
+.section .reset,"ax"
+
+.global _start_c_runtime,_entry_point
 .type _start_c_runtime,%function
 _start_c_runtime:
-
+_entry_point:
 // set the vector offset table register
 ldr r0, =__vectors
 ldr r1,=PPB_BASE+M0PLUS_VTOR_OFFSET
-str r0,[r1]
+
 
 // Zero out the BSS
 ldr r1, =__bss_start__

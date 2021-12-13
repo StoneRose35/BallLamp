@@ -61,6 +61,7 @@ void UInt8ToChar(uint8_t nr, char * out)
 void UInt16ToChar(uint16_t nr, char * out)
 {
 	uint16_t pos=10000;
+	uint16_t npos=0;
 	uint16_t cntr=0,charpos=0;
 	uint16_t firstDigit = 0;
 	if (nr==0)

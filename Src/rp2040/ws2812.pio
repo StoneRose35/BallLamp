@@ -25,6 +25,7 @@ do_zero:
 .program frametimer
     out x,32
 .wrap_target
+timerloop:
     mov y,x 
     looppt:
     jmp y--, looppt

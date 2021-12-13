@@ -194,7 +194,7 @@ typedef struct {
 #define NEOPIXEL_PIN 27
 
 #define PIO_CTRL ((volatile uint32_t*)(PIO0_BASE+PIO_CTRL_OFFSET))
-#define PIO_INSTR_MEM ((volatile uint16_t*)(PIO0_BASE+PIO_INSTR_MEM0_OFFSET))
+#define PIO_INSTR_MEM ((volatile uint32_t*)(PIO0_BASE+PIO_INSTR_MEM0_OFFSET))
 #define PIO_INTE ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ0_INTE_OFFSET))
 #define PIO_IRQ ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ_OFFSET))
 
@@ -228,6 +228,7 @@ typedef struct {
 
 #define CLK_SYS_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_SYS_CTRL_OFFSET))
 #define CLK_REF_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_REF_CTRL_OFFSET))
+#define CLK_PERI_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_PERI_CTRL_OFFSET))
 
 typedef struct {
 	volatile uint32_t cs;
@@ -238,9 +239,10 @@ typedef struct {
 
 #define PLL_SYS ((PllType*)PLL_SYS_BASE)
 
-#define POSTDIV1 4
-#define POSTDIV2 3
-#define FEEDBK 128
+#define POSTDIV1 6
+#define POSTDIV2 2
+#define FEEDBK 120
+#define NP_CLKDIV 15
 
 #define UART_UARTIBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTIBRD_OFFSET))
 #define UART_UARTFBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTFBRD_OFFSET))
@@ -252,6 +254,7 @@ typedef struct {
 #define UART_UARTCR ((volatile uint32_t*)(UART0_BASE+UART_UARTCR_OFFSET))
 #define UART_UARTDR ((volatile uint32_t*)(UART0_BASE+UART_UARTDR_OFFSET))
 #define UART_UARTRIS ((volatile uint32_t*)(UART0_BASE+UART_UARTRIS_OFFSET))
+#define UART_UARTFR ((volatile uint32_t*)(UART0_BASE+UART_UARTFR_OFFSET))
 
 #define UARTBT_UARTIBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTIBRD_OFFSET))
 #define UARTBT_UARTFBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTFBRD_OFFSET))
@@ -263,6 +266,7 @@ typedef struct {
 #define UARTBT_UARTCR ((volatile uint32_t*)(UART1_BASE+UART_UARTCR_OFFSET))
 #define UARTBT_UARTDR ((volatile uint32_t*)(UART1_BASE+UART_UARTDR_OFFSET))
 #define UARTBT_UARTRIS ((volatile uint32_t*)(UART1_BASE+UART_UARTRIS_OFFSET))
+#define UARTBT_UARTFR ((volatile uint32_t*)(UART1_BASE+UART_UARTFR_OFFSET))
 
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))

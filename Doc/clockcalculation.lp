@@ -20,7 +20,7 @@ fws2812(Fs/Wf/10,Wf,P1,P2,Fb) :- fsys(Fs,P1,P2,Fb), ws2812_fact(Wf).
 :- sol(P1,P2,Wf,Fd), fvco(Fv,Fd), Fv > 1600000.
 
 % fsys must not be greated than 133MHz
-:- sol(P1,P2,Wf,Fd), fsys(Fsys,P1,P2,Fd), Fsys > 133000.
+:- sol(P1,P2,Wf,Fd), fsys(Fsys,P1,P2,Fd), Fsys > 120000.
 
 % factors: deviation from ideal ws2812 frequency
 ws2812err(|Fws-800|,Wf,P1,P2,Fb) :-sol(P1,P2,Wf,Fb), fws2812(Fws,Wf,P1,P2,Fb).

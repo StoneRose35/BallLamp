@@ -5,6 +5,10 @@
 #include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
 #include <stdlib.h>
+#include "systemClock.h"
+#include "uart.h"
+#include "stringFunctions.h"
+#include "system.h"
 
 #define GPIO13_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
@@ -18,17 +22,21 @@
 typedef unsigned int uint32_t; 
 
 volatile int testarray[256];
-volatile unsigned int answer_to_all_questions_of_the_universe = 42;
+volatile uint32_t answer_to_all_questions_of_the_universe = 10000;
 void blinkSetup();
 void _sr35_delay(uint32_t val);
-void _boot_stage_2();
-void * dynamicArray;
 
-int notmain()
+uint8_t context = (1 << CONTEXT_USB);
+
+int main()
 {
-	char a=0;
-
+	void * dynamicArray;
+	*RESETS |= (1 << RESETS_RESET_UART0_LSB) | (1 <<RESETS_RESET_UART1_LSB);
+	uint16_t a=0;
+	char nrbfr[8];
+	setupClock();
 	blinkSetup();
+	initUart();
 
 	dynamicArray=malloc(24*sizeof(int));
 
@@ -38,8 +46,22 @@ int notmain()
 		*GPIO_OUT |= (1 << LED_PIN);
 		_sr35_delay(6500000UL);
 		*GPIO_OUT &= ~(1 << LED_PIN);
-		_sr35_delay(6500000UL);
-		a++;		
+		_sr35_delay(6500000UL);	
+		printf("on blink ");
+		UInt16ToChar(a,nrbfr);
+		printf(nrbfr);
+		printf("\n");
+		a++;	
+		uint8_t sendresult;
+		sendresult = sendCharAsyncUsb();
+		while (sendresult == 0)
+		{
+			sendresult = sendCharAsyncUsb();
+		}
+		if (a == 10000)
+		{
+			a=0;
+		}
 	}	
 }
 

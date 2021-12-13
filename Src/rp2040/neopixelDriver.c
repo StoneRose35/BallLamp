@@ -142,8 +142,8 @@ void initTimer()
 	*PIO_SM0_PINCTRL |= (1 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB) 
 	| (NEOPIXEL_PIN << PIO_SM1_PINCTRL_SIDESET_BASE_LSB);
 
-	// set counter, based on 128Mhz/(800kHz*10) -> 16
-	*PIO_SM0_CLKDIV = 16 << PIO_SM0_CLKDIV_INT_LSB;
+	// set counter, based on f_sys/(800kHz*10)
+	*PIO_SM0_CLKDIV = NP_CLKDIV << PIO_SM0_CLKDIV_INT_LSB;
 
 	// start PIO 0, state machine 0
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
@@ -175,6 +175,12 @@ void initTimer()
 
 	// enable interrupts 7 and 11
 	*NVIC_ISER = (1 << 7) | (1 << 11);
+
+	uint32_t interruptstatus = *NVIC_ISER;
+	if ((interruptstatus & (1 << 7)) == 0)
+	{
+		*NVIC_ISER = (1 << 7) | (1 << 11);
+	}
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array

@@ -7,5 +7,6 @@
         "io_bank0.h": "c",
         "uart.h": "c"
     },
-    "cmake.configureOnOpen": false
+    "cmake.configureOnOpen": false,
+    "cortex-debug.variableUseNaturalFormat": true
 }

@@ -97,7 +97,7 @@ void colorUpdate(RGB * color,uint32_t phase)
 }
 
 
-int main(void)
+int notmain(void)
 {
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
@@ -107,10 +107,12 @@ int main(void)
 	BufferedInputType usbInput;
 	BufferedInputType btInput;
 
+
 	#ifdef STM32
 	enableFpu();
 	#endif
     setupClock();
+
 
     initConsole(&usbConsole);
     initConsole(&btConsole);
@@ -128,8 +130,10 @@ int main(void)
     btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
 	initTimer();
-	initUart();
+
 	initBTUart();
+	initUart();
+
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 	printf("initializing color interpolators\r\n");

@@ -62,8 +62,16 @@ SECTIONS
     } > FLASH
     __exidx_end = .;
     
-    
     . = ALIGN(4);
+    .filesystem :
+   {
+      . = ALIGN(4K);
+      __filesystem_start = .;
+      LONG(0) /* compatibility: here the baud rate has been placed, its not read, therefore filll the place with 0  */
+      KEEP(*(.filesysdata))
+      __filesystem_end = .;
+  } >FLASH
+
     
     __etext = .;
     
@@ -107,22 +115,8 @@ SECTIONS
 
         *(.jcr)
         . = ALIGN(4);
-    } > RAM  AT> FLASH
-
-    . = ALIGN(4);
-    .ram_exec : {
-        *(.ram_exec)
         __data_end__ = .;
-    } > RAM AT> FLASH
-
-  .filesystem :
-  {
-      . = ALIGN(4K);
-      __filesystem_start = .;
-      LONG(0) /* compatibility: here the baud rate has been placed, its not read, therefore filll the place with 0  */
-      KEEP(*(.filesysdata))
-      __filesystem_end = .;
-  } >FLASH
+    } > RAM  AT> FLASH
     
    .bss  : {
         . = ALIGN(4);
@@ -141,6 +135,6 @@ SECTIONS
     . = ALIGN(4);
   } > RAM
 
-   /* __StackTop = 0x20040000; /* highest stack pointer is at the very end of the regular ram block */
+  /*__StackTop = 0x20004000; highest stack pointer is at the very end of the regular ram block */
  }
 
