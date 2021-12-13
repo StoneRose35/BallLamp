@@ -126,6 +126,8 @@ _entry_point:
 // set the vector offset table register
 ldr r0, =__vectors
 ldr r1,=PPB_BASE+M0PLUS_VTOR_OFFSET
+str r0,[r1]
+
 
 
 // Zero out the BSS
@@ -161,7 +163,7 @@ blo data_cpy_loop
 
 // jump off to main
 ldr r1,=main
-bx r1
+blx r1
 
 
 // utility delay function

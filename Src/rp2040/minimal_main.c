@@ -22,7 +22,7 @@
 typedef unsigned int uint32_t; 
 
 volatile int testarray[256];
-volatile uint32_t answer_to_all_questions_of_the_universe = 10000;
+volatile uint32_t answer_to_all_questions_of_the_universe = 42;
 void blinkSetup();
 void _sr35_delay(uint32_t val);
 
@@ -50,7 +50,7 @@ int main()
 		printf("on blink ");
 		UInt16ToChar(a,nrbfr);
 		printf(nrbfr);
-		printf("\n");
+		printf("\r\n");
 		a++;	
 		uint8_t sendresult;
 		sendresult = sendCharAsyncUsb();

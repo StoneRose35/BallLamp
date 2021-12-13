@@ -29,7 +29,7 @@ CommBufferType btCommBuffer;
 // receive interrupt for the usb uart
 void isr_uart0_irq20()
 {
-	if ((*UART_UARTCR & (1 << UART_UARTICR_RXIC_LSB)) == (1 << UART_UARTICR_RXIC_LSB)) // reception case
+	if ((*UART_UARTMIS & (1 << UART_UARTMIS_RXMIS_LSB)) == (1 << UART_UARTMIS_RXMIS_LSB)) // reception case
 	{
 		usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt++]=*UART_UARTDR & 0xFF;
 		usbCommBuffer.inputBufferCnt &= (INPUT_BUFFER_SIZE-1);
