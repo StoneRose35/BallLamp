@@ -41,7 +41,7 @@ void isr_uart0_irq20()
 // receive interrupt for the bluetooth uart
 void isr_uart1_irq21()
 {
-	if ((*UARTBT_UARTCR & (1 << UART_UARTICR_RXIC_LSB)) == (1 << UART_UARTICR_RXIC_LSB)) // reception case
+	if ((*UARTBT_UARTMIS & (1 << UART_UARTMIS_RXMIS_LSB)) == (1 << UART_UARTMIS_RXMIS_LSB)) // reception case
 	{
 		btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt++]=*UARTBT_UARTDR & 0xFF;
 		btCommBuffer.inputBufferCnt &= (INPUT_BUFFER_SIZE-1);

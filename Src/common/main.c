@@ -97,7 +97,7 @@ void colorUpdate(RGB * color,uint32_t phase)
 }
 
 
-int notmain(void)
+int main(void)
 {
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
@@ -129,10 +129,12 @@ int notmain(void)
     btInput.commBuffer=&btCommBuffer;
     btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
-	initTimer();
-
 	initBTUart();
 	initUart();
+
+
+	initTimer();
+
 
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
@@ -152,12 +154,13 @@ int notmain(void)
     /* Loop forever */
 	for(;;)
 	{
-
+		
 		if (getSendState()==SEND_STATE_RTS)//(READY_TO_SEND)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
 			tasksDone = 0;
 		}
+		
 
 		if ((task & (1 << TASK_USB_CONSOLE))==(1 << TASK_USB_CONSOLE))
 		{
@@ -174,9 +177,9 @@ int notmain(void)
 
 			task &= ~(1 << TASK_BT_CONSOLE);
 		}
-		/*
-		 * Time slot for handling tasks
-		 */
+		//
+		// Time slot for handling tasks
+		// 
 		if (tasksDone == 0)
 		{
 			for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
@@ -191,6 +194,7 @@ int notmain(void)
 
 		// if the tasks are finished after the fps time has elapsed the next frame doesn't show
 		// the correct data due to a buffer underrun
+		
 		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
 		{
 			// potential error handling
@@ -202,7 +206,7 @@ int notmain(void)
 		{
 			decompressRgbArray(lamps,N_LAMPS);
 		}
-
+		
 		sendCharAsyncUsb();
 		sendCharAsyncBt();
 

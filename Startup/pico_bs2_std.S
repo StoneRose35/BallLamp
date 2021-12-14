@@ -27,7 +27,7 @@
 .cpu cortex-m0plus
 .thumb
 
-.section .boot_code2, "ax"
+.section .boot2_code, "ax"
 .align 2
 
 

@@ -23,13 +23,14 @@ do_zero:
 
 
 .program frametimer
+    pull
     out x,32
 .wrap_target
 timerloop:
     mov y,x 
     looppt:
     jmp y--, looppt
-    irq 0
+    irq  wait 0
 .wrap
 
 

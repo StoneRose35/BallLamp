@@ -196,7 +196,9 @@ typedef struct {
 #define PIO_CTRL ((volatile uint32_t*)(PIO0_BASE+PIO_CTRL_OFFSET))
 #define PIO_INSTR_MEM ((volatile uint32_t*)(PIO0_BASE+PIO_INSTR_MEM0_OFFSET))
 #define PIO_INTE ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ0_INTE_OFFSET))
+#define PIO_INTF ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ0_INTF_OFFSET))
 #define PIO_IRQ ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ_OFFSET))
+#define PIO_IRQ_FORCE ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ_FORCE_OFFSET))
 
 #define PIO_SM0_EXECCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET))
 #define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET))

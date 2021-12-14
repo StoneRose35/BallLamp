@@ -37,7 +37,7 @@
 .cpu cortex-m0plus
 .thumb
 
-.section .ram_exec, "ax"
+.section .boot2_code, "ax"
 .align 2
 
 .global _boot_stage_2

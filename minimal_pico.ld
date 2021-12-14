@@ -4,12 +4,11 @@ MEMORY
 {
     FLASH(rx) : ORIGIN = 0x10000000, LENGTH = 8192k  /* 8MB on rp2040 feather */
     RAM(rwx) : ORIGIN =  0x20000000, LENGTH = 256k
+    SCRATCH_X(rwx) : ORIGIN = 0x20040000, LENGTH = 4k
+    SCRATCH_Y(rwx) : ORIGIN = 0x20041000, LENGTH = 4k
 }
 
-_estack = ORIGIN(RAM) + LENGTH(RAM);
 _heap_size_min = 0x1000; /* 4k of heap size minimum */
-_stack_size_min = 0x400; /* 1k of protected minimum stack */
-
 
 SECTIONS
 {
@@ -25,21 +24,22 @@ SECTIONS
         __boot2_end__ = .;
     } > FLASH
     
-    /* used for pre-compiling the 256 bytes of the boot stage 2 code*/
+    /* used for pre-compiling the 256 bytes of the boot stage 2 code
     .boot2_code : {
     	*(.boot2_code*)
-    } > FLASH
+    } > FLASH */
 
     ASSERT(__boot2_end__ - __boot2_start__ == 256,
         "ERROR: Pico second stage bootloader must be 256 bytes in size") 
         
-    .startup2 : {
-    	KEEP(*(.startup2*))
-    } > FLASH
     
     .text : {
         KEEP (*(.vectors))
         KEEP (*(.reset))
+        /* put that stuff into ram, so exclude it here*/
+        *(EXCLUDE_FILE(*libgcc.a: *libc.a:*lib_a-mem*.o *libm.a:) .text*)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .ctors)
+        *(EXCLUDE_FILE(*crtend?.o *crtend.o) .dtors)
         . = ALIGN(4);
     } > FLASH
     
@@ -50,6 +50,7 @@ SECTIONS
         . = ALIGN(4);
     } > FLASH
 
+    /*
     .ARM.extab :
     {
         *(.ARM.extab* .gnu.linkonce.armextab.*)
@@ -62,7 +63,9 @@ SECTIONS
     } > FLASH
     __exidx_end = .;
     
-    . = ALIGN(4);
+    
+    . = ALIGN(4);*/
+
     .filesystem :
    {
       . = ALIGN(4K);
@@ -72,7 +75,6 @@ SECTIONS
       __filesystem_end = .;
   } >FLASH
 
-    
     __etext = .;
     
     .data : {
@@ -80,10 +82,10 @@ SECTIONS
         *(vtable)
 
         /* remaining .text and .rodata; i.e. stuff we exclude above because we want it in RAM */
-        /* *(.text*) */
-        /* . = ALIGN(4); */
-        /* *(.rodata*) */
-        /* . = ALIGN(4); */
+        *(.text*) 
+        . = ALIGN(4); 
+        *(.rodata*) 
+        . = ALIGN(4); 
 
         *(.data*)
 
@@ -91,6 +93,11 @@ SECTIONS
         *(.after_data.*)
         . = ALIGN(4);
         /* preinit data */
+        PROVIDE_HIDDEN (__mutex_array_start = .);
+        KEEP(*(SORT(.mutex_array.*)))
+        KEEP(*(.mutex_array))
+        PROVIDE_HIDDEN (__mutex_array_end = .);
+
 
         . = ALIGN(4);
         /* preinit data */
@@ -127,13 +134,16 @@ SECTIONS
         __bss_end__ = .;
     } > RAM
 
+
   ._user_heap_stack :
   {
     . = ALIGN(4);
-    PROVIDE ( _end = . );
-    . = . + _heap_size_min;
-    . = ALIGN(4);
+    PROVIDE ( __end__ = . );
   } > RAM
+
+
+    __StackTop = ORIGIN(SCRATCH_Y) + LENGTH(SCRATCH_Y);
+    __StackBottom = ORIGIN(SCRATCH_Y);
 
   /*__StackTop = 0x20004000; highest stack pointer is at the very end of the regular ram block */
  }

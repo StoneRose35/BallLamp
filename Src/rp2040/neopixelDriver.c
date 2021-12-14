@@ -35,9 +35,10 @@ void isr_pio0_irq0_irq7()
 		}
 		else
 		{
-			*PIO_IRQ |= (1 << 0);
+			
 			sendState = SEND_STATE_RTS;
 		}
+		*PIO_IRQ = (1 << 0);
 	}
 }
 
@@ -157,30 +158,30 @@ void initTimer()
 	| ( frametimer_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 32 bits of have been shifted out, disable autopull
-	*PIO_SM0_SHIFTCTRL |= (32 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
+	*PIO_SM0_SHIFTCTRL |= (0 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
 	// fill in instructions
 	for(uint8_t c=0;c < frametimer_program.length;c++){
 		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(frametimer_program.instructions + c);
 	}
 
-	// write the appropriate wait value to the transmit fifo
-	*PIO_SM1_TXF = 4400000;
+
 
 	//enable interrupt from pio0 sm1
 	*PIO_INTE |= (1 << PIO_IRQ0_INTS_SM1_LSB);
 
-	// start PIO 0, state machine 1
-	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
-
 	// enable interrupts 7 and 11
 	*NVIC_ISER = (1 << 7) | (1 << 11);
 
-	uint32_t interruptstatus = *NVIC_ISER;
-	if ((interruptstatus & (1 << 7)) == 0)
-	{
-		*NVIC_ISER = (1 << 7) | (1 << 11);
-	}
+	// start PIO 0, state machine 1
+	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
+
+	// write the appropriate wait value to the transmit fifo
+	*PIO_SM1_TXF = 4400000;
+
+	// force pio irq0 to test the interrupt handler
+	//*PIO_IRQ_FORCE |= 1;
+
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array

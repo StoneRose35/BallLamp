@@ -28,7 +28,7 @@ void _sr35_delay(uint32_t val);
 
 uint8_t context = (1 << CONTEXT_USB);
 
-int main()
+int notmain()
 {
 	void * dynamicArray;
 	*RESETS |= (1 << RESETS_RESET_UART0_LSB) | (1 <<RESETS_RESET_UART1_LSB);
