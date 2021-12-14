@@ -542,18 +542,21 @@ void handleCommand(char * cmd,void* caller)
 {
 	uint8_t cnt = 0;
 	uint8_t cmdFound = 0;
-	while(userCommands[cnt].commandFct != 0 && cmdFound == 0)
+	if (*cmd!= 0)
 	{
-		if (startsWith(cmd,userCommands[cnt].commandName) > 0)
+		while(userCommands[cnt].commandFct != 0 && cmdFound == 0)
 		{
-			callUserFunction(userCommands[cnt].commandFct,cmd,userCommands[cnt].contextType,caller);
-			cmdFound = 1;
+			if (startsWith(cmd,userCommands[cnt].commandName) > 0)
+			{
+				callUserFunction(userCommands[cnt].commandFct,cmd,userCommands[cnt].contextType,caller);
+				cmdFound = 1;
+			}
+			cnt++;
 		}
-		cnt++;
-	}
-	if(cmdFound == 0)
-	{
-		printf("\r\nERROR: Unrecognized Command");
+		if(cmdFound == 0)
+		{
+			printf("\r\nERROR: Unrecognized Command");
+		}
 	}
 }
 
