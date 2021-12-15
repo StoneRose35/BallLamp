@@ -205,4 +205,10 @@ void initBTUart()
 	*NVIC_ISER = (1 << 21);
 }
 
+void initGpio()
+{
+    *RESETS &= ~(1 << RESETS_RESET_IO_BANK0_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_IO_BANK0_LSB)) == 0);
+}
+
 #endif

@@ -129,6 +129,7 @@ int main(void)
     btInput.commBuffer=&btCommBuffer;
     btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
+	initGpio();
 	initBTUart();
 	initUart();
 

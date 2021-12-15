@@ -45,12 +45,15 @@ typedef struct
 
 
 void initUart();
+void initBTUart();
+void initGpio();
+
 void printf(const char*);
 
 uint8_t sendCharAsyncUsb();
 uint8_t sendCharAsyncBt();
 
-void initBTUart();
+
 
 
 #endif /* UART_H_ */
