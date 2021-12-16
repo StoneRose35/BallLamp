@@ -69,17 +69,12 @@ void blinkSetup()
 {
     //switch on GPIO
     *RESETS &= ~(1 << 5);
-	while ((*RESETS_DONE & (1 << 5)) == 0)
-	{
-
-	}
+	while ((*RESETS_DONE & (1 << 5)) == 0);
 
 	*GPIO_OE &= ~(1 << LED_PIN);
 	*GPIO_OUT &= ~(1 << LED_PIN);
 
     *GPIO13_CNTR =  5; // function 5 (SIO)
-
 	*GPIO_OE |= (1 << LED_PIN);
-
 }
 

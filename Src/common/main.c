@@ -97,7 +97,7 @@ void colorUpdate(RGB * color,uint32_t phase)
 }
 
 
-int main(void)
+int nottmain(void)
 {
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
@@ -134,10 +134,6 @@ int main(void)
 	initUart();
 
 
-	initTimer();
-
-
-
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 	printf("initializing color interpolators\r\n");
 
@@ -148,6 +144,8 @@ int main(void)
 	startInterpolators(&interpolators);
 
 	setSendState(SEND_STATE_RTS);
+
+	initTimer();
 
 
 	printf("BallLamp v0.1 running\r\n");

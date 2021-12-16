@@ -23,14 +23,16 @@ do_zero:
 
 
 .program frametimer
+    set pindirs, 1
     pull
     out x,32
 .wrap_target
-timerloop:
-    mov y,x 
+    mov y,x
     looppt:
     jmp y--, looppt
-    irq  wait 0
+    ;set pins, 1
+    ;looppt1:
+    ;jmp y--, looppt1  
+    ;set pins, 0
+    irq 0
 .wrap
-
-

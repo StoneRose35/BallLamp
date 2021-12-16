@@ -17,7 +17,7 @@ all: clean_objs bs2_code_size $(PROJECT).uf2
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 
-all_rp2040: $(RP2040_OBJS)
+all_rp2040: $(RP2040_OBJS) 
 
 all_common: $(COMMON_OBJS)
 
@@ -95,6 +95,8 @@ out/%.o: Src/rp2040/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 Src/rp2040/neopixelDriver.c: Inc/gen/pioprogram.h
+
+Src/rp2040/simple_neopixel.c: Inc/gen/pioprogram.h
 
 # pio assembler
 Inc/gen/pioprogram.h: Inc/gen tools/pioasm

@@ -5,6 +5,7 @@
  *      Author: philipp
  */
 #ifdef RP2040_FEATHER
+#ifdef NOTRYOUT
 
 #include "neopixelDriver.h"
 #include "system.h"
@@ -75,15 +76,14 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	for(cnt=0;cnt<length;cnt++)
 	{
 		// refer to specific hardware implementation to check which color comes first
-		cbfr = (*(frame+cnt)).rgb.g;
-		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.g;
+		*(rawdata_ptr + rdata_cnt++) = 0;
+		cbfr = (*(frame+cnt)).rgb.b;
+		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.b;
 		cbfr = (*(frame+cnt)).rgb.r;
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.r;
-		cbfr = (*(frame+cnt)).rgb.b;
-		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.r;
+		cbfr = (*(frame+cnt)).rgb.g;
+		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.g;
 
-		//*(rawdata_ptr + rdata_cnt++) = 0; // add a zero to allow word-wise data shifting
-	}
 	sendState = SEND_STATE_DATA_READY;
 }
 
@@ -100,26 +100,33 @@ void initTimer()
 	 */
 
 	// enable the dma block
+	*RESETS |= (1 << RESETS_RESET_DMA_LSB);
     *RESETS &= ~(1 << RESETS_RESET_DMA_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_DMA_LSB)) == 0);
+
 	// read from the raw data array in memory
 	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
 	//place data into the TX fifo of PIO0's SM0
 	*DMA_CH0_WRITE_ADDR = PIO0_BASE+PIO_TXF0_OFFSET;
 	//increase read address at each transfer, select DREQ0 (DREQ_PIO0_TX0) as data sed request
-	*DMA_CH0_CTRL_TRIG |= (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | (1 << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB);
+	// choose word-sized transfers
+	*DMA_CH0_CTRL_TRIG |= (1 << DMA_CH0_CTRL_TRIG_INCR_READ_LSB) | (0 << DMA_CH0_CTRL_TRIG_TREQ_SEL_LSB) | (2 << DMA_CH0_CTRL_TRIG_DATA_SIZE_LSB);
 	//define the number of data sent
-	*DMA_CH0_TRANS_COUNT = 3*N_LAMPS;
+	*DMA_CH0_TRANS_COUNT = N_LAMPS;
 	//generate interrupt upon completion of the data transfer which happens on channel 0
 	*DMA_INTE0 |= (1 << 0);
+	
 
 	/* 
 	 * PIO Setup
 	*/
 	uint8_t instr_mem_cnt = 0;
 	uint8_t instr_offset = 0;
+	uint8_t first_instr_pos;
+
 
 	// enable the PIO0 block
+	*RESETS |= (1 << RESETS_RESET_PIO0_LSB);
     *RESETS &= ~(1 << RESETS_RESET_PIO0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PIO0_LSB)) == 0);
 
@@ -131,23 +138,35 @@ void initTimer()
 	| ( ws2812_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( ws2812_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
-	//  do pull after 8 bits of have been shifted out, enable autopull
-	*PIO_SM0_SHIFTCTRL |= (8 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(1 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
+	//  do pull after 24 bits of have been shifted out, enable autopull
+	// shift out left since msb should come first
+	*PIO_SM0_SHIFTCTRL |= (24 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(1 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
+	*PIO_SM0_SHIFTCTRL &= ~(1 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
+	first_instr = instr_mem_cnt;
 	for(uint8_t c=0;c < ws2812_program.length;c++){
 		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
 	}
 
     // set one sideset pin, base to the neopixel output pin
-	*PIO_SM0_PINCTRL |= (1 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB) 
-	| (NEOPIXEL_PIN << PIO_SM1_PINCTRL_SIDESET_BASE_LSB);
+	// also put the set boundary to the neopixel pin to allow
+	// setting the pin as output
+	*PIO_SM0_PINCTRL = 
+      (1 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB) 
+	| (NEOPIXEL_PIN << PIO_SM0_PINCTRL_SIDESET_BASE_LSB) 
+    | ( 1 << PIO_SM0_PINCTRL_SET_COUNT_LSB)
+	| ( NEOPIXEL_PIN << PIO_SM0_PINCTRL_SET_BASE_LSB) 
+    ;
 
 	// set counter, based on f_sys/(800kHz*10)
 	*PIO_SM0_CLKDIV = NP_CLKDIV << PIO_SM0_CLKDIV_INT_LSB;
 
-	// start PIO 0, state machine 0
-	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
+     // set pindirs, 1
+    *PIO_SM0_INSTR = 0xe081;
+
+	// jump to first instruction
+	*PIO_SM0_INSTR = first_instr_pos;
 
 	/*
 	 * configure state machine 1 which serves as a frame timer
@@ -157,15 +176,23 @@ void initTimer()
 	| ( frametimer_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( frametimer_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
+	// TEST attach pin13 to output and slow down sm1
+	//*GPIO13_CNTR = 6;
+	//*PIO_SM1_PINCTRL |= (13 << PIO_SM1_PINCTRL_OUT_BASE_LSB) | (1 << PIO_SM1_PINCTRL_OUT_COUNT_LSB)
+	//| (13 << PIO_SM1_PINCTRL_SET_BASE_LSB) | (1 << PIO_SM1_PINCTRL_SET_COUNT_LSB);
+	//*PIO_SM1_CLKDIV = 0xFFFF << PIO_SM1_CLKDIV_INT_LSB;
+
 	//  do pull after 32 bits of have been shifted out, disable autopull
-	*PIO_SM0_SHIFTCTRL |= (0 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
+	*PIO_SM1_SHIFTCTRL |= (0 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
 	// fill in instructions
+	first_instr = instr_mem_cnt;
 	for(uint8_t c=0;c < frametimer_program.length;c++){
 		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(frametimer_program.instructions + c);
 	}
 
-
+	// emplicitely jump to first instruction
+	*PIO_SM1_INSTR = first_instr;
 
 	//enable interrupt from pio0 sm1
 	*PIO_INTE |= (1 << PIO_IRQ0_INTS_SM1_LSB);
@@ -173,14 +200,11 @@ void initTimer()
 	// enable interrupts 7 and 11
 	*NVIC_ISER = (1 << 7) | (1 << 11);
 
+    // write the appropriate wait value to the transmit fifo
+	*PIO_SM1_TXF = (uint32_t)0x3D0900;
+
 	// start PIO 0, state machine 1
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
-
-	// write the appropriate wait value to the transmit fifo
-	*PIO_SM1_TXF = 4400000;
-
-	// force pio irq0 to test the interrupt handler
-	//*PIO_IRQ_FORCE |= 1;
 
 }
 
@@ -206,5 +230,5 @@ void setSendState(uint8_t s)
 	sendState = s;
 }
 
-
+#endif
 #endif

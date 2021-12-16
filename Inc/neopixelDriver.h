@@ -6,11 +6,13 @@
  */
 
 
-#include "types.h"
-#include "system.h"
+
 
 #ifndef LED_TIMER_H_
 #define LED_TIMER_H_
+
+#include "types.h"
+#include "system.h"
 
 #ifdef STM32
 typedef struct {
@@ -191,7 +193,7 @@ typedef struct {
 
 #ifdef RP2040_FEATHER
 
-#define NEOPIXEL_PIN 27
+#define NEOPIXEL_PIN 16
 
 #define PIO_CTRL ((volatile uint32_t*)(PIO0_BASE+PIO_CTRL_OFFSET))
 #define PIO_INSTR_MEM ((volatile uint32_t*)(PIO0_BASE+PIO_INSTR_MEM0_OFFSET))
@@ -199,16 +201,21 @@ typedef struct {
 #define PIO_INTF ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ0_INTF_OFFSET))
 #define PIO_IRQ ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ_OFFSET))
 #define PIO_IRQ_FORCE ((volatile uint32_t*)(PIO0_BASE + PIO_IRQ_FORCE_OFFSET))
+#define PIO_FSTAT ((volatile uint32_t*)(PIO0_BASE + PIO_FSTAT_OFFSET))
 
 #define PIO_SM0_EXECCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_EXECCTRL_OFFSET))
 #define PIO_SM0_SHIFTCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_SHIFTCTRL_OFFSET))
 #define PIO_SM0_PINCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_PINCTRL_OFFSET))
 #define PIO_SM0_CLKDIV ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_CLKDIV_OFFSET))
+#define PIO_SM0_TXF ((volatile uint32_t*)(PIO0_BASE+PIO_TXF0_OFFSET))
+#define PIO_SM0_INSTR  ((volatile uint32_t*)(PIO0_BASE+PIO_SM0_INSTR_OFFSET))
 
 #define PIO_SM1_EXECCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_EXECCTRL_OFFSET))
 #define PIO_SM1_SHIFTCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_SHIFTCTRL_OFFSET))
+#define PIO_SM1_PINCTRL ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_PINCTRL_OFFSET))
 #define PIO_SM1_CLKDIV ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_CLKDIV_OFFSET))
 #define PIO_SM1_TXF ((volatile uint32_t*)(PIO0_BASE+PIO_TXF1_OFFSET))
+#define PIO_SM1_INSTR  ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_INSTR_OFFSET))
 
 #define DMA_CH0_WRITE_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH0_WRITE_ADDR_OFFSET))
 #define DMA_CH0_READ_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH0_READ_ADDR_OFFSET))
@@ -218,6 +225,7 @@ typedef struct {
 #define DMA_INTS0 ((volatile uint32_t*)(DMA_BASE+DMA_INTS0_OFFSET))
 
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
+#define GPIO13_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
 
@@ -271,10 +279,6 @@ typedef struct {
 #define UARTBT_UARTDR ((volatile uint32_t*)(UART1_BASE+UART_UARTDR_OFFSET))
 #define UARTBT_UARTRIS ((volatile uint32_t*)(UART1_BASE+UART_UARTRIS_OFFSET))
 #define UARTBT_UARTFR ((volatile uint32_t*)(UART1_BASE+UART_UARTFR_OFFSET))
-
-#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
-#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
-
 
 #endif
 
