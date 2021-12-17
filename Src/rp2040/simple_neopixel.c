@@ -111,27 +111,45 @@ int main()
 
     led_pin_setup();
 
+	uint16_t instr_mem_cnt = 0;
+	uint16_t first_instr_pos;
+
     	// enable the PIO0 block
 	*RESETS |= (1 << RESETS_RESET_PIO0_LSB);
     *RESETS &= ~(1 << RESETS_RESET_PIO0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PIO0_LSB)) == 0);
 
+	// ***********************************************************
+	// configure state machine 0 which drives the neopixels
+	// ***********************************************************
+
 	// switch the neopixel pin to be controlled by the pio0
 	*NEOPIXEL_PIN_CNTR =  6; 
 
-    // disable optional side-set, set wrap top and wrap bottom
+    first_instr_pos = instr_mem_cnt;
+    // enable side-set, set wrap top and wrap bottom
 	*PIO_SM0_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( ws2812_wrap_target  << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( ws2812_wrap << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( ws2812_wrap_target + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( ws2812_wrap + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 24 bits of have been shifted out, enable autopull
-    // shift out left since msb should come first
-	*PIO_SM0_SHIFTCTRL |= (24 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) |(1 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB);
-    *PIO_SM0_SHIFTCTRL &= ~(1 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
+	// shift out left since msb should come first
+	*PIO_SM0_SHIFTCTRL |= (24 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(1 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
+	*PIO_SM0_SHIFTCTRL &= ~(1 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
+	// offset the jump instruction by position of the first command since the jump addresses
+	// are relative to the program
 	for(uint8_t c=0;c < ws2812_program.length;c++){
-		*(PIO_INSTR_MEM + c) = *(ws2812_program.instructions + c);
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = (*(ws2812_program.instructions + c) & 0xe000)==0 ?
+		 *(ws2812_program.instructions + c) + first_instr_pos : *(ws2812_program.instructions + c);
+	}
+
+	// check all instructions
+	for (uint8_t cc=0;cc< ws2812_program.length;cc++)
+	{
+		*PIO_SM0_INSTR = cc + first_instr_pos;
+		uint8_t muh = 1;
 	}
 
     // set one sideset pin, base to the neopixel output pin
@@ -144,14 +162,21 @@ int main()
 	| ( NEOPIXEL_PIN << PIO_SM0_PINCTRL_SET_BASE_LSB) 
     ;
 
-    // set counter, based on f_sys/(800kHz*10)
+	// set counter, based on f_sys/(800kHz*10)
 	*PIO_SM0_CLKDIV = NP_CLKDIV << PIO_SM0_CLKDIV_INT_LSB;
 
-    // set pindirs, 1
+     // set pindirs, 1
     *PIO_SM0_INSTR = 0xe081;
+
+	// jump to first instruction
+	*PIO_SM0_INSTR = first_instr_pos;
 
     // start PIO 0, state machine 0
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
+
+	// test send red
+	*PIO_SM0_TXF = ((60 << 24) | (250 << 16) | (60 << 8));
+
 
     uint32_t cnt = 0;
     uint8_t txstate = 0;

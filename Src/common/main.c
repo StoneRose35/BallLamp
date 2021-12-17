@@ -1,6 +1,8 @@
 #include "systemChoice.h"
 
 #ifdef HARDWARE
+#ifndef SIMPLE_TIMERTEST
+#ifndef SIMPLE_NEOPIXEL
 /**
  ******************************************************************************
  * @file           : main.c
@@ -97,7 +99,7 @@ void colorUpdate(RGB * color,uint32_t phase)
 }
 
 
-int nottmain(void)
+int main(void)
 {
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
@@ -211,4 +213,6 @@ int nottmain(void)
 
 	}
 }
+#endif
+#endif
 #endif

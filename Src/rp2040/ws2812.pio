@@ -23,16 +23,11 @@ do_zero:
 
 
 .program frametimer
-    set pindirs, 1
-    pull
-    out x,32
+    pull            ;get counter limit from fifo
+    out x,32        ;put whole word from shift register to x
 .wrap_target
-    mov y,x
+    mov y,x         ; copy x to y (y will be modified)
     looppt:
-    jmp y--, looppt
-    ;set pins, 1
-    ;looppt1:
-    ;jmp y--, looppt1  
-    ;set pins, 0
-    irq 0
+    jmp y--, looppt ; repeat instruction as long as y is not zero, decrease y for each iteration
+    irq 1           ; assert interrupt (1 was chosen since this program is planned to run on state machine 1)
 .wrap

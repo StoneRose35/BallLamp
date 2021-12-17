@@ -5,7 +5,8 @@
  *      Author: philipp
  */
 #ifdef RP2040_FEATHER
-#ifdef NOTRYOUT
+#ifndef SIMPLE_TIMERTEST
+#ifndef SIMPLE_NEOPIXEL
 
 #include "neopixelDriver.h"
 #include "system.h"
@@ -28,7 +29,7 @@ volatile uint8_t sendState=SEND_STATE_INITIAL;
 // and should also update sendState once clocking in the colors is done a.k.a. when decompressArray can be called earliest
 void isr_pio0_irq0_irq7()
 {
-	if((*PIO_IRQ & (1 << 0)) == (1 << 0)) // got irq 0, a frame has passed
+	if((*PIO_IRQ & (1 << 1)) == (1 << 1)) // got irq 0, a frame has passed
 	{
 		if (sendState != SEND_STATE_DATA_READY)
 		{
@@ -36,10 +37,9 @@ void isr_pio0_irq0_irq7()
 		}
 		else
 		{
-			
 			sendState = SEND_STATE_RTS;
 		}
-		*PIO_IRQ = (1 << 0);
+		*PIO_IRQ = (1 << 1);
 	}
 }
 
@@ -50,7 +50,6 @@ void isr_pio0_irq0_irq7()
 // for all lamps 
 void isr_dma_irq0_irq11()
 {
-
 	if ((*DMA_INTS0 & (1<<0))==(1 << 0)) // if from channel 0
 	{
 		// clear interrupt
@@ -72,7 +71,6 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 	uint8_t cbfr;
 	uint16_t rdata_cnt = 0;
 	*(rawdata_ptr + rdata_cnt) = 0;
-	rdata_cnt=1;
 	for(cnt=0;cnt<length;cnt++)
 	{
 		// refer to specific hardware implementation to check which color comes first
@@ -83,7 +81,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.r;
 		cbfr = (*(frame+cnt)).rgb.g;
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.g;
-
+	}
 	sendState = SEND_STATE_DATA_READY;
 }
 
@@ -94,11 +92,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
  */
 void initTimer()
 {
-	/**
-	 * @brief DMA Setup
-	 * 
-	 */
-
+    
 	// enable the dma block
 	*RESETS |= (1 << RESETS_RESET_DMA_LSB);
     *RESETS &= ~(1 << RESETS_RESET_DMA_LSB);
@@ -116,13 +110,13 @@ void initTimer()
 	//generate interrupt upon completion of the data transfer which happens on channel 0
 	*DMA_INTE0 |= (1 << 0);
 	
+	
 
-	/* 
-	 * PIO Setup
-	*/
-	uint8_t instr_mem_cnt = 0;
-	uint8_t instr_offset = 0;
-	uint8_t first_instr_pos;
+	// 
+	// PIO Setup
+	//
+	uint16_t instr_mem_cnt = 0;
+	uint16_t first_instr_pos;
 
 
 	// enable the PIO0 block
@@ -130,13 +124,19 @@ void initTimer()
     *RESETS &= ~(1 << RESETS_RESET_PIO0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PIO0_LSB)) == 0);
 
+
+	// ***********************************************************
+	// configure state machine 0 which drives the neopixels
+	// ***********************************************************
+
 	// switch the neopixel pin to be controlled by the pio0
 	*NEOPIXEL_PIN_CNTR =  6; 
 
+    first_instr_pos = instr_mem_cnt;
     // enable side-set, set wrap top and wrap bottom
-	*PIO_SM0_EXECCTRL = (1 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( ws2812_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( ws2812_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	*PIO_SM0_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
+	| ( ws2812_wrap_target + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( ws2812_wrap + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 24 bits of have been shifted out, enable autopull
 	// shift out left since msb should come first
@@ -144,9 +144,11 @@ void initTimer()
 	*PIO_SM0_SHIFTCTRL &= ~(1 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
-	first_instr = instr_mem_cnt;
+	// offset the jump instruction by position of the first command since the jump addresses
+	// are relative to the program
 	for(uint8_t c=0;c < ws2812_program.length;c++){
-		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(ws2812_program.instructions + c);
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = (*(ws2812_program.instructions + c) & 0xe000)==0 ?
+		 *(ws2812_program.instructions + c) + first_instr_pos : *(ws2812_program.instructions + c);
 	}
 
     // set one sideset pin, base to the neopixel output pin
@@ -168,31 +170,30 @@ void initTimer()
 	// jump to first instruction
 	*PIO_SM0_INSTR = first_instr_pos;
 
-	/*
-	 * configure state machine 1 which serves as a frame timer
-	*/
-	// disable side-set, set wrap top and wrap bottom
-	*PIO_SM1_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( frametimer_wrap_target + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( frametimer_wrap + instr_mem_cnt << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+    // start PIO 0, state machine 0
+	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
 
-	// TEST attach pin13 to output and slow down sm1
-	//*GPIO13_CNTR = 6;
-	//*PIO_SM1_PINCTRL |= (13 << PIO_SM1_PINCTRL_OUT_BASE_LSB) | (1 << PIO_SM1_PINCTRL_OUT_COUNT_LSB)
-	//| (13 << PIO_SM1_PINCTRL_SET_BASE_LSB) | (1 << PIO_SM1_PINCTRL_SET_COUNT_LSB);
-	//*PIO_SM1_CLKDIV = 0xFFFF << PIO_SM1_CLKDIV_INT_LSB;
+	// ***********************************************************
+	// configure state machine 1 which serves as a frame timer
+	// ***********************************************************
+	// disable side-set, set wrap top and wrap bottom
+	first_instr_pos = instr_mem_cnt;
+	*PIO_SM1_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
+	| ( frametimer_wrap_target + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( frametimer_wrap + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 32 bits of have been shifted out, disable autopull
 	*PIO_SM1_SHIFTCTRL |= (0 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
 
 	// fill in instructions
-	first_instr = instr_mem_cnt;
+	first_instr_pos = instr_mem_cnt;
 	for(uint8_t c=0;c < frametimer_program.length;c++){
-		*(PIO_INSTR_MEM + instr_mem_cnt++) = *(frametimer_program.instructions + c);
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = (*(frametimer_program.instructions + c) & 0xe000)==0 ?
+		 *(frametimer_program.instructions + c) + first_instr_pos : *(frametimer_program.instructions + c);
 	}
 
 	// emplicitely jump to first instruction
-	*PIO_SM1_INSTR = first_instr;
+	*PIO_SM1_INSTR = first_instr_pos;
 
 	//enable interrupt from pio0 sm1
 	*PIO_INTE |= (1 << PIO_IRQ0_INTS_SM1_LSB);
@@ -206,6 +207,8 @@ void initTimer()
 	// start PIO 0, state machine 1
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
 
+
+
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array
@@ -213,8 +216,12 @@ void initTimer()
  * */
 void sendToLed()
 {
+	sendState = SEND_STATE_SENDING;
 	// reset address
 	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
+
+	// set the number of transfers
+	*DMA_CH0_TRANS_COUNT = N_LAMPS;
 
 	// enable dma
 	*DMA_CH0_CTRL_TRIG |= (1 << 0);
@@ -230,5 +237,6 @@ void setSendState(uint8_t s)
 	sendState = s;
 }
 
+#endif
 #endif
 #endif

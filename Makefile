@@ -6,8 +6,9 @@ OBJCPY=arm-none-eabi-objcopy
 ELF2UF2=./tools/elf2uf2
 OPT=-Og
 PAD_CKECKSUM=./tools/pad_checksum
-CARGS=-fno-builtin -g -DRP2040_FEATHER -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -std=gnu11 -I./Inc/RpiPico -I./Inc -I./Inc/gen
-LARGS=-g -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" --specs=nosys.specs -Xlinker --gc-sections -static --specs=nano.specs
+DEFINES=-DRP2040_FEATHER 
+CARGS=-fno-builtin -g $(DEFINES) -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -std=gnu11 -I./Inc/RpiPico -I./Inc -I./Inc/gen
+LARGS=-g -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./minimal_pico.ld -Xlinker -Map="./out/$(PROJECT).map" -Xlinker --gc-sections -static 
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 BOOTLOADER=bs2_fast_qspi
@@ -97,6 +98,8 @@ out/%.o: Src/rp2040/%.c
 Src/rp2040/neopixelDriver.c: Inc/gen/pioprogram.h
 
 Src/rp2040/simple_neopixel.c: Inc/gen/pioprogram.h
+
+Src/rp2040/simple_timertest.c: Inc/gen/pioprogram.h
 
 # pio assembler
 Inc/gen/pioprogram.h: Inc/gen tools/pioasm
