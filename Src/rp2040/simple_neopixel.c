@@ -1,4 +1,5 @@
 
+#ifdef SIMPLE_NEOPIXEL
 
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/pio.h"
@@ -19,6 +20,48 @@
 #define WAITVAL (120000)
 
 void colorUpdate(RGB * color,uint32_t phase);
+void setupClock();
+volatile uint32_t task;
+
+void colorUpdate(RGB * color,uint32_t phase)
+{
+	if (phase < 0x100)
+	{
+		color->r = 0xFF;
+		color->g = phase & 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x200)
+	{
+		color->r = 0x1FF - phase;
+		color->g = 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x300)
+	{
+		color->r = 0x00;
+		color->g = 0xFF;
+		color->b = phase - 0x200;
+	}
+	else if (phase < 0x400)
+	{
+		color->r = 0x00;
+		color->g = 0x3FF - phase;
+		color->b = 0xFF;
+	}
+	else if (phase < 0x500)
+	{
+		color->r = phase - 0x400;
+		color->g = 0x00;
+		color->b = 0xFF;
+	}
+	else
+	{
+		color->r = 0xFF;
+		color->g = 0x00;
+		color->b = 0x5FF - phase;
+	}
+}
 
 uint8_t put_val_blocking(uint32_t val)
 {
@@ -144,3 +187,5 @@ int main()
 
     return 0;
 }
+
+#endif
