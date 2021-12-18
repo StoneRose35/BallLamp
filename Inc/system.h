@@ -1,17 +1,20 @@
-/*
+/**
  * system.h
- *
- *  Created on: 28.07.2021
- *      Author: philipp
+ * contains microprocessor-independent information on the lamp system
+ * such as the number of lamp attached and the intended framerate
+ * while the system clock frequency can be entirely defined within neopixelDriver.h
+ * the framerate settings should be entirely deriveable from FRAMERATE
  */
 
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
+#include "types.h"
+
 #define N_LAMPS (20)
-#define FRAMERATE (30) // frames or lamp images
+#define FRAMERATE (30) // frames or lamp images per second
 
-
+// settings regarding the specific neopixels used, adjust depending on the actual neopixel chip
 #define WS2818_FREQ (800000) // 1/(0.4es + 0.85us)
 #define WS2818_SHORT (2500000) // 1/0.4us
 #define WS2818_LONG  (1176470)
@@ -48,11 +51,10 @@
 
 #define FLASH_HEADER_SIZE 32
 
-
-
-#include "types.h"
-
-
+/**
+ * @brief a simple rgb structure, is not aligned to be streamed directly to the neopixels
+ * 
+ */
 typedef struct
 {
 	uint8_t r;

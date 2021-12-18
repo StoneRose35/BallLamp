@@ -202,7 +202,7 @@ void initTimer()
 	*NVIC_ISER = (1 << 7) | (1 << 11);
 
     // write the appropriate wait value to the transmit fifo
-	*PIO_SM1_TXF = (uint32_t)0x3D0900;
+	*PIO_SM1_TXF = (uint32_t)PIO_SM1_CNT;
 
 	// start PIO 0, state machine 1
 	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);

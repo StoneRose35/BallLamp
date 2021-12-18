@@ -193,6 +193,16 @@ typedef struct {
 
 #ifdef RP2040_FEATHER
 
+#define F_XOSC (12000000)
+// divider factors, calculated using clingo with clockcalculation.lp
+#define POSTDIV1 6
+#define POSTDIV2 2
+#define NP_CLKDIV 15
+#define FEEDBK 120
+#define F_SYS (F_XOSC*FEEDBK/POSTDIV1/POSTDIV2)
+#define PIO_SM1_CNT (F_SYS/FRAMERATE-2) 
+
+// GPIO number where the neopixel is attached
 #define NEOPIXEL_PIN 16
 
 #define PIO_CTRL ((volatile uint32_t*)(PIO0_BASE+PIO_CTRL_OFFSET))
@@ -249,10 +259,7 @@ typedef struct {
 
 #define PLL_SYS ((PllType*)PLL_SYS_BASE)
 
-#define POSTDIV1 6
-#define POSTDIV2 2
-#define FEEDBK 120
-#define NP_CLKDIV 15
+
 
 #define UART_UARTIBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTIBRD_OFFSET))
 #define UART_UARTFBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTFBRD_OFFSET))

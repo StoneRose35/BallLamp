@@ -7,7 +7,7 @@
 
 #include <stdlib.h>
 #include "types.h"
-#ifdef STM32
+#ifdef HARDWARE
 #include "system.h"
 #endif
 #include "colorInterpolator.h"

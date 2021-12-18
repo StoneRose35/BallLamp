@@ -1,6 +1,13 @@
 
 % calculation of best vco frequency and system frequency to satisfy the need of UART Communination
 % and neopixel clocking
+% atoms having the solution predicate are listed as follows
+% POSTDIV1
+% POSTDIV2
+% NP_CLKDIV
+% FEEDBK
+
+
 postdiv1(1..7).
 postdiv2(1..7).
 
