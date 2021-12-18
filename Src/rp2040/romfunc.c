@@ -7,9 +7,9 @@ void * getRomFunction(char c1,char c2)
 {
     void * fct;
     uint32_t code = (c1 << 8) + c2;
-    //uint32_t* func_table_address = (uint32_t*)*((uint16_t*)0x14);
-    rom_table_lookup_fn rom_table_lookup = (rom_table_lookup_fn)0x18;
-    fct = rom_table_lookup((uint16_t*)0x14,code);
+    //multicast (uint32_t -> void pointer -> function pointer/uint16_t pointer) here only to avoid compiler warnings
+    rom_table_lookup_fn rom_table_lookup = (rom_table_lookup_fn)(void*)(uint32_t)(*((uint16_t*)0x18));
+    fct = rom_table_lookup((uint16_t*)(void*)(uint32_t)*((uint16_t*)0x14),code);
     return fct;
 }
 
