@@ -1,8 +1,12 @@
-/*
- * interpolators.c
- *
- *  Created on: 21.10.2021
- *      Author: philipp
+/**
+ * @file interpolators.c
+ * @author Philipp Fuerholz (fuerholz@gmx.ch)
+ * @brief functions for handling an array of Task data structures
+ * @version 0.1
+ * @date 2021-12-21
+ * 
+ * @copyright Copyright (c) 2021
+ * 
  */
 
 
@@ -10,6 +14,12 @@
 #include "colorInterpolator.h"
 #include <stdlib.h>
 
+/**
+ * @brief initializes an array of Task data scrutures, frees the dynamically allocated
+ * memory for each task of steps is not 0, resets all values to zero except lamp_nr which set to 255
+ * 
+ * @param tasks the data structure to reset
+ */
 void initInterpolators(Tasks tasks)
 {
 	for(uint8_t c=0;c<tasks->taskArrayLength;c++)
@@ -30,6 +40,18 @@ void initInterpolators(Tasks tasks)
 	}
 }
 
+/**
+ * @brief allocates a new entry within Tasks for a given neopixel element.
+ * Returns 1 if a Task for the given neopixel element is already defined and running or if no free index in the Tasks array is found.
+ * reuses the first Task array position for the given neopixel number if found.
+ * 
+ * @param tasks the tasks array holding  alls color progressions/ tasks
+ * @param lampNr the neopixel number for which the color progression/task should be initialized
+ * @param nsteps the number of steps of the newly defined color progression
+ * @param repeating 1 if all tasks should repeat, 0 if none should repeat. There is no option using this function to define only a faction
+ *                  of tasks as repeating
+ * @return uint8_t 0 if successful, 1 otherwise
+ */
 uint8_t setLampInterpolator(Tasks tasks,uint8_t lampNr,uint8_t nsteps,uint8_t repeating)
 {
 	uint8_t taskCreated=0;
@@ -77,6 +99,13 @@ uint8_t setLampInterpolator(Tasks tasks,uint8_t lampNr,uint8_t nsteps,uint8_t re
 	return 0;
 }
 
+/**
+ * @brief gets the indes withing the tasks/color progression array for a certain neopixel nr
+ * returns 255 if no entry is found
+ * @param tasks the data object holding all tasks
+ * @param lampnr the neopixel number for which the index should be returned
+ * @return uint8_t the index if found, 255 otherwise 
+ */
 uint8_t getLampIndex(Tasks tasks,uint8_t lampnr)
 {
 	for(uint8_t c=0;c<tasks->taskArrayLength;c++)
@@ -89,6 +118,19 @@ uint8_t getLampIndex(Tasks tasks,uint8_t lampnr)
 	return 0xFF;
 }
 
+/**
+ * @brief defines a step for a given neopixel number at a given steps index within a color progression/task
+ * 
+ * @param tasks the data object holding all tasks
+ * @param r Red
+ * @param g Green
+ * @param b Blue
+ * @param frames the number of frames to set 
+ * @param interpolation 1 if linear interpolation should be applied, 0 otherwise
+ * @param lamp_nr the neopixel number
+ * @param step the step index which should be defined
+ * @return uint8_t 0 if successful, an error code otherwise
+ */
 uint8_t setColorFramesInterpolation(Tasks tasks, uint8_t r,uint8_t g,uint8_t b,int32_t frames,uint8_t interpolation, uint8_t lamp_nr,uint8_t step)
 {
 	uint8_t idx;
@@ -107,6 +149,12 @@ uint8_t setColorFramesInterpolation(Tasks tasks, uint8_t r,uint8_t g,uint8_t b,i
 	return 0;
 }
 
+/**
+ * @brief starts all tasks
+ * 
+ * @param tasks the data object holding all tasks
+ * @return uint8_t 0 if successful, error code otherwise
+ */
 uint8_t startInterpolators(Tasks tasks)
 {
 	for (uint8_t c=0;c<tasks->taskArrayLength;c++)
@@ -119,6 +167,12 @@ uint8_t startInterpolators(Tasks tasks)
 	return 0;
 }
 
+/**
+ * @brief stops all tasks
+ * 
+ * @param tasks the data object holding all tasks
+ * @return uint8_t 0 if successful, error code otherwise
+ */
 uint8_t stopInterpolators(Tasks tasks)
 {
 	for (uint8_t c=0;c<tasks->taskArrayLength;c++)
@@ -128,6 +182,13 @@ uint8_t stopInterpolators(Tasks tasks)
 	return 0;
 }
 
+/**
+ * @brief serializes the Tasks data structure to a byte array
+ * 
+ * @param t the data object holding all tasks
+ * @param resultStream the pointer to the byte output stream passed by reference
+ * @return uint32_t the size in bytes of the Tasks data structure
+ */
 uint32_t toStream(Tasks t,uint8_t** resultStream)
 {
 	uint32_t tasksSize = 0;
@@ -179,6 +240,12 @@ uint32_t toStream(Tasks t,uint8_t** resultStream)
 	return tasksSize;
 }
 
+/**
+ * @brief converts a halfword stream into a Tasks data structure
+ * 
+ * @param stream the data stream holding the information to build a
+ * @param t the Tasks data structure to which the stream data is converted to 
+ */
 void fromStream(uint16_t* stream,Tasks t)
 {
 	uint32_t streamOffset = 0;

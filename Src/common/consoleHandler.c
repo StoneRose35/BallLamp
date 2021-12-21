@@ -1,10 +1,25 @@
+/**
+ * @file consoleHandler.c
+ * @author Philipp Fuerholz (fuerholz@gmx.ch)
+ * @brief a minimalistic implementation of a command shell including a 4 line command history and the standard inline editing
+ * capabilities known from bash. Doesn't support autocompletion.
+ * @version 0.1
+ * @date 2021-12-21
+ * 
+ * @copyright Copyright (c) 2021
+ * 
+ */
 #include "types.h"
 #include "consoleHandler.h"
 #include <string.h>
 #include "taskManager.h"
 #include "system.h"
 
-
+/**
+ * @brief initializes all buffers with zeros
+ * 
+ * @param console the console data structure to initialize
+ */
 void initConsole(Console console)
 {
 	uint16_t cnt;
@@ -27,12 +42,22 @@ void initConsole(Console console)
 	console->mode=0;
 }
 
-const char * consolePrefix = "lamp-os>";
-const char * cmd_arrow_left = "[D";
-const char * cmd_arrow_right = "[C";
-const char * cmd_arrow_up = "[A";
-const char * cmd_arrow_down = "[B";
+const char * consolePrefix = "lamp-os>"; //!< command line prefix, every shell line starts with that
+const char * cmd_arrow_left = "[D"; //!< special character sequence for "arrow left"
+const char * cmd_arrow_right = "[C"; //!< special character sequence for "arrow right"
+const char * cmd_arrow_up = "[A"; //!< special character sequence for "arrow up"
+const char * cmd_arrow_down = "[B"; //!< special character sequence for "arrow down"
 
+/**
+ * @brief defines how to handle a single character input into the command shell. 
+ * * Normals Characters: Echos "normal" characters so that we see what we're typing into the console
+ * * Arrow Up/Down: browse through command history (if filled) 
+ * * Arrow Left/Right: move cursor within the currenty entered command 
+ * * Del/Backspace: deletes parts of the currently entered content depending on the cursor position
+ * @param binput the input to which the entered character belongs
+ * @param charin the character input
+ * @return char* what should be written back to the user a.k.a. the output of the command shell
+ */
 char* onCharacterReception(BufferedInput binput,uint8_t charin)
 {
 	uint8_t c1=0;
@@ -236,7 +261,13 @@ char* onCharacterReception(BufferedInput binput,uint8_t charin)
 	return binput->console->outBfr;
 }
 
-
+/**
+ * @brief empties the command buffer holding the currenty command being typed in
+ * 
+ * @param console this console's cbfCnt is reset
+ * @param idx position within the command history
+ * @param cmdBfr the command holding the entire command history
+ */
 void clearCommandBuffer(Console console,uint8_t idx,char* cmdBfr)
 {
 	for(uint16_t cnt=0; cnt<COMMAND_BUFFER_SIZE; cnt++)
@@ -246,6 +277,11 @@ void clearCommandBuffer(Console console,uint8_t idx,char* cmdBfr)
 	console->cbfCnt=0;
 }
 
+/**
+ * @brief clear the entire output buffer 
+ * 
+ * @param console 
+ */
 void clearOutBuffer(Console console)
 {
 	for(uint16_t cnt=0; cnt<OUT_BUFFER_SIZE; cnt++)
@@ -255,7 +291,13 @@ void clearOutBuffer(Console console)
 }
 
 
-//TODO replace with /wrap rpi2040 rom functions
+/**
+ * @brief copies a command within the command Buffer
+ * 
+ * @param idxSrc the byte index of the source command position
+ * @param idxTarget the byte index of the target position
+ * @param cmdBfr the command buffer which should be manipulated
+ */
 void copyCommand(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfr)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
@@ -264,6 +306,14 @@ void copyCommand(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfr)
 	}
 }
 
+/**
+ * @brief copies a command from one command buffer to another
+ * 
+ * @param idxSrc the byte index of the source command within cmdBfrSrc
+ * @param idxTarget the byte index of the target command within cmdBfrTarget
+ * @param cmdBfrSrc the command buffer from which the command should be copied
+ * @param cmdBfrTarget the command buffer to the the command should be copied to
+ */
 void copyCommandBetweenArrays(uint8_t idxSrc,uint8_t idxTarget,char* cmdBfrSrc,char* cmdBfrTarget)
 {
 	for (uint16_t c=0;c<COMMAND_BUFFER_SIZE;c++)
