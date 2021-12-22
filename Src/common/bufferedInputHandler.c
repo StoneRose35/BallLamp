@@ -16,7 +16,7 @@
 #endif
 
 /**
- * @brief calls @see onCharacterReception for each element of the input buffer and prints out the answers sequentially
+ * @brief calls onCharacterReception for each element of the input buffer and prints out the answers sequentially
  * *note*: currently the handling procedure is the same for API and Console
  * @param binput the input, can be of type API or Console
  */

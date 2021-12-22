@@ -33,8 +33,8 @@ typedef struct {
 	uint8_t b; //!< Blue
 	uint8_t interpolation; //!<  bit array, position 0: interpolation mode (set: linear, unset: constant)
 	int32_t frames; //!< the duration in frames, the duration in seconds would be @see frames / @see FRAMERATE
-	int32_t deltar; //<! the change of the Red value per frame when linear interpolation is set, this value is computed during initialization
-	int32_t deltag; //<! see deltar
+	int32_t deltar; //!< the change of the Red value per frame when linear interpolation is set, this value is computed during initialization
+	int32_t deltag; //!< see deltar
 	int32_t deltab; //!< see deltar
 
 } ColorStepType;

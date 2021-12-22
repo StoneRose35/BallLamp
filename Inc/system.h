@@ -55,26 +55,23 @@
 
 /**
  * @brief a simple rgb structure, is not aligned to be streamed directly to the neopixels
- * @param r Red
- * @param g Green
- * @param b Blue
+ *
  */
 typedef struct
 {
-	uint8_t r;
-	uint8_t g;
-	uint8_t b;
+	uint8_t r; //!< Red
+	uint8_t g; //!< Green
+	uint8_t b; //!< Blue
 } RGB;
 
 /**
  * @brief overlay of a potentially streamable color information with the color structure, currently unused
- * @param RGB the color struct
- * @param stream the streamable content of the color struct
+ * 
  */
 typedef union
 {
-	RGB rgb;
-	uint32_t stream;
+	RGB rgb; //!< the color struct
+	uint32_t stream; //!< the streamable content of the color struct
 } RGBStream;
 
 #endif /* SYSTEM_H_ */
