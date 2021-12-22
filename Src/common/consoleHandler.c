@@ -42,7 +42,7 @@ void initConsole(Console console)
 	console->mode=0;
 }
 
-const char * consolePrefix = "lamp-os>"; //!< command line prefix, every shell line starts with that
+const char * consolePrefix = CONSOLE_PREFIX; //!< command line prefix, every shell line starts with that
 const char * cmd_arrow_left = "[D"; //!< special character sequence for "arrow left"
 const char * cmd_arrow_right = "[C"; //!< special character sequence for "arrow right"
 const char * cmd_arrow_up = "[A"; //!< special character sequence for "arrow up"

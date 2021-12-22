@@ -1,3 +1,56 @@
+/**
+ * \mainpage Ico Lamp Overview
+ * \section archoverview Architectural Overview
+ * The system contains two following basinc components
+ * \subsection comminterfaces Communication Interfaces
+ * Two Uart Communication interfaces accessible through usb and bluetooth exposing a command line interface (CLI) or
+ * and application programming interface (API). The interface type can be changed at runtime. The properties of the communication
+ * interfaces are defined in bufferedInputStructs.h. The baudrate is defined in uart.h.
+ * \subsection neopixeldriver Neopixel driver
+ * A hardware-based neopixel driver allowing the transmission of a neopixel color array without interruption. This is typically
+ * achieved with a DMA-fed timer or state machine.
+ * \subsection fakebash Fake-Bash
+ * The CLI features a defineable command history and basic cursor capabilities known from bash excluding autocompletion. 
+ * The command line prefix is defined in consoleHandler.h
+ * \image html ./timing_diagram_large.png
+ * also see Doc/timing_diagram.svg
+ * \section commandref User Command Reference
+ * 
+ * 
+ */
+
+
+/**
+ * @file main.c
+ * @author Philipp Fuerholz (fuerholz@gmx.ch)
+ * @brief Entry Point for the Ico Lamp system
+ * @version 0.1
+ * @date 2021-12-22
+ * ##Startup##
+ * Assumes an initialized C runtime environment, this means 
+ * * Stack Pointer is defined
+ * * bss section i zero-initialized
+ * * data section contains the values defined in the flash image
+ * ##Main Function##
+ * The main function is split into an initialization part run only once and a loop part running infinitly.
+ * ###Initialization part###
+ * In the initialization phase the following steps can be implemented
+ * * clock setup: Set the CPU and bus clock according to the specific needs
+ * * initialize the CPU itself, for example enable the floating point unit
+ * * initialize communication interfaces: setting up the data structures is handled in a hardware-independent manner. A specific 
+ *   implementation should provide initializers for the physical interface (initGpio) and the interrupt handlers for the communication interfaces
+ *   (initUart and initBTUart)
+ * * initialize the neopixel driver itself with initTimer \todo choose a better name for this
+ * ###Main Loop###
+ * The main loops processes a serie of tasks in a predefined order if they should be executed, these are
+ * * send raw color data to the neopixel array
+ * * handle usb CLI/API
+ * * handle bluetooth CLI/API
+ * * update Task array, e.g. compute the colors for the next frame
+ * * convert RGBStream to streamable color data
+ * * send one character over the usb Uart
+ * * send one character over the bluetooth Uart
+ */
 #include "systemChoice.h"
 
 #ifdef HARDWARE
@@ -38,8 +91,10 @@ volatile uint8_t context;
 extern CommBufferType usbCommBuffer;
 extern CommBufferType btCommBuffer;
 
-/*
- * updates the color along a hue shift with the phase going from 0 to 1535
+/**
+ * @brief updates the color along a hue shift with the phase going from 0 to 1535
+ * @param color the color data to update
+ * @param phase the phase value going from 0x0 to 0x600, the hue shifts starts/ends with red
  * */
 void colorUpdate(RGB * color,uint32_t phase)
 {
@@ -81,7 +136,11 @@ void colorUpdate(RGB * color,uint32_t phase)
 	}
 }
 
-
+/**
+ * @brief the main entry point, should never exit
+ * 
+ * @return int by definition but should never return a value
+ */
 int main(void)
 {
 	uint8_t tasksDone = 1;

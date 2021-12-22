@@ -478,6 +478,11 @@ void setupBluetoothCommand(char * cmd,void* context)
 	}
 }
 
+/**
+ * @brief the currently implemented commands
+ * The "0" command is used to mark the end of the array, it is not an actual command
+ * 
+ */
 UserCommandType userCommands[] = {
 	{"BACKGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"FOREGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},

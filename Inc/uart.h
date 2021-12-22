@@ -14,7 +14,7 @@
 
 
 #define BAUD_RATE_USB 57600
-#define BAUD_RATE_BT 9600
+#define BAUD_RATE_BT 9600 //TODO remove, since not used
 
 #ifdef STM32
 typedef struct

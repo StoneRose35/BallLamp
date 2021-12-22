@@ -192,8 +192,9 @@ void initBTUart()
 
 	// clock is 120MHz / (16*57600)
 	// resulting in 130.208333333, becoming 130 and floor(0.2291666*64+0.5)=13
-	*UARTBT_UARTIBRD = 130;
-	*UARTBT_UARTFBRD = 13;
+	// TODO derive from BAUD_RATE
+	*UARTBT_UARTIBRD = 130; // (uint32_t)(F_SYS/(16*BAUD_RATE))
+	*UARTBT_UARTFBRD = 13; // (uint32_t)(64*(F_SYS/(16.0*BAUD_RATE) - floor(F_SYS/(16.0*BAUD_RATE))) + 0.5
 
 	// set word length to 8 bits
 	*UARTBT_UARTLCR_H |= (3 << UART_UARTLCR_H_WLEN_LSB);

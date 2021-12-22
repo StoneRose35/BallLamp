@@ -11,6 +11,7 @@
 #define CONSOLEHANDLER_H_
 
 
+#define CONSOLE_PREFIX "lamp-os>"
 
 
 void initConsole(Console);
