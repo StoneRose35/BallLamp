@@ -27,6 +27,7 @@ typedef struct
 pio_sm_config pio_get_default_sm_config()
 {
     pio_sm_config a;
+    a.a = 0;
     return a;
 }
 void sm_config_set_wrap(pio_sm_config* c,uint wt,uint w)

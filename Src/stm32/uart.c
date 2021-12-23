@@ -127,15 +127,6 @@ void printf(const char* data)
  * */
 void initUart()
 {
-	// GPIO Settings
-	RCC->AHBENR |= (1 << IOPAEN);
-	GPIOA->MODER |= (AF << 4) | (AF << 30); // alternate function for pa2 and pa15
-	GPIOA->AFRL |= (7 << 2*4); // PA2: UART2.TX
-	GPIOA->AFRH |= (7 << 7*4); //PA15: UART2.RX
-
-
-	// enable uart2 in rcc
-	RCC->APB1ENR |= (1 << 17);
 
     // CR1 enable bits 5,3,2 Receiver not empty interrupt, Receiver and Transmitter on
 	UART2->CR1 |= (1 << 5) | (1 << 3) | (1 << 2);
@@ -157,14 +148,7 @@ void initBTUart()
 {
 	uint32_t brr_value;
 	extern uint32_t __filesystem_start;
-	// GPIO Settings
-	RCC->AHBENR |= (1 << IOPBEN);
-	GPIOB->MODER |= (AF << 6*2) | (AF << 7*2); // alternate function for pb6 and pb7
-	GPIOB->AFRL |= (7 << 6*4) | (7 << 7*4); // PB6: UART2.TX, PB7: UART2.RX
-	GPIOB->PUPDR |= (1 << 7*2); // enable pullup on receiver side
 
-	// enable uart1 in rcc
-	RCC->APB2ENR |= (1 << 14);
 
     // CR1 enable bits 5,3,2 Receiver not empty interrupt, Receiver and Transmitter on
 	UART1->CR1 |= (1 << 5) | (1 << 3) | (1 << 2);
@@ -178,6 +162,26 @@ void initBTUart()
 	*NVIC_ISER1 |= (1 << 5);
 
 	UART1->CR1 |= 1;  //uart enable
+}
+
+void initGpio()
+{
+
+	RCC->AHBENR |= (1 << IOPAEN);
+	GPIOA->MODER |= (AF << 4) | (AF << 30); // alternate function for pa2 and pa15
+	GPIOA->AFRL |= (7 << 2*4); // PA2: UART2.TX
+	GPIOA->AFRH |= (7 << 7*4); //PA15: UART2.RX
+
+	// enable uart2 in rcc
+	RCC->APB1ENR |= (1 << 17);
+
+	RCC->AHBENR |= (1 << IOPBEN);
+	GPIOB->MODER |= (AF << 6*2) | (AF << 7*2); // alternate function for pb6 and pb7
+	GPIOB->AFRL |= (7 << 6*4) | (7 << 7*4); // PB6: UART2.TX, PB7: UART2.RX
+	GPIOB->PUPDR |= (1 << 7*2); // enable pullup on receiver side
+
+	// enable uart1 in rcc
+	RCC->APB2ENR |= (1 << 14);
 }
 
 #endif

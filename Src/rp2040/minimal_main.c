@@ -53,6 +53,7 @@ int notmain()
 		printf("\r\n");
 		a++;	
 		uint8_t sendresult;
+		*((int*)dynamicArray+10) =9;
 		sendresult = sendCharAsyncUsb();
 		while (sendresult == 0)
 		{

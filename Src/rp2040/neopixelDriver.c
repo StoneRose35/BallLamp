@@ -68,18 +68,14 @@ void isr_dma_irq0_irq11()
 void decompressRgbArray(RGBStream * frame,uint8_t length)
 {
 	uint8_t cnt = 0;
-	uint8_t cbfr;
 	uint16_t rdata_cnt = 0;
 	*(rawdata_ptr + rdata_cnt) = 0;
 	for(cnt=0;cnt<length;cnt++)
 	{
 		// refer to specific hardware implementation to check which color comes first
 		*(rawdata_ptr + rdata_cnt++) = 0;
-		cbfr = (*(frame+cnt)).rgb.b;
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.b;
-		cbfr = (*(frame+cnt)).rgb.r;
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.r;
-		cbfr = (*(frame+cnt)).rgb.g;
 		*(rawdata_ptr + rdata_cnt++) = (*(frame+cnt)).rgb.g;
 	}
 	sendState = SEND_STATE_DATA_READY;
@@ -135,8 +131,8 @@ void initTimer()
     first_instr_pos = instr_mem_cnt;
     // enable side-set, set wrap top and wrap bottom
 	*PIO_SM0_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( ws2812_wrap_target + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( ws2812_wrap + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( (ws2812_wrap_target + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( (ws2812_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 24 bits of have been shifted out, enable autopull
 	// shift out left since msb should come first
@@ -171,7 +167,7 @@ void initTimer()
 	*PIO_SM0_INSTR = first_instr_pos;
 
     // start PIO 0, state machine 0
-	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+0);
+	*PIO_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0));
 
 	// ***********************************************************
 	// configure state machine 1 which serves as a frame timer
@@ -179,8 +175,8 @@ void initTimer()
 	// disable side-set, set wrap top and wrap bottom
 	first_instr_pos = instr_mem_cnt;
 	*PIO_SM1_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( frametimer_wrap_target + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( frametimer_wrap + first_instr_pos << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( (frametimer_wrap_target + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( (frametimer_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  do pull after 32 bits of have been shifted out, disable autopull
 	*PIO_SM1_SHIFTCTRL |= (0 << PIO_SM1_SHIFTCTRL_PULL_THRESH_LSB) |(0 << PIO_SM1_SHIFTCTRL_AUTOPULL_LSB);
@@ -205,7 +201,7 @@ void initTimer()
 	*PIO_SM1_TXF = (uint32_t)PIO_SM1_CNT;
 
 	// start PIO 0, state machine 1
-	*PIO_CTRL |= (1 << PIO_CTRL_SM_ENABLE_LSB+1);
+	*PIO_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+1));
 
 
 

@@ -54,9 +54,7 @@ uint16_t saveHeader(uint16_t * data,uint32_t size)
  */
 uint16_t saveData(uint16_t * data,uint32_t size,uint32_t offset)
 {
-	uint16_t retcode=0;
 	uint8_t sizeInPages = (uint8_t)((size+offset) >> FLASH_PAGE_SIZE_BIT); 
-	uint8_t firstPage = (uint8_t)(offset >> FLASH_PAGE_SIZE_BIT);
 	uint32_t dataCnt=0;
 	uint32_t flashCnt=0;
 	uint32_t pageOffset=0;

@@ -24,7 +24,7 @@ void setupClock()
 	// 281 results from (12MHz * 6ms)/256
 	*XOSC_STARTUP = 281;
 	*XOSC_CTRL_ENABLE = (XOSC_CTRL_ENABLE_VALUE_ENABLE << XOSC_CTRL_ENABLE_LSB)  | XOSC_CTRL_FREQ_RANGE_VALUE_1_15MHZ;
-	while ((*XOSC_STATUS | (1 << XOSC_STATUS_STABLE_LSB))==0);
+	while ((*XOSC_STATUS & (1 << XOSC_STATUS_STABLE_LSB))==0);
 
 	// switch to XOSC for ref 
 	*CLK_REF_CTRL |= (0x02 << 0);

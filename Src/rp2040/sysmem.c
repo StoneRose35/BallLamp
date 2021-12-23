@@ -13,7 +13,6 @@ static uint8_t *__sbrk_heap_end = NULL;
 void *_sbrk(ptrdiff_t incr)
 {
   extern uint8_t __end__; /* end of the predefined ram section (data, bss, ram_exec), defined in the linker script */
-  extern uint8_t __StackTop; /* topmost stack position (usually at ramend), defined in the linker script */
   extern uint8_t __StackBottom; /* minimum protected stack size, defined in the linker script */
   const uint8_t *max_heap = (uint8_t *)&__StackBottom;
   uint8_t *prev_heap_end;
