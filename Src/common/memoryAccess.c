@@ -1,8 +1,11 @@
-/*
- * memoryAccess.c
- *
- *  Created on: 05.11.2021
- *      Author: philipp
+/**
+ * @file memoryAccess.c
+ * @author Philipp Fuerholz (fuerholz@gmx.ch)
+ * @brief provides functions to access persistent storage
+ * @version 0.1
+ * @date 2021-12-23
+ * 
+ * 
  */
 
 
@@ -12,7 +15,13 @@
 #include "flash.h"
 #include "memoryAccess.h"
 
-
+/**
+ * @brief save size bytes at the beginning of the persistent storage sector
+ * 
+ * @param data halfword array to save
+ * @param size length of the array in halfwords
+ * @return uint16_t 0 if exited without error, >0 otherwise
+ */
 uint16_t saveHeader(uint16_t * data,uint32_t size)
 {
 	uint16_t retcode=0;
@@ -35,6 +44,14 @@ uint16_t saveHeader(uint16_t * data,uint32_t size)
 	return retcode;
 }
 
+/**
+ * @brief saves data at a given position in the persistenz storage section
+ * 
+ * @param data halfword array to save
+ * @param size length of the array in halfwords
+ * @param offset start address 
+ * @return uint16_t 0 if exited successfully, >0 otherwise
+ */
 uint16_t saveData(uint16_t * data,uint32_t size,uint32_t offset)
 {
 	uint16_t retcode=0;

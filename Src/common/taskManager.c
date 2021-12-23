@@ -1,8 +1,15 @@
-/*
- * taskManager.c
- *
- *  Created on: 16.09.2021
- *      Author: philipp
+/**
+ * @file taskManager.c
+ * @author Philipp Fuerholz (fuerholz@gmx.ch)
+ * @brief currently contains all user-callable functions, related helper functions and data structures and the 
+ * task Manager functions themselves.
+ * 
+ * All user-callable functions should print error messages to indicate exceptions. User functions should not access hardware buffers
+ * directly and be system or mcu independent.
+ * @version 0.1
+ * @date 2021-12-23
+ * 
+ * 
  */
 #include "systemChoice.h"
 #include "taskManager.h"
@@ -23,7 +30,10 @@
 #include <string.h>
 #include <stdlib.h>
 
-
+/**
+ * @brief array of 16 standard colors used for the color command
+ * 
+ */
 RGB colors[] = {
 		{.r=0,.g=0,.b=0}, // background
 		{.r=255,.g=255,.b=255}, // foreground
@@ -46,6 +56,10 @@ RGB colors[] = {
 		{.r=170,.g=170,.b=170} // 15 gray
 };
 
+/**
+ * @brief command name of the color commands
+ * 
+ */
 const char * colorCommands[N_COLOR_COMMANDS] = {
 		"BACKGROUND",
 		"FOREGROUND",
@@ -64,6 +78,12 @@ const char * colorCommands[N_COLOR_COMMANDS] = {
 		"DARKPURPLE",
 		"GRAY"};
 
+/**
+ * @brief implementation of the command which sets the color of a set of neopixel colors to a preset color
+ * 
+ * @param cmd the command itself, Example AQUA(0-4,10)
+ * @param context the RGBStream containing the structured color information
+ */
 void colorCommand(char * cmd,void * context)
 {
 	char bracketContent[128];
@@ -99,6 +119,12 @@ void colorCommand(char * cmd,void * context)
 	}
 }
 
+/**
+ * @brief set a set of neopixel to a custom rgb value
+ * @param cmd The command including argument, Example RGB(110,0,110,1,3,5-7) set the neopixels 1,3,5,6,7
+ * to a dim violet.
+ * @param context the RGBStream containing the structured color information
+ */
 void rgbCommand(char* cmd,void* context)
 {
 	char * clr;
@@ -147,19 +173,38 @@ void rgbCommand(char* cmd,void* context)
 }
 
 
-
+/**
+ * @brief Starts the neopixel animation, if possible
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the Tasks objects
+ */
 void startCommand(char * cmd,void* context)
 {
 	Tasks interpolators=(Tasks)context;
 	startInterpolators(interpolators);
+	//TODO print error if return code > 0
 }
 
+/**
+ * @brief Stops the neopixel animation, if possible
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the Tasks objects
+ */
 void stopCommand(char * cmd,void* context)
 {
 	Tasks interpolators=(Tasks)context;
 	stopInterpolators(interpolators);
+	//TODO print error if return code > 0
 }
 
+/**
+ * @brief prints a brief overview of the commands
+ * 
+ * @param cmd the command, doesn't take any arguments
+ * @param context unused
+ */
 void helpCommand(char * cmd,void* context)
 {
 	printf("Supported Color commands are\r\n");
@@ -197,7 +242,13 @@ void helpCommand(char * cmd,void* context)
 
 }
 
-
+/**
+ * @brief defines an interpolator/color sequence for a given neopixel 255 means every neopixel. This function doesn't take ranges
+ * as an argument to select a set of neopixels.
+ * 
+ * @param cmd the command itself including arguments.
+ * @param context the Tasks data structures holding all individual neopixel Task data structures 
+ */
 void interpCommand(char * cmd,void* context)
 {
 	char * var;
@@ -261,7 +312,12 @@ void interpCommand(char * cmd,void* context)
 	}
 }
 
-
+/**
+ * @brief defines a certain step for a color sequence/interpolator
+ * 
+ * @param cmd the command itself including arguments.
+ * @param context the Tasks data structures holding all individual neopixel Task data structures 
+ */
 void istepCommand(char * cmd,void* context)
 {
 	char * var;
@@ -330,6 +386,12 @@ void istepCommand(char * cmd,void* context)
 
 }
 
+/**
+ * @brief shows the state of all color sequences including their progression
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the Tasks data structure
+ */
 void desciCommand(char * cmd,void* context)
 {
 	char nrbfr[8];
@@ -374,7 +436,13 @@ void desciCommand(char * cmd,void* context)
 	}
 }
 
-
+/**
+ * @brief frees a color sequence / interpolator data structures
+ * 
+ * returns error messages if no destroyable interpolators have been found
+ * @param cmd the command including arguments.
+ * @param context the Tasks data structure.
+ */
 void destroyCommand(char * cmd,void* context)
 {
 	uint8_t has_errors = 0;
@@ -419,6 +487,12 @@ void destroyCommand(char * cmd,void* context)
 	}
 }
 
+/**
+ * @brief persistently stores a set of interpolators / color sequences
+ * return a message indicating how many bytes have been saved and is saving has been successful.
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the Tasks data structure.
+ */
 void saveCommand(char * cmd,void* context)
 {
 	uint16_t retcode = 0;
@@ -439,6 +513,12 @@ void saveCommand(char * cmd,void* context)
 	printf("\r\n");
 }
 
+/**
+ * @brief load a set of interpolators from the persistent storage
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the Tasks data structure.
+ */
 void loadCommand(char * cmd,void* context)
 {
 	Tasks interpolators=(Tasks)context;
@@ -449,6 +529,13 @@ void loadCommand(char * cmd,void* context)
 	fromStream((uint16_t*)((ptr)getFilesystemStart()+FLASH_HEADER_SIZE),interpolators);
 }
 
+/**
+ * @brief switches the mode of the interface to API. Nothing happens if the mode is already API.
+ * 
+ * Note: it is only possible to change the mode of the interface which is accessed.
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the BufferedInput from which the command has been sent.
+ */
 void apiCommand(char * cmd,void* context)
 {
 	BufferedInput binput = (BufferedInput)context;
@@ -457,6 +544,12 @@ void apiCommand(char * cmd,void* context)
 	binput->console->outBfr[0]=0; // disable command prompt already generated by the console handler
 }
 
+/**
+ * @brief switches the mode of the interface to Console/CLI. Nothing happens if the mode is already Console/CLI.
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context the BufferedInput from which the command has been sent.
+ */
 void consoleCommand(char * cmd,void* context)
 {
 	BufferedInput binput = (BufferedInput)context;
@@ -464,6 +557,12 @@ void consoleCommand(char * cmd,void* context)
 	printf("Switching back to Console Mode\r\n");
 }
 
+/**
+ * @brief sets up Bluetooth, Deprecated.
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context unused
+ */
 void setupBluetoothCommand(char * cmd,void* context)
 {
 	if(ATCheckEnabled() == 0)
@@ -517,7 +616,16 @@ UserCommandType userCommands[] = {
 };
 
 
-
+/**
+ * @brief sets the appropriate system context and calls the user functions
+ * 
+ * A system context can either be the global RGBStream defining the structured color information for all neopixels or the TasksType holding the
+ * animation for the neopixels.
+ * @param userFct pointer to the function which should be executed
+ * @param cmd the command including possible arguments
+ * @param contextType the context type enumeration, depending on this value a system context or null is handed over
+ * @param callerContext an optional caller context, currently used for API and CONSOLE
+ */
 void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType,void* callerContext)
 {
 	extern TasksType interpolators;
@@ -542,7 +650,13 @@ void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType,
 	}
 }
 
-
+/**
+ * @brief The actual task manager
+ * 
+ * hands the command over to callUserFunction if the command name has been found.
+ * @param cmd the commmand including possible arguments
+ * @param caller generic context, currently for API and CONSOLE the calling BufferedInput is handed over, is null for all other commands
+ */
 void handleCommand(char * cmd,void* caller)
 {
 	uint8_t cnt = 0;

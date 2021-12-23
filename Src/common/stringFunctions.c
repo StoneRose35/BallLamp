@@ -1,10 +1,24 @@
 
+/**
+ * @file stringFunctions.c
+ * @author Philipp	Fuerholz (fuerholz@gmx.ch)
+ * @brief contains various string conversion functions
+ * @version 0.1
+ * @date 2021-12-23
+ * 
+ * 
+ */
 #include "types.h"
 #include "stringFunctions.h"
 #include <string.h>
 #include <stdlib.h>
 
-
+/**
+ * @brief converts a number from 0 1 into a string showing percent from 0 to 100. The precision is fixed to three digits.
+ * 
+ * @param percentVal the value to convert
+ * @param out the character array holding the converted string, must be initialized and of length 8 minimum
+ */
 void toPercentChar(float percentVal,char * out)
 {
 	uint32_t ival = (uint32_t)(percentVal*100000.0);
@@ -28,6 +42,12 @@ void toPercentChar(float percentVal,char * out)
 	out[str_len+1] = 0;
 }
 
+/**
+ * @brief converts a uint8_t to a string
+ * 
+ * @param nr the number to convert
+ * @param out the character array,must be initialized and of length 4 minimum
+ */
 void UInt8ToChar(uint8_t nr, char * out)
 {
 	uint8_t pos=100;
@@ -58,6 +78,12 @@ void UInt8ToChar(uint8_t nr, char * out)
 	out[charpos]=0;
 }
 
+/**
+ * @brief converts a uint16_t to a string
+ * 
+ * @param nr the number to convert
+ * @param out the character array,must be initialized and of length 6 minimum
+ */
 void UInt16ToChar(uint16_t nr, char * out)
 {
 	uint16_t pos=10000;
@@ -89,6 +115,12 @@ void UInt16ToChar(uint16_t nr, char * out)
 	out[charpos]=0;
 }
 
+/**
+ * @brief converts a uint32_t to a string
+ * 
+ * @param nr the number to convert
+ * @param out the character array,must be initialized and of length 11 minimum
+ */
 void UInt32ToChar(uint32_t nr, char * out)
 {
 	uint32_t pos=1000000000;
@@ -119,7 +151,12 @@ void UInt32ToChar(uint32_t nr, char * out)
 	out[charpos]=0;
 }
 
-
+/**
+ * @brief add zeros on the left side on a string representing an integer number, used by toPercentChar
+ * 
+ * @param minlength the minimum length the string should have
+ * @param nr the array containing the string representation of the integer number, note the extra space must be allocated
+ */
 void fillWithLeadingZeros(uint8_t minlength,char * nr)
 {
 	uint8_t nrlen=0;
@@ -141,7 +178,13 @@ void fillWithLeadingZeros(uint8_t minlength,char * nr)
 	}
 }
 
-
+/**
+ * @brief checks if one string start with another
+ * 
+ * @param ptrn the pattern to check
+ * @param target the string for which should be checked if it start with ptrn
+ * @return 1 if target start with ptrn, 0 otherwise
+ */
 uint8_t startsWith(const char* ptrn,const char* target)
 {
 	uint8_t cnt=0,isEqual=1;
@@ -156,6 +199,12 @@ uint8_t startsWith(const char* ptrn,const char* target)
 	return isEqual;
 }
 
+/**
+ * @brief convert a string to an uint8_t, doesn't do any validity check on the string
+ * 
+ * @param chr the string convert
+ * @return the string as a uint8_t
+ */
 uint8_t toUInt8(char * chr)
 {
 	uint8_t res=0;
@@ -169,6 +218,12 @@ uint8_t toUInt8(char * chr)
 	return res;
 }
 
+/**
+ * @brief convert a string to an uint32_t, doesn't do any validity check on the string
+ * 
+ * @param chr the string convert
+ * @return the string as a uint32_t
+ */
 uint32_t toUInt32(char * chr)
 {
 	uint32_t res=0;
@@ -182,7 +237,12 @@ uint32_t toUInt32(char * chr)
 	return res;
 }
 
-
+/**
+ * @brief convert a string to an int16_t, doesn't do any validity check on the string
+ * 
+ * @param chr the string convert
+ * @return the string as a int16_t
+ */
 int16_t toInt16(char * chr)
 {
 	int16_t res=0;
@@ -206,6 +266,13 @@ int16_t toInt16(char * chr)
 	return res;
 }
 
+/**
+ * @brief returns the content within the brackts of a string. Doens't do any specific validity checks. For example for "RGB(123,32,34,0-17)"
+ * the function would return "123,32,34,0-17"
+ * 
+ * @param input the string containing exactly one set of brackett: "()"
+ * @param out the content within the brackets
+ */
 void getBracketContent(const char* input,char * out)
 {
 	uint8_t cnt=0,bcnt=0;
@@ -243,6 +310,11 @@ void getBracketContent(const char* input,char * out)
 	}
 }
 
+/**
+ * @brief removes all whitespace characters (Tab, Space) from a string
+ * 
+ * @param input the string for which the whitespace should be removed, note that the operation happens in-place and that the character after the terminating 0 are not zeroed
+ */
 void stripWhitespaces(char * input)
 {
 
@@ -266,6 +338,13 @@ void stripWhitespaces(char * input)
 	}
 }
 
+/**
+ * @brief expands a range description from uint8_t values into a uint8_t array. The first number must be smaller than the seconds one. Also the string should no contains whitespaces.
+ * 
+ * @param stringinput the string which should be expanded
+ * @param result pointer to the uint8_t array, the array itself is initialized dynamically within the function
+ * @return the length of the array, 0 if no range has been input
+ */
 uint8_t expandRange(char * stringinput,uint8_t ** result)
 {
 	char nr[4];
