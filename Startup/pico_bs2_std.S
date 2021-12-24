@@ -31,8 +31,6 @@
 .align 2
 
 
-// TODO: properly set up QSPI for flash access
-
 /* trying to initialize  the xip flash using default single channel spi mode*/
 
 push {lr}

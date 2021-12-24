@@ -59,7 +59,7 @@ uint8_t sendCharAsyncUsb()
 	}
 	if (usbCommBuffer.outputBufferWriteCnt == usbCommBuffer.outputBufferReadCnt)
 	{
-		usbCommBuffer.outputBufferWriteCnt=0;
+ 		usbCommBuffer.outputBufferWriteCnt=0;
 		usbCommBuffer.outputBufferReadCnt=0;
 		return 1;
 	}
@@ -134,7 +134,7 @@ void printf(const char* data)
 /* USB Uart, used for serial communication over usb
  * 
  * */
-void initUart()
+void initUart(uint16_t baudrate)
 {
 	// power on uart, first switch it off explicitely
 	*RESETS |= (1 << RESETS_RESET_UART0_LSB); 
@@ -152,10 +152,9 @@ void initUart()
 	// clock is 132MHz / (16*57600)
 	// resulting in 143.2291666, becoming 143 and floor(0.2291666*64)=14
 
-	// clock is 120MHz / (16*57600)
-	// resulting in 130.208333333, becoming 130 and floor(0.2291666*64+0.5)=13
-	*UART_UARTIBRD = 130;
-	*UART_UARTFBRD = 13;
+	// set the baud rate
+	*UART_UARTIBRD = (uint32_t)(F_SYS/(16*BAUD_RATE)); // 130 with F_SYS at 120 MHz
+	*UART_UARTFBRD = (uint32_t)(64*(F_SYS/(16.0*BAUD_RATE) - (uint32_t)(F_SYS/(16.0*BAUD_RATE))) + 0.5); // 13 with F_SYS at 120 MHz
 
 	// set word length to 8 bits
 	*UART_UARTLCR_H |= (3 << UART_UARTLCR_H_WLEN_LSB);
@@ -172,7 +171,7 @@ void initUart()
  * Uart connected to the bluetooth module
  * 
  * */
-void initBTUart()
+void initBTUart(uint16_t baudrate)
 {
 	// power on uart
 	*RESETS |= (1 << RESETS_RESET_UART1_LSB); 
@@ -187,14 +186,9 @@ void initBTUart()
 	// enable interrupt on receive
 	*UARTBT_UARTIMSC |= (1 << UART_UARTIMSC_RXIM_LSB);
 
-	// clock is 132MHz / (16*57600)
-	// resulting in 143.2291666, becoming 143 and floor(0.2291666*64)=14
-
-	// clock is 120MHz / (16*57600)
-	// resulting in 130.208333333, becoming 130 and floor(0.2291666*64+0.5)=13
-	// TODO derive from BAUD_RATE
-	*UARTBT_UARTIBRD = 130; // (uint32_t)(F_SYS/(16*BAUD_RATE))
-	*UARTBT_UARTFBRD = 13; // (uint32_t)(64*(F_SYS/(16.0*BAUD_RATE) - floor(F_SYS/(16.0*BAUD_RATE))) + 0.5
+	// set the baud rate
+	*UARTBT_UARTIBRD = (uint32_t)(F_SYS/(16*BAUD_RATE)); // 130 with F_SYS at 120 MHz
+	*UARTBT_UARTFBRD = (uint32_t)(64*(F_SYS/(16.0*BAUD_RATE) - (uint32_t)(F_SYS/(16.0*BAUD_RATE))) + 0.5); // 13 with F_SYS at 120 MHz
 
 	// set word length to 8 bits
 	*UARTBT_UARTLCR_H |= (3 << UART_UARTLCR_H_WLEN_LSB);

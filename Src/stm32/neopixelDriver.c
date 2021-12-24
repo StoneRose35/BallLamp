@@ -122,7 +122,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
  * Initiates the GPIO, TIM2 and DMA necessary for operating the neopixel array
  * should be called once after startup
  */
-void initTimer()
+void initNeopixels()
 {
     RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
     RCC->AHBENR |= (1 << IOPAEN) | (1 << DMA1EN); // enable gpio a and dma 1

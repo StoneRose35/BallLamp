@@ -181,9 +181,13 @@ void rgbCommand(char* cmd,void* context)
  */
 void startCommand(char * cmd,void* context)
 {
+	uint8_t retcode;
 	Tasks interpolators=(Tasks)context;
-	startInterpolators(interpolators);
-	//TODO print error if return code > 0
+	retcode = startInterpolators(interpolators);
+	if (retcode > 0)
+	{
+		printf("Error while starting the animation\r\n");
+	}
 }
 
 /**
@@ -194,9 +198,13 @@ void startCommand(char * cmd,void* context)
  */
 void stopCommand(char * cmd,void* context)
 {
+	uint8_t retcode;
 	Tasks interpolators=(Tasks)context;
-	stopInterpolators(interpolators);
-	//TODO print error if return code > 0
+	retcode = stopInterpolators(interpolators);
+	if (retcode > 0)
+	{
+		printf("Error while stopping the animation\r\n");
+	}
 }
 
 /**

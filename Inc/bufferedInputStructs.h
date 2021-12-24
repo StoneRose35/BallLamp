@@ -20,8 +20,8 @@
 
 #define COMMAND_BUFFER_SIZE 48 //!< the size of the input command buffer thus the maximum command length. The byte size of the input buffer is COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE
 #define COMMAND_HISTORY_SIZE 4 //!< the maximum number of commands remembered
-#define OUT_BUFFER_SIZE 256 //!< the size of the command line output buffer, holding the characters which should be printed back at once after a character is entered
-                            //TODO maybe too big, not more than the command buffer is expected..
+#define OUT_BUFFER_SIZE 32 //!< the size of the command line output buffer, holding the characters which should be printed back at once after a character is entered
+                            
 #define API_INPUT_BUFFER_SIZE 256 //!< the size of the input buffer of the api, adjust to the maximum command length
 #define API_OUTPUT_BUFFER_SIZE 8 //!< size of the output api buffer
 

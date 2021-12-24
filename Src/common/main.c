@@ -123,7 +123,7 @@
  * * initialize communication interfaces: setting up the data structures is handled in a hardware-independent manner. A specific 
  *   implementation should provide initializers for the physical interface (initGpio) and the interrupt handlers for the communication interfaces
  *   (initUart and initBTUart)
- * * initialize the neopixel driver itself with initTimer \todo choose a better name for this
+ * * initialize the neopixel driver itself with initNeopixels
  * ###Main Loop###
  * The main loops processes a serie of tasks in a predefined order if they should be executed, these are
  * * send raw color data to the neopixel array
@@ -257,8 +257,8 @@ int main(void)
     btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
 	initGpio();
-	initBTUart();
-	initUart();
+	initBTUart(BAUD_RATE);
+	initUart(BAUD_RATE);
 
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
@@ -272,7 +272,7 @@ int main(void)
 
 	setSendState(SEND_STATE_RTS);
 
-	initTimer();
+	initNeopixels();
 
 
 	printf("BallLamp v0.1 running\r\n");

@@ -86,7 +86,7 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
    mechanism (usually dma) and the hardware driver necessary for operating the neopixel array
  * should be called once after startup
  */
-void initTimer()
+void initNeopixels()
 {
     
 	// enable the dma block

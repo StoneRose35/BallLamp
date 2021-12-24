@@ -125,14 +125,14 @@ void printf(const char* data)
 /* USB Uart, used for serial communication over usb
  * hooked up to pa2 (TX) and pa15 (rx)
  * */
-void initUart()
+void initUart(uint16_t baudrate)
 {
 
     // CR1 enable bits 5,3,2 Receiver not empty interrupt, Receiver and Transmitter on
 	UART2->CR1 |= (1 << 5) | (1 << 3) | (1 << 2);
 
 	// set baud rate
-	UART2->BRR = F_APB1/BAUD_RATE_USB;
+	UART2->BRR = F_APB1/baudrate;
 
 	// enable uart2 interrupt, at pos 38 --> pos 6 of 2nd register
 	*NVIC_ISER1 |= (1 << 6);
@@ -144,19 +144,13 @@ void initUart()
  * Uart connected to the bluetooth module
  * pb6 is tx and pb7 is rx
  * */
-void initBTUart()
+void initBTUart(uint16_t baudrate)
 {
-	uint32_t brr_value;
-	extern uint32_t __filesystem_start;
-
 
     // CR1 enable bits 5,3,2 Receiver not empty interrupt, Receiver and Transmitter on
 	UART1->CR1 |= (1 << 5) | (1 << 3) | (1 << 2);
 
-	// set baud rate
-	brr_value = *(&__filesystem_start + 0);
-
-	UART1->BRR = brr_value;
+	UART1->BRR = F_APB1/baudrate;
 
 	// enable uart1 interrupt, at pos 37 --> pos 5 of 2nd register
 	*NVIC_ISER1 |= (1 << 5);

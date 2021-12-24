@@ -13,8 +13,7 @@
 
 
 
-#define BAUD_RATE_USB 57600
-#define BAUD_RATE_BT 9600 //TODO remove, since not used
+#define BAUD_RATE 57600
 
 #ifdef STM32
 typedef struct
@@ -44,8 +43,8 @@ typedef struct
 #endif
 
 
-void initUart();
-void initBTUart();
+void initUart(uint16_t baudrate);
+void initBTUart(uint16_t baudrate);
 void initGpio();
 
 void printf(const char*);

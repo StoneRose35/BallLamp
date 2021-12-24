@@ -36,7 +36,7 @@ int notmain()
 	char nrbfr[8];
 	setupClock();
 	blinkSetup();
-	initUart();
+	initUart(9600);
 
 	dynamicArray=malloc(24*sizeof(int));
 

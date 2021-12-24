@@ -16,7 +16,7 @@ inline ptr getFilesystemStart()
 	extern uint8_t __filesystem_start;
 	return (ptr)&__filesystem_start;
 }
-//TODO add symbols in the rp2040 linker file
+
 #else
 	uint16_t fakeflash[1024*1024];
 	inline ptr getFilesystemStart()

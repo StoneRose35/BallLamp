@@ -290,7 +290,7 @@ typedef struct {
 #endif
 
 #ifdef HARDWARE
-void initTimer();
+void initNeopixels();
 void decompressRgbArray(RGBStream * frame,uint8_t length);
 void sendToLed();
 uint8_t getSendState();
