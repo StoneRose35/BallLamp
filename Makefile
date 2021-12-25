@@ -1,4 +1,9 @@
 
+# **********************************
+#
+# RP2040 Builds
+#
+# **********************************
 
 PROJECT=pico_lamp
 CC=arm-none-eabi-gcc
@@ -118,7 +123,32 @@ $(PROJECT).bin: $(PROJECT).elf
 $(PROJECT).uf2: tools/elf2uf2 $(PROJECT).elf 
 	$(ELF2UF2) -v ./out/$(PROJECT).elf ./out/$(PROJECT).uf2
 
-# experimental stuff
+# *************************************************************
+#
+# Tests on x86
+#
+# *************************************************************
 
-testfunction.S: 
-	$(CC) $(CARGS) $(OPT) -S ./Src/rp2040/testfunction.c -o testfunction.S
+CC_TEST=gcc -I./Inc -Og -g3 -Wall -c -fmessage-length=0 -MMD -MP 
+
+
+TEST_COMMON_OBJS := $(patsubst Src/common/%.c,testout/%.o,$(wildcard Src/common/*.c))
+TEST_MOCK_OBJS := $(patsubst Src/mock/%.c,testout/%.o,$(wildcard Src/mock/*.c))
+TEST_MAIN_OBJS := $(patsubst Tests/%.c,testout/%.o,$(wildcard Tests/*.c))
+
+clean_tests: 
+	@rm -rf ./testout/*
+	
+testout/$(PROJECT): $(TEST_COMMON_OBJS) $(TEST_MOCK_OBJS) $(TEST_MAIN_OBJS)
+	gcc  -o ./testout/$(PROJECT) ./testout/*.o
+
+tests: clean_tests testout/$(PROJECT)
+
+testout/%.o: Src/common/%.c 
+	$(CC_TEST) -o $@ -c $^
+
+testout/%.o: Src/mock/%.c
+	$(CC_TEST) -o $@ -c $^
+
+testout/%.o: Tests/%.c
+	$(CC_TEST) -o $@ -c $^

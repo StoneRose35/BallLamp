@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include "consoleHandler.h"
 #include "taskManager.h"
 #include "taskManagerUtils.h"
@@ -12,6 +13,8 @@
 #include "interpolators.h"
 #include "flash.h"
 #include "memoryAccess.h"
+
+
 
 
 
@@ -343,15 +346,43 @@ void testFlashHeaderWrite()
 	printf("******** ending testFlashHeaderWrite\n");
 }
 
+void testFlashWrite()
+{
+	printf("******** starting testFlashWrite\n");
+	srand(3435);
+	for (uint8_t q=0;q<200;q++)
+	{
+		uint16_t* data;
+		uint32_t dsize = rand()%100 + 10;
+		data = (uint16_t*)malloc(dsize*sizeof(uint16_t));
+		for(uint32_t d=0;d<dsize;d++)
+		{
+			*(data + d) = (uint16_t)(rand() & 0xFFFF);
+		}
+
+		uint32_t offset = rand()%(8192-dsize*sizeof(uint16_t));
+		offset &= ~(1);
+		saveData(data,dsize,offset);
+		for(uint16_t c2=0;c2<dsize;c2++)
+		{
+			if (*((uint16_t*)fakeflash + c2 + (offset>>1)) != *(data + c2))
+			{
+				printf("characters written do not match: %d vs %d\n",*((uint16_t*)fakeflash + c2 + (offset>>1)),*(data + c2));
+			}
+		}
+		free(data);
+	}
+	printf("******** ending testFlashWrite\n");
+}
+
 
 int main(int argc,char** argv)
 {
 	interpolators.taskArray=(TaskType*)interpolatorsArray;
 	interpolators.taskArrayLength=N_LAMPS;
 	initInterpolators(&interpolators);
-
+	testFlashWrite();
 	testFlashHeaderWrite();
-
 	testStreamRoundtrip();
 	testInterpolation();
 	consoleHandlerHistoryCheck();

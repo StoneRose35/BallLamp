@@ -18,7 +18,7 @@ inline ptr getFilesystemStart()
 }
 
 #else
-	uint16_t fakeflash[1024*1024];
+	uint8_t fakeflash[8192];
 	inline ptr getFilesystemStart()
 	{
 		return (ptr)fakeflash;
@@ -27,8 +27,8 @@ inline ptr getFilesystemStart()
 
 
 void unlockFlash();
-uint8_t erasePage(uint8_t pagenr);
+uint8_t erasePage(uint16_t pagenr);
 uint8_t programHalfword(uint16_t hwrd,ptr addr);
-uint8_t programPage(uint8_t pagenr,uint16_t* data,uint16_t cnt);
+uint8_t programPage(uint16_t pagenr,uint16_t* data,uint16_t cnt);
 
 #endif /* FLASH_H_ */

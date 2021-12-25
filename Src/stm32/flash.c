@@ -18,7 +18,7 @@ void unlockFlash()
 	FLASH->KEYR = 0x45670123L;
 	FLASH->KEYR = 0xCDEF89AB;
 }
-uint8_t erasePage(uint8_t pagenr)
+uint8_t erasePage(uint16_t pagenr)
 {
 	if ((FLASH->CR & (1 << FLASH_LOCK))==(1 << FLASH_LOCK))
 	{
@@ -72,7 +72,7 @@ uint8_t programHalfword(uint16_t hwrd,ptr addr)
 	return errcode;
 }
 
-uint8_t programPage(uint8_t pagenr,uint16_t* data,uint16_t cnt)
+uint8_t programPage(uint16_t pagenr,uint16_t* data,uint16_t cnt)
 {
 	uint8_t errcode = 0;
 	ptr flashOffset = getFilesystemStart() + (pagenr << FLASH_PAGE_SIZE_BIT);

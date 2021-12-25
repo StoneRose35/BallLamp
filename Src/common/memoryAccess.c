@@ -45,28 +45,35 @@ uint16_t saveHeader(uint16_t * data,uint32_t size)
 }
 
 /**
- * @brief saves data at a given position in the persistenz storage section
+ * @brief saves data at a given position in the persistent storage section
  * 
  * @param data halfword array to save
  * @param size length of the array in halfwords
- * @param offset start address 
+ * @param offset start address in bytes
  * @return uint16_t 0 if exited successfully, >0 otherwise
  */
 uint16_t saveData(uint16_t * data,uint32_t size,uint32_t offset)
 {
-	uint8_t sizeInPages = (uint8_t)((size+offset) >> FLASH_PAGE_SIZE_BIT); 
+	uint8_t sizeInPages = (uint8_t)(size >> FLASH_PAGE_SIZE_BIT);
+	if ((size & (FLASH_PAGE_SIZE-1))!=0)
+	{
+		sizeInPages++;
+	}
+	sizeInPages <<=  1;
 	uint32_t dataCnt=0;
 	uint32_t flashCnt=0;
-	uint32_t pageOffset=0;
-	uint16_t pageBuffer[FLASH_PAGE_SIZE>>2];
+	uint32_t pageOffset;
+	uint16_t pageBuffer[FLASH_PAGE_SIZE>>1];
+	uint16_t c=0;
 
 	ptr fsStart = getFilesystemStart();
+	uint16_t firstpage = offset >> FLASH_PAGE_SIZE_BIT;
 
-	for (uint8_t c=0;c<sizeInPages;c++)
+	while(dataCnt<size)
 	{
 		if(c==0)
 		{
-			pageOffset = (offset - ((offset >> FLASH_PAGE_SIZE_BIT)<<FLASH_PAGE_SIZE_BIT))>>FLASH_PAGE_SIZE_BIT; 
+			pageOffset = (offset - ((offset >> FLASH_PAGE_SIZE_BIT)<<FLASH_PAGE_SIZE_BIT)) >> 1;
 		}
 		else
 		{
@@ -74,17 +81,22 @@ uint16_t saveData(uint16_t * data,uint32_t size,uint32_t offset)
 		}
 		for (uint16_t c2=0;c2<FLASH_PAGE_SIZE>>1;c2++)
 		{
-			if(dataCnt < size && c2 > pageOffset)
+			if(dataCnt < size && c2 >= pageOffset)
 			{
 				pageBuffer[c2] = *(data+dataCnt++);
 			}
-			else
+			else if (dataCnt < size && c2 < pageOffset)
 			{
 				pageBuffer[c2] = *((uint16_t*)fsStart + flashCnt++);
 			}
+			else
+			{
+				pageBuffer[c2] = *((uint16_t*)fsStart + size+ (offset>>1) + flashCnt++);
+			}
 		}
-		erasePage(c);
-		programPage(c,pageBuffer,FLASH_PAGE_SIZE>>1);
+		erasePage(firstpage + c);
+		programPage(firstpage + c,pageBuffer,FLASH_PAGE_SIZE>>1);
+		c++;
 	}
 
 	return 0;

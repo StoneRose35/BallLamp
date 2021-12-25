@@ -11,6 +11,7 @@
 #define SYSTEM_H_
 
 #include "types.h"
+#include "systemChoice.h"
 
 #define N_LAMPS (20) //!< the number of neopixel the system contains 
 
@@ -21,6 +22,7 @@
 #define WS2818_SHORT (2500000) //!< 1/pulse length of the short neopixel pulse
 #define WS2818_LONG  (1176470) //!< 1/pulse length of the long neopixel pulse
 
+#ifdef HARDWARE
 #ifdef STM32
 #define F_BUS (64000000)
 #define F_APB1 F_BUS/2
@@ -37,6 +39,11 @@
 #ifdef RP2040_FEATHER
 #define FLASH_PAGE_SIZE 4096 //!< size in bytes of a flash page, a flash page is the smallest eraseable flash unit
 #define FLASH_PAGE_SIZE_BIT 12 //!< bit position of the flash page size, i.e. 2^FLASH_PAGE_SIZE_BIT = FLASH_PAGE_SIZE
+#endif
+
+#else
+#define FLASH_PAGE_SIZE 16
+#define FLASH_PAGE_SIZE_BIT 4
 #endif
 
 

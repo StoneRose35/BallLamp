@@ -12,6 +12,12 @@
                 "kind": "build",
                 "isDefault": true
             }
+        },
+        {
+            "label": "Build tests",
+            "type": "shell",
+            "command": "make tests",
+            "group": "build"
         }
     ]
 }
