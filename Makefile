@@ -53,7 +53,7 @@ tools/pioasm: tools/pioasm_src/gen/parser.cpp tools/pioasm_src/gen/lexer.cpp
 	g++ -DYY_NO_UNISTD_H -Itools/pioasm_src -Itools/pioasm_src/gen -Wno-psabi -o ./tools/pioasm ./tools/pioasm_src/*.cpp ./tools/pioasm_src/gen/*.cpp 
 
 
-# boot stage code variants for the rp2040 feather
+# boot stage code variants for the rp2040 feather and the rp2040 itsybitsy
 bs2_std.o:
 	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_std.S -o ./out/bs2_std.o
 
@@ -62,6 +62,9 @@ bs2_dspi.o:
 
 bs2_fast_qspi.o:
 	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi.S -o ./out/bs2_fast_qspi.o
+
+bs2_fast_qspi2.o:
+	$(CC) $(CARGS) $(OPT) -c ./Startup/pico_bs2_fast_qspi2.S -o ./out/bs2_fast_qspi2.o
 
 
 # generating the boot stage2 assembly file
