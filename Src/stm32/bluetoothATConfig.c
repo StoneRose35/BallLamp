@@ -6,7 +6,7 @@
  */
 
 #ifdef STM32
-#include "types.h"
+#include <stdint.h>
 #include "uart.h"
 #include "neopixelDriver.h"
 #include "stringFunctions.h"

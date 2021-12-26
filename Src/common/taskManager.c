@@ -18,8 +18,11 @@
 #include "flash.h"
 #ifdef HARDWARE
 #include "uart.h"
+#include "systick.h"
+register void* address __asm__("sp");
 #else
 #include <stdio.h>
+void* address;
 #endif
 #include "stringFunctions.h"
 #include "interpolators.h"
@@ -29,6 +32,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <malloc.h>
 
 /**
  * @brief array of 16 standard colors used for the color command
@@ -247,6 +251,7 @@ void helpCommand(char * cmd,void* context)
 	printf(" * CONSOLE: switches the physical interface to console mode, characters received are echoed\r\n");
 	printf("   also command line history and editing is possible\r\n");
 	printf(" * SETUPBT: changes the bluetooth interface name and pin, sets bluetooth speed to 57600\r\n");
+	printf(" * SYSINFO: displays system and memory infos\r\n");
 
 }
 
@@ -586,6 +591,38 @@ void setupBluetoothCommand(char * cmd,void* context)
 }
 
 /**
+ * @brief prints out system information
+ * 
+ * @param cmd the command, doesn't taken any arguments, therefore unused here.
+ * @param context unused
+ */
+void sysInfoCommand(char * cmd,void*context)
+{
+	uint32_t current_sp = (uint32_t)address;
+	struct mallinfo heapInfo;
+	uint32_t nticks;
+	char nrbfr[16];
+	heapInfo = mallinfo();
+	nticks = getTickValue();
+	printf("\r\n\r\nTicks since Start: ");
+	UInt32ToChar(nticks,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+	printf("Current Stack Pointer Location (bytes): ");
+	UInt32ToHex(current_sp,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+	printf("Total Allocated Space (bytes): ");
+	UInt32ToChar((uint32_t)heapInfo.uordblks,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+	printf("Total Free Space (bytes): ");
+	UInt32ToChar((uint32_t)heapInfo.fordblks,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+}
+
+/**
  * @brief the currently implemented commands
  * The "0" command is used to mark the end of the array, it is not an actual command
  * 
@@ -619,6 +656,7 @@ UserCommandType userCommands[] = {
 	{"API",&apiCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"CONSOLE",&consoleCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
+	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

@@ -8,7 +8,7 @@
 #ifndef INC_TASKMANAGERUTILS_H_
 #define INC_TASKMANAGERUTILS_H_
 
-#include "types.h"
+#include <stdint.h>
 #include "stringFunctions.h"
 #include "system.h"
 

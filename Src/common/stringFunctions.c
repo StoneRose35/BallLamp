@@ -8,7 +8,7 @@
  * 
  * 
  */
-#include "types.h"
+#include <stdint.h>
 #include "stringFunctions.h"
 #include <string.h>
 #include <stdlib.h>
@@ -149,6 +149,49 @@ void UInt32ToChar(uint32_t nr, char * out)
 	}
 	out[charpos]=0;
 }
+
+/**
+ * @brief converts a 32bit unsigned int to a hex representation, fox example UInt32ToHex(123,nrbfr)
+ * would put "0x7b" in nrbfr
+ * @param val the unsigned int value to convert
+ * @param nrbfr the buffer to hold the string representation, must be at least 11 chars in size
+ */
+void UInt32ToHex(uint32_t val,char* nrbfr)
+{
+	uint32_t cval = val;
+	uint32_t nibbleval;
+	uint8_t charcnt=0;
+	if (val == 0)
+	{
+		nrbfr[0] = '0';
+		nrbfr[1] = 'x';
+		nrbfr[2] = '0';
+		charcnt = 3;
+	}
+	else
+	{
+		nrbfr[0] = '0';
+		nrbfr[1] = 'x';
+		charcnt = 2;
+		while (charcnt < 10)
+		{
+			// shift out left, discard leading zeros
+			nibbleval = cval >> 28;
+			if ((nibbleval < 10 && nibbleval > 0) || ( nibbleval < 10 && charcnt > 2))
+			{
+				nrbfr[charcnt++] = nibbleval + 0x30;
+			}
+			else if (nibbleval > 10)
+			{
+				nrbfr[charcnt++] = nibbleval + 0x61 - 10;
+			}
+			cval = cval <<  4;
+		}
+	}
+	nrbfr[charcnt] = 0;
+}
+
+
 
 /**
  * @brief add zeros on the left side on a string representing an integer number, used by toPercentChar

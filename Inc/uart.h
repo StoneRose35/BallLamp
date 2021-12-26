@@ -5,7 +5,7 @@
  *      Author: philipp
  */
 #include "systemChoice.h"
-#include "types.h"
+#include <stdint.h>
 
 #ifdef HARDWARE
 #ifndef UART_H_
@@ -16,6 +16,7 @@
 #define BAUD_RATE 57600
 
 #ifdef STM32
+typedef volatile uint32_t reg;
 typedef struct
 {
 	reg CR1;

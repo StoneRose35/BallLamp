@@ -8,8 +8,10 @@
         "uart.h": "c",
         "pio.h": "c",
         "addressmap.h": "c",
-        "system.h": "c"
+        "system.h": "c",
+        "malloc.h": "c",
+        "stdint.h": "c"
     },
     "cmake.configureOnOpen": false,
-    "cortex-debug.variableUseNaturalFormat": true
+    "cortex-debug.variableUseNaturalFormat": false
 }

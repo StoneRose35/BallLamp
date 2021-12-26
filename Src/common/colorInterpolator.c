@@ -9,7 +9,7 @@
  */
 
 #include <stdlib.h>
-#include "types.h"
+#include <stdint.h>
 #ifdef HARDWARE
 #include "system.h"
 #endif

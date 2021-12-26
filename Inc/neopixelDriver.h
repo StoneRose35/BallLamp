@@ -11,7 +11,7 @@
 #ifndef LED_TIMER_H_
 #define LED_TIMER_H_
 
-#include "types.h"
+#include <stdint.h>
 #include "system.h"
 
 #ifdef STM32
@@ -193,17 +193,16 @@ typedef struct {
 
 #ifdef RP2040_FEATHER
 
-#define F_XOSC (12000000)
-// divider factors, calculated using clingo with clockcalculation.lp
-#define POSTDIV1 6
-#define POSTDIV2 2
-#define NP_CLKDIV 15
-#define FEEDBK 120
-#define F_SYS (F_XOSC*FEEDBK/POSTDIV1/POSTDIV2)
-#define PIO_SM1_CNT (F_SYS/FRAMERATE-2) 
 
 // GPIO number where the neopixel is attached
+// Integrated Neopixel on RP2040 Feather: 16
+// Integrated Neopixel on RP2040 Itsybitsy: 17
+#ifdef ITSYBITSY
+#define NEOPIXEL_PIN 17
+#define NEOPIXEL_POWER_PIN 16
+#else
 #define NEOPIXEL_PIN 16
+#endif
 
 #define PIO_CTRL ((volatile uint32_t*)(PIO0_BASE+PIO_CTRL_OFFSET))
 #define PIO_INSTR_MEM ((volatile uint32_t*)(PIO0_BASE+PIO_INSTR_MEM0_OFFSET))
@@ -235,7 +234,12 @@ typedef struct {
 #define DMA_INTS0 ((volatile uint32_t*)(DMA_BASE+DMA_INTS0_OFFSET))
 
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
-#define GPIO13_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET))
+#ifdef ITSYBITSY
+#define NEOPIXEL_POWER_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_POWER_PIN))
+#endif
+#define GPIO_OE ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OE_OFFSET))
+#define GPIO_OUT ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OUT_OFFSET))
+
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
 

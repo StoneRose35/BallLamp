@@ -9,6 +9,7 @@
 #define FLASH_H_
 #include "systemChoice.h"
 #include "system.h"
+typedef uint32_t* ptr;
 
 #ifdef HARDWARE
 inline ptr getFilesystemStart()

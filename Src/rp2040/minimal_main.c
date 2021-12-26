@@ -19,7 +19,6 @@
 
 #define LED_PIN (13)
 
-typedef unsigned int uint32_t; 
 
 volatile int testarray[256];
 volatile uint32_t answer_to_all_questions_of_the_universe = 42;

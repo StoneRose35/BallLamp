@@ -9,7 +9,7 @@
 #ifndef BLUETOOTHATCONFIG_H_
 #define BLUETOOTHATCONFIG_H_
 
-#include "types.h"
+#include <stdint.h>
 
 uint8_t ATCheckEnabled();
 

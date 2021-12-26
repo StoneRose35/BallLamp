@@ -10,7 +10,7 @@
 #ifndef COLORINTERPOLATOR_H_
 #define COLORINTERPOLATOR_H_
 
-#include "types.h"
+#include <stdint.h>
 #include "system.h"
 
 #define STATE_STOPPED 0 //!< the color progression is stopped

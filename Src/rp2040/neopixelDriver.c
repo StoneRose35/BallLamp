@@ -88,6 +88,15 @@ void decompressRgbArray(RGBStream * frame,uint8_t length)
  */
 void initNeopixels()
 {
+
+	// Swich on Neopixel Power in RP2040 itsybitsy
+	#ifdef ITSYBITSY
+	*GPIO_OE &= ~(1 << NEOPIXEL_POWER_PIN);
+	*GPIO_OUT &= ~(1 << NEOPIXEL_POWER_PIN);
+    *NEOPIXEL_POWER_PIN_CNTR =  5; // function 5 (SIO)
+	*GPIO_OE |= (1 << NEOPIXEL_POWER_PIN);
+	*(GPIO_OUT + 1) = (1 << NEOPIXEL_POWER_PIN);
+	#endif
     
 	// enable the dma block
 	*RESETS |= (1 << RESETS_RESET_DMA_LSB);

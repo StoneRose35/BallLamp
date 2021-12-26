@@ -13,7 +13,7 @@
 #include "hardware/regs/resets.h"
 
 #include "neopixelDriver.h"
-#include "types.h"
+#include <stdint.h>
 
 
 void setupClock()

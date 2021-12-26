@@ -1,4 +1,4 @@
-#include "types.h"
+#include <stdint.h>
 #include "romfunc.h"
 
 

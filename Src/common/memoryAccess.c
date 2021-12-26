@@ -9,7 +9,7 @@
  */
 
 
-#include "types.h"
+#include <stdint.h>
 
 #include <stdlib.h>
 #include "flash.h"

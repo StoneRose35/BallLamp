@@ -9,14 +9,14 @@ PROJECT=pico_lamp
 CC=arm-none-eabi-gcc
 OBJCPY=arm-none-eabi-objcopy
 ELF2UF2=./tools/elf2uf2
-OPT=-Og
+OPT=-O3
 PAD_CKECKSUM=./tools/pad_checksum
-DEFINES=-DRP2040_FEATHER 
+DEFINES=-DRP2040_FEATHER -DITSYBITSY
 CARGS=-fno-builtin -g $(DEFINES) -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -std=gnu11 -Wall -I./Inc/RpiPico -I./Inc -I./Inc/gen
-LARGS=-g -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./rp2040_feather.ld -Xlinker -Map="./out/$(PROJECT).map" -Xlinker --gc-sections -static 
+LARGS=-g -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./rp2040_feather.ld -Xlinker -Map="./out/$(PROJECT).map" -Xlinker --gc-sections -static --specs="nano.specs" -Wl,--start-group -lc -lm -Wl,--end-group
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
-BOOTLOADER=bs2_fast_qspi
+BOOTLOADER=bs2_fast_qspi2
 
 all: clean_objs bs2_code_size $(PROJECT).uf2 
 
@@ -115,7 +115,8 @@ Inc/gen/pioprogram.h: Inc/gen tools/pioasm
 
 # main linking and generating flashable content
 $(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common
-	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o
+	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o 
+#~/pico/pico-libs/rp2_common/pico_stdio/stdio.c.obj ~/pico/pico-libs/common/pico_sync/mutex.c.obj ~/pico/pico-libs/rp2_common/hardware_timer/timer.c.obj ~/pico/pico-libs/common/pico_time/time.c.obj
 
 $(PROJECT).bin: $(PROJECT).elf
 	@$(OBJCPY) $(CPYARGS) ./out/$(PROJECT).elf ./out/$(PROJECT).bin

@@ -8,7 +8,7 @@
 #ifndef BUFFEREDINPUTHANDLER_H_
 #define BUFFEREDINPUTHANDLER_H_
 
-#include "types.h"
+#include <stdint.h>
 #include "bufferedInputStructs.h"
 #include "uart.h"
 

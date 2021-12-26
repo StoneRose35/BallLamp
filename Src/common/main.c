@@ -96,10 +96,14 @@
  * `CONSOLE`
  * 
  * Switches the current interface back to CLI mode. This command is useful in debugging cases or when the interface mode has been set to API erroneously.
- * \subsection setupbtCommand Setup Bluetooth Command$
+ * \subsection setupbtCommand Setup Bluetooth Command
  * `SETUPBT`
  * 
  * Configures the HC-06 Bluetooth interface (Name, PIN and Baudrate) using AT-Commands. Not implemented in the Raspberry Pi Pico Version, Deprecated, will be removed in the future.
+ * \subsection sysinfoCommand Sysinfo Command
+ * `SYSINFO`
+ * 
+ *  
  */
 
 
@@ -146,6 +150,7 @@
 #include "system.h"
 #include "core.h"
 #include "systemClock.h"
+#include "systick.h"
 #include "uart.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
@@ -239,7 +244,7 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-
+	initSystickTimer();
 
     initConsole(&usbConsole);
     initConsole(&btConsole);

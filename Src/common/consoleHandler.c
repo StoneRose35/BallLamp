@@ -9,7 +9,7 @@
  * @copyright Copyright (c) 2021
  * 
  */
-#include "types.h"
+#include <stdint.h>
 #include "consoleHandler.h"
 #include <string.h>
 #include "taskManager.h"

@@ -10,7 +10,7 @@
 #ifndef SYSTEM_H_
 #define SYSTEM_H_
 
-#include "types.h"
+#include <stdint.h>
 #include "systemChoice.h"
 
 #define N_LAMPS (20) //!< the number of neopixel the system contains 
@@ -24,12 +24,12 @@
 
 #ifdef HARDWARE
 #ifdef STM32
-#define F_BUS (64000000)
-#define F_APB1 F_BUS/2
-#define WS2818_CNT F_BUS/WS2818_FREQ
-#define WS2818_SHORT_CNT F_BUS/WS2818_SHORT
-#define WS2818_LONG_CNT F_BUS/WS2818_LONG
-#define REMAINING_WAITTIME F_BUS/FRAMERATE-F_BUS/WS2818_FREQ*24*N_LAMPS
+#define F_SYS (64000000)
+#define F_APB1 F_SYS/2
+#define WS2818_CNT F_SYS/WS2818_FREQ
+#define WS2818_SHORT_CNT F_SYS/WS2818_SHORT
+#define WS2818_LONG_CNT F_SYS/WS2818_LONG
+#define REMAINING_WAITTIME F_SYS/FRAMERATE-F_SYS/WS2818_FREQ*24*N_LAMPS
 
 #define I2C_ADDRESS (15)
 #define FLASH_PAGE_SIZE 2048
@@ -37,8 +37,20 @@
 #endif
 
 #ifdef RP2040_FEATHER
+
+#define F_XOSC (12000000)
+// divider factors, calculated using clingo with clockcalculation.lp
+#define POSTDIV1 6
+#define POSTDIV2 2
+#define NP_CLKDIV 15
+#define FEEDBK 120
+#define F_SYS (F_XOSC*FEEDBK/POSTDIV1/POSTDIV2)
+#define PIO_SM1_CNT (F_SYS/FRAMERATE-2) 
+
 #define FLASH_PAGE_SIZE 4096 //!< size in bytes of a flash page, a flash page is the smallest eraseable flash unit
 #define FLASH_PAGE_SIZE_BIT 12 //!< bit position of the flash page size, i.e. 2^FLASH_PAGE_SIZE_BIT = FLASH_PAGE_SIZE
+
+
 #endif
 
 #else

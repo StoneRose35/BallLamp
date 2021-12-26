@@ -7,7 +7,7 @@
 
 #ifdef STM32
 
-#include "types.h"
+#include <stdint.h>
 #include "neopixelDriver.h"
 #include "stdlib.h"
 #include "flash.h"

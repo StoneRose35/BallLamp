@@ -7,7 +7,7 @@
 #ifdef STM32
 
 #include "core.h"
-#include "types.h"
+#include <stdint.h>
 
 void enableFpu()
 {

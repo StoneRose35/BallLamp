@@ -119,6 +119,19 @@ std_isr isr_irq31
 
 .section .reset,"ax"
 
+.global _reset
+.type _reset,%function
+_reset:
+// initialize the stack pointer
+ldr r1, =(XIP_BASE + 0x100)
+ldr r2,[r1]
+msr msp, r2
+
+// branch to _start_c_runtime
+ldr r1, =(XIP_BASE + 0x104) 
+ldr r2,[r1]
+bx r2
+
 .global _start_c_runtime,_entry_point
 .type _start_c_runtime,%function
 _start_c_runtime:

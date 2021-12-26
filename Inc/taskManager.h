@@ -5,7 +5,7 @@
  *      Author: philipp
  */
 
-#include "types.h"
+#include <stdint.h>
 #include "system.h"
 
 #ifndef TASKMANAGER_H_
