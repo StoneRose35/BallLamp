@@ -4,3 +4,10 @@
 /Release/
 /Test/
 /Stm32Debug/
+/out/*
+/testout/*
+/tools/elf2uf2
+/tools/pioasm
+/tools/pioasm_src/gen/*
+/Inc/gen/*.h
+/Doc/gen/*

@@ -8,17 +8,25 @@
 #ifndef INTERPOLATORS_H_
 #define INTERPOLATORS_H_
 
-#define ERR_INVALID_STEP 128
+#define ERR_INVALID_STEP 128 //!< return code indicating an invalid step
 
 #include "colorInterpolator.h"
 
+/**
+ * @brief data structure for a complete set of Task data structured needed to show an animation
+ * 
+ */
 typedef struct {
-	uint8_t taskArrayLength;
-	char name[32];
-	TaskType* taskArray;
+	uint8_t taskArrayLength; //!< the number of Tasks in the data structure
+	char name[32]; //!< name of the animation
+	TaskType* taskArray; //!< the array of individual Tasks
 
 } TasksType;
 
+/**
+ * @brief pointer to TasksType, defined for convenience
+ * 
+ */
 typedef TasksType* Tasks;
 
 void initInterpolators(Tasks tasks);
