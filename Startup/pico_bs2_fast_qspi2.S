@@ -1,5 +1,5 @@
 /**
- startup file for qspi operation for the rp2040 itsybitsy
+ startup file for qspi operation for the rp2040 itsybitsy and standard raspberry pi pico boards
  */
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sio.h"
