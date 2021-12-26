@@ -90,7 +90,7 @@
 					</folderInfo>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name="Inc"/>
-						<entry excluding="rp2040/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Src"/>
+						<entry excluding="rp2040/*|mock/*" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Src"/>
 						<entry excluding="pico*.S" flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="Startup"/>
 					</sourceEntries>
 				</configuration>

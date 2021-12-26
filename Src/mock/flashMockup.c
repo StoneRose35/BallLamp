@@ -17,9 +17,9 @@ uint8_t erasePage(uint16_t pagenr)
 	}
 	return 0;
 }
-uint8_t programHalfword(uint16_t hwrd,ptr addr)
+uint8_t programHalfword(uint16_t hwrd,uint16_t* addr)
 {
-	*((uint16_t*)addr)&=hwrd;
+	*addr&=hwrd;
 	return 0;
 }
 

@@ -9,9 +9,10 @@
 #define FLASH_H_
 #include "systemChoice.h"
 #include "system.h"
-typedef uint32_t* ptr;
+
 
 #ifdef HARDWARE
+typedef uint32_t ptr;
 inline ptr getFilesystemStart()
 {
 	extern uint8_t __filesystem_start;
@@ -19,6 +20,7 @@ inline ptr getFilesystemStart()
 }
 
 #else
+typedef uint32_t* ptr;
 	uint8_t fakeflash[8192];
 	inline ptr getFilesystemStart()
 	{
@@ -29,7 +31,7 @@ inline ptr getFilesystemStart()
 
 void unlockFlash();
 uint8_t erasePage(uint16_t pagenr);
-uint8_t programHalfword(uint16_t hwrd,ptr addr);
+uint8_t programHalfword(uint16_t hwrd,uint16_t* addr);
 uint8_t programPage(uint16_t pagenr,uint16_t* data,uint16_t cnt);
 
 #endif /* FLASH_H_ */

@@ -539,7 +539,7 @@ void loadCommand(char * cmd,void* context)
 	{
 		destroyTask(interpolators->taskArray+c);
 	}
-	fromStream((uint16_t*)((ptr)getFilesystemStart()+FLASH_HEADER_SIZE),interpolators);
+	fromStream((uint16_t*)getFilesystemStart()+FLASH_HEADER_SIZE,interpolators);
 }
 
 /**
