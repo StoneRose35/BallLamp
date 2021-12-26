@@ -1,3 +1,6 @@
+/**
+ * bootloader enabling the double speed spi used for testing on the rp2040 feather
+ */
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/ssi.h"

@@ -1,4 +1,6 @@
-
+/**
+simple bootloader using the standard 0x03 spi read for flash access
+ */
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/ssi.h"

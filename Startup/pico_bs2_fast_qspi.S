@@ -16,7 +16,7 @@
 #define CMD_WRITE_STATUS_2 0x31
 #define CMD_WRITE_STATUS_3 0x11
 
-#define PICO_FLASH_SPI_CLKDIV 4
+#define PICO_FLASH_SPI_CLKDIV 2
 
 // register offsets
 #define SSI_TMOD 8
