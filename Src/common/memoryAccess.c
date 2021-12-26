@@ -25,21 +25,21 @@
 uint16_t saveHeader(uint16_t * data,uint32_t size)
 {
 	uint16_t retcode=0;
-	uint32_t pageBfr[FLASH_PAGE_SIZE >> 2];
-	for(uint16_t c=0;c<FLASH_PAGE_SIZE>>2; c++)
+	uint16_t pageBfr[FLASH_PAGE_SIZE >> 1];
+	for(uint16_t c=0;c<FLASH_PAGE_SIZE>>1; c++)
 	{
-		pageBfr[c] = *((uint32_t*)(getFilesystemStart() + c));
+		pageBfr[c] = *((uint16_t*)getFilesystemStart() + c);
 	}
 
-	erasePage(1);
+	erasePage(0);
 
-	for (uint32_t c2=0;c2<size;c2+=2)
+	for (uint32_t c2=0;c2<size;c2++)
 	{
-		retcode += programHalfword(*(data+(c2>>1)),getFilesystemStart()+c2);
+		retcode += programHalfword(*(data+(c2>>1)),(uint16_t*)getFilesystemStart()+c2);
 	}
-	for (uint32_t c3=0;c3<(FLASH_PAGE_SIZE-size);c3+=2)
+	for (uint32_t c3=0;c3<((FLASH_PAGE_SIZE>>1)-size);c3++)
 	{
-		retcode += programHalfword(*((uint16_t*)(pageBfr+((c3>>1) + size))),getFilesystemStart()+size+c3);
+		retcode += programHalfword(*(pageBfr+c3+size),(uint16_t*)getFilesystemStart()+size+c3);
 	}
 	return retcode;
 }

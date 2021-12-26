@@ -1,4 +1,6 @@
-#ifndef STM32
+#include "systemChoice.h"
+
+#ifndef HARDWARE
 
 #include "flash.h"
 
