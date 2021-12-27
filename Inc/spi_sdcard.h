@@ -14,7 +14,7 @@
 #include "hardware/regs/pads_bank0.h"
 #include "hardware/regs/sio.h"
 
-#define CS 21
+#define CS 5
 #define MISO 20
 #define MOSI 19
 #define SCK 18
