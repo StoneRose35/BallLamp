@@ -15,9 +15,9 @@ void initSpi()
     *SCK_PIN_CNTR = 1;
     *CS_PIN_CNTR = 1;
 
-    // enable pullups on mosi
-    *MOSI_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    *MOSI_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);     
+    // enable pullups on miso
+    *MISO_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
+    *MISO_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);     
 
     // configure control register 0: 8-bit data, 200 as SCR resuting in a initial clock rate of 300 kHz at 120 MHz
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (200 << SPI_SSPCR0_SCR_LSB);
@@ -38,12 +38,9 @@ void sendDummyBytes(uint16_t cnt)
     }
 }
 
-void sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
+uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
 {
-    // drive DO / MOSI high
-    //*MOSI_PIN_CNTR =  5; // function 5 (SIO)
-	//*GPIO_OE |= (1 << MOSI);
-	//*(GPIO_OUT + 1) = (1 << MOSI);
+
     uint8_t c = 0;
     uint8_t retval;
     uint16_t retcnt=0;
@@ -67,6 +64,7 @@ void sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
         c++;
     }
     // wait for response
+    c = 0;
     while(retcnt < len)
     {
         *SSPDR = 0xFF;
@@ -78,14 +76,21 @@ void sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
         {
             *(resp + retcnt++) = retval;
         }
+        c++;
         //}
+        if (c == 0x10)
+        {
+            return ERROR_TIMEOUT;
+        }
     }
+    return 0;
 }
 
 uint8_t initSdCard()
 {
     uint8_t cmd[6];
     uint8_t resp[5];
+    uint8_t retcode;
     // send 10 dummy bytes
     sendDummyBytes(10);
 
@@ -96,10 +101,14 @@ uint8_t initSdCard()
     cmd[3] = 0x0;
     cmd[4] = 0x0;
     cmd[5] = 0x95;
-    sendCommand(cmd,resp,1);
+    retcode = sendCommand(cmd,resp,1);
+    if (retcode != 0)
+    {
+        return retcode;
+    }
     if (resp[0] != (1 << R1_IDLE))
     {
-        return 1; // the card is probably unresponsive
+        return ERROR_CARD_UNRESPONSIVE; // the card is probably unresponsive
     }
 
     // send command 8
@@ -109,14 +118,18 @@ uint8_t initSdCard()
     cmd[3] = 0x1;
     cmd[4] = 0xAA;
     cmd[5] = 0x87;
-    sendCommand(cmd,resp,5);
+    retcode = sendCommand(cmd,resp,5);
+    if (retcode != 0)
+    {
+        return retcode;
+    }
     if (resp[0] == SD_CARD_VERSION_2)
     {
         for (uint8_t c2=1;c2<5;c2++)
         {
             if(cmd[c2] != resp[c2])
             {
-                return 2;
+                return ERROR_V2_CMD8_RESPONSE;
             }
         }
         // send CMD55
@@ -126,17 +139,25 @@ uint8_t initSdCard()
         cmd[3] = 0x0;
         cmd[4] = 0x0;
         cmd[5] = 0xFF;
-        sendCommand(cmd,resp,1);
+        retcode = sendCommand(cmd,resp,1);
+        if (retcode != 0)
+        {
+            return retcode;
+        }
         if((resp[0] & (1 << R1_ILLEGAL_COMMAND)) == (1 << R1_ILLEGAL_COMMAND))
         {
             // send command CMD1
             cmd[0] = 0x40 + 1;
-            cmd[1] = 0x40;
+            cmd[1] = 0x0;
             cmd[2] = 0x0;
             cmd[3] = 0x0;
             cmd[4] = 0x0;
             cmd[5] = 0xFF;
-            sendCommand(cmd,resp,1);
+            retcode = sendCommand(cmd,resp,1);
+            if (retcode != 0)
+            {
+                return retcode;
+            }
         }
         else
         {
@@ -147,7 +168,11 @@ uint8_t initSdCard()
             cmd[3] = 0x0;
             cmd[4] = 0x0;
             cmd[5] = 0xFF;
-            sendCommand(cmd,resp,1);
+            retcode = sendCommand(cmd,resp,1);
+            if (retcode != 0)
+            {
+                return retcode;
+            }
         }
     }
     else{ // for sd card version 1 try CMD1 only
@@ -158,7 +183,11 @@ uint8_t initSdCard()
         cmd[3] = 0x0;
         cmd[4] = 0x0;
         cmd[5] = 0xFF;
-        sendCommand(cmd,resp,1);
+        retcode = sendCommand(cmd,resp,1);
+        if (retcode != 0)
+        {
+            return retcode;
+        }
     }
 
     if ((resp[0] & (1 << R1_ILLEGAL_COMMAND)) == (1 << R1_ILLEGAL_COMMAND))
@@ -174,12 +203,15 @@ uint8_t initSdCard()
     cmd[3] = 0x2;
     cmd[4] = 0x0;
     cmd[5] = 0xFF;
-    sendCommand(cmd,resp,1);
+    retcode = sendCommand(cmd,resp,1);
+    if (retcode != 0)
+    {
+        return retcode;
+    }
     if ((resp[0] & (1 << R1_ILLEGAL_COMMAND)) == (1 << R1_ILLEGAL_COMMAND))
     {
-        return 3;
+        return ERROR_ILLEGAL_COMMAND;
     }
-
     return 0;
 }
 
