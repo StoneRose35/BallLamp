@@ -17,6 +17,7 @@
 #include "stringFunctions.h"
 #include "neopixelCommands.h"
 #include "utilCommands.h"
+#include "sdAccessCommands.h"
 #include "uart.h"
 
 
@@ -56,6 +57,7 @@ UserCommandType userCommands[] = {
 	{"CONSOLE",&consoleCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
 	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
+	{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

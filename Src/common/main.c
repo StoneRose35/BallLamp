@@ -291,12 +291,14 @@ int main(void)
 	/**
 	 * set initial color upon start
 	 */
+	/*
 	for (uint8_t c=0;c<N_LAMPS;c++)
 	{
 		lamps[c].rgb.r = 245;
 		lamps[c].rgb.g = 140;
 		lamps[c].rgb.b = 40;
 	}
+	*/
 
 
 	printf("Microsys v1.0running\r\n");

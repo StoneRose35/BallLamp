@@ -48,6 +48,7 @@ void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
             while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
             dummy = *SSPDR & 0xFF;
             *SSPDR = 0xFF;
+            c++;
         }
     }
 }
@@ -125,6 +126,7 @@ uint8_t initSdCard()
         return ERROR_CARD_UNRESPONSIVE; // the card is probably unresponsive
     }
 
+    sendDummyBytes(2,0);
     // send command 8
     cmd[0] = 0x48;
     cmd[1] = 0x0;
@@ -146,6 +148,9 @@ uint8_t initSdCard()
                 return ERROR_V2_CMD8_RESPONSE;
             }
         }
+
+
+        sendDummyBytes(2,0);
         // send CMD55
         cmd[0] = 0x40 + 55;
         cmd[1] = 0x0;
@@ -160,6 +165,8 @@ uint8_t initSdCard()
         }
         if((resp[0] & (1 << R1_ILLEGAL_COMMAND)) == (1 << R1_ILLEGAL_COMMAND))
         {
+
+            sendDummyBytes(2,0);
             // send command CMD1
             cmd[0] = 0x40 + 1;
             cmd[1] = 0x0;
@@ -175,6 +182,8 @@ uint8_t initSdCard()
         }
         else
         {
+
+            sendDummyBytes(2,0);
             // send command CMD41
             cmd[0] = 0x40 + 41;
             cmd[1] = 0x40;
@@ -191,6 +200,8 @@ uint8_t initSdCard()
     }
     else{ // for sd card version 1 try CMD1 only
         // send command CMD1
+
+        sendDummyBytes(2,0);
         cmd[0] = 0x40 + 1;
         cmd[1] = 0x40;
         cmd[2] = 0x0;
@@ -209,6 +220,7 @@ uint8_t initSdCard()
         return 3;
     }
 
+    sendDummyBytes(2,0);
     // set block size to 512 bytes
     // send CMD16
     cmd[0] = 0x40 + 16;
@@ -236,6 +248,7 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
     uint8_t retcode;
     uint16_t c,cSect;
 
+    sendDummyBytes(2,0);
     // send CMD17b (read one block)
     cmd[0]=17 + 0x40;
     *((uint32_t*)(cmd + 1)) = address;
