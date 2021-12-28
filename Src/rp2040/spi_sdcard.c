@@ -27,14 +27,28 @@ void initSpi()
     *SSPCR1 = 1 << SPI_SSPCR1_SSE_LSB;
 }
 
-void sendDummyBytes(uint16_t cnt)
+void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
 {
-    uint8_t dummy;
-    for(uint16_t c=0;c<cnt;c++)
+    uint8_t dummy = 0;
+    if (targetbyte > 0)
     {
-        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-        dummy = *SSPDR & 0xFF;
-        *SSPDR = 0xFF;
+        uint16_t c=0;
+        while(c<cnt && dummy != targetbyte)
+        {
+            while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+            dummy = *SSPDR & 0xFF;
+            *SSPDR = 0xFF;
+            c++;
+        }
+    }
+    else
+    {
+        for(uint16_t c=0;c<cnt;c++)
+        {
+            while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+            dummy = *SSPDR & 0xFF;
+            *SSPDR = 0xFF;
+        }
     }
 }
 
@@ -72,7 +86,7 @@ uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
         //if ((*SSPSR & (1 << SPI_SSPSR_RNE_LSB))==(1 << SPI_SSPSR_RNE_LSB))
         //{
         retval = *SSPDR;
-        if ((retcnt==0 && (retval & 0x80)==0) || retcnt > 0)
+        if ((retcnt==0 && (retval & 0x80))==0 || retcnt > 0)
         {
             *(resp + retcnt++) = retval;
         }
@@ -92,7 +106,7 @@ uint8_t initSdCard()
     uint8_t resp[5];
     uint8_t retcode;
     // send 10 dummy bytes
-    sendDummyBytes(10);
+    sendDummyBytes(10,0);
 
     // send command 0
     cmd[0] = 0x40;
@@ -215,3 +229,43 @@ uint8_t initSdCard()
     return 0;
 }
 
+
+uint8_t readSector(uint8_t* sect, uint32_t address)
+{
+    uint8_t cmd[6];
+    uint8_t retcode;
+    uint16_t c,cSect;
+
+    // send CMD17b (read one block)
+    cmd[0]=17 + 0x40;
+    *((uint32_t*)(cmd + 1)) = address;
+    cmd[5] = 0xFF;
+    retcode = sendCommand(cmd,sect,1);
+    if (retcode != 0)
+    {
+        return ERROR_TIMEOUT;
+    }
+    if(sect[0]!= 0x0)
+    {
+        return ERROR_READ_FAILURE;
+    }
+
+    c=0;
+    cSect = 0;
+    uint8_t dataBeginMarker=0;;
+    while(cSect < 512 && c < 1024)
+    {
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+        if (dataBeginMarker != 0xFE)
+        {
+            dataBeginMarker = *SSPDR & 0xFF;
+        } else
+        {
+            sect[cSect++] = *SSPDR & 0xFF;
+        }
+        *SSPDR = 0xFF;
+        c++;
+    }
+
+    return 0;
+}

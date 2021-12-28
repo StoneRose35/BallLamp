@@ -40,6 +40,7 @@ uint32_t getClusterLbaBegin(PartitionInfoType* ,VolumeIdType*);
 uint32_t getClusterLba(uint32_t,PartitionInfoType*,VolumeIdType*);
 uint8_t getDirectoryEntries(uint8_t*,DirectoryEntryType**);
 
+/*
 void main(int argc,char ** argv)
 {
     uint8_t sector[512];
@@ -79,13 +80,15 @@ void main(int argc,char ** argv)
     fclose(fid);
 
 }
+*/
 
-
+/*
 void readSector(uint8_t* res,FILE* fid,uint64_t offset)
 {
     fseek(fid,offset << 9,SEEK_SET);
     fread(res,512,1,fid);
 }
+*/
 
 void getPartitionInfo(uint8_t *sect,uint8_t partNr,PartitionInfoType* res)
 {
@@ -133,7 +136,7 @@ uint8_t getDirectoryEntries(uint8_t * sect,DirectoryEntryType** entries)
         (*entries + c)->fileext[1] = *(sect + (c<<5)+9);
         (*entries + c)->fileext[2] = *(sect + (c<<5)+10);
         (*entries + c)->attrib = *(sect + (c<<5)+11);
-        (*entries + c)->firstCluster = *((uint16_t*)(sect + (c<<5)+0x14)) << 16 + *((uint16_t*)(sect + (c<<5)+0x1A));
+        (*entries + c)->firstCluster = (*((uint16_t*)(sect + (c<<5)+0x14)) << 16) + *((uint16_t*)(sect + (c<<5)+0x1A));
         (*entries + c)->size = *((uint32_t*)(sect + (c<<5) + 0x1C));
         
         c++;

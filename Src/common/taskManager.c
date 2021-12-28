@@ -29,6 +29,7 @@ void* address;
 #include "taskManagerUtils.h"
 #include <bufferedInputHandler.h>
 #include "bluetoothATConfig.h"
+#include "neopixelDriver.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -232,6 +233,7 @@ void helpCommand(char * cmd,void* context)
 	printf("   equal to writing 3,4,5,6\r\n");
 	printf("   <red>, <green> and <blue> range from 0 to 255\r\n");
 	printf("   example: RED(13) switches led 13 to red while leaving all others\r\n");
+	printf(" * NGENGINE(<f>): Starts(<f> = 1) or Stops (<f> = 0) the neopixel engine, if stopped issuing color commands has no effect\r\n");
 	printf(" * START: starts all interpolators\r\n");
 	printf(" * STOP: stops all interpolators\r\n");
 	printf(" * INTERP(<lamp_nr>,<nSteps>,<repeating>): defines an interpolator/color sequence for Lamp <lampnr>, 255 means every lamp\r\n");
@@ -623,6 +625,36 @@ void sysInfoCommand(char * cmd,void*context)
 }
 
 /**
+ * @brief switches the neopixel engine off or on
+ * 
+ * @param cmd takes either 0 or 1 as argument,0: Off, 1: ON
+ * @param context unused
+ */
+void npEngineCommand(char * cmd,void*context)
+{
+	uint8_t error_flag=0;
+	uint8_t engineflag;
+	char bracketContent[4];
+	getBracketContent(cmd,bracketContent);
+	engineflag = tryToUInt8(bracketContent,&error_flag);
+	if (error_flag == 0)
+	{
+		if(engineflag == 0 || engineflag== 1)
+		{
+			engineState(engineflag);
+		}
+		else
+		{
+			printf("Argument must be either 0: Off or 1: On");
+		}
+	}
+	else
+	{
+		printf("Couldn't parse arguments\r\n");
+	}
+}
+
+/**
  * @brief the currently implemented commands
  * The "0" command is used to mark the end of the array, it is not an actual command
  * 
@@ -645,6 +677,7 @@ UserCommandType userCommands[] = {
 	{"DARKPURPLE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"GRAY",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"RGB",&rgbCommand,CONTEXT_TYPE_RGBSTREAM},
+	{"NPENGINE",&npEngineCommand,CONTEXT_TYPE_NONE},
 	{"START",&startCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"STOP",&stopCommand,CONTEXT_TYPE_INTERPOLATORS},
 	{"SAVE",&saveCommand,CONTEXT_TYPE_INTERPOLATORS},

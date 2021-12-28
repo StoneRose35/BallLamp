@@ -39,7 +39,7 @@
 #endif
 
 void initSpi();
-void sendDummyBytes(uint16_t cnt);
+void sendDummyBytes(uint16_t cnt,uint8_t targetbyte);
 uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
 
 uint8_t initSdCard();
@@ -55,4 +55,5 @@ uint8_t initSdCard();
 #define ERROR_CARD_UNRESPONSIVE 2
 #define ERROR_V2_CMD8_RESPONSE 3
 #define ERROR_ILLEGAL_COMMAND 4
+#define ERROR_READ_FAILURE 5
 #endif

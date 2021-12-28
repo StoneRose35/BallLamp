@@ -304,8 +304,6 @@ extern uint32_t clr_cnt;
 extern uint32_t bit_cnt;
 extern uint8_t * rawdata_ptr;
 
-
-
 #define SEND_STATE_INITIAL 0
 #define SEND_STATE_DATA_READY 5
 #define SEND_STATE_RTS 1
@@ -313,5 +311,7 @@ extern uint8_t * rawdata_ptr;
 #define SEND_STATE_SENT 3
 #define SEND_STATE_BUFFER_UNDERRUN 4
 #endif
+
+void engineState(uint8_t); // enginestate gets called by the task manager therefore it must be mocked for the hardware independent tests
 
 #endif

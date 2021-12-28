@@ -152,6 +152,19 @@ void initNeopixels()
 
 }
 
+
+void engineState(uint8_t flag)
+{
+	if(flag==1)
+	{
+		RCC->APB1ENR|= 1 << TIM2EN; // enable timer 2
+	}
+	else if(flag==0)
+	{
+		RCC->APB1ENR &= ~(1 << TIM2EN); // disable timer 2
+	}
+}
+
 /* non-blocking function which initiates a data transfer to the neopixel array
  * be aware that rawdata should not be modified as long as tim2 is in neopixel clocking mode
  * (counts up to WS2818_CNT)

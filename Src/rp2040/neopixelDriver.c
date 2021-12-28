@@ -232,6 +232,25 @@ void sendToLed()
 	*DMA_CH0_CTRL_TRIG |= (1 << 0);
 }
 
+/**
+ * @brief switch the neopixel driver on or off, when off no interrupts due to the frame timer should happen anyore
+ * 
+ * @param flag 0: off, 1: on
+ */
+void engineState(uint8_t flag)
+{
+	if(flag== 1)
+	{
+		// start PIO 0, state machine 1 (the frame timer)
+		*PIO_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+1));
+	}
+	else if (flag == 0)
+	{
+		// stop PIO 0, state machine 1 (the frame timer)
+		*PIO_CTRL &= ~(1 << (PIO_CTRL_SM_ENABLE_LSB+1));
+	}
+}
+
 uint8_t getSendState()
 {
 	return sendState;
