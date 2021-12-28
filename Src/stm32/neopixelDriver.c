@@ -153,7 +153,7 @@ void initNeopixels()
 }
 
 
-void engineState(uint8_t flag)
+void setEngineState(uint8_t flag)
 {
 	if(flag==1)
 	{
@@ -163,6 +163,13 @@ void engineState(uint8_t flag)
 	{
 		RCC->APB1ENR &= ~(1 << TIM2EN); // disable timer 2
 	}
+}
+
+
+uint8_t getEngineState()
+{
+	uint8_t retval = ((RCC->APB1ENR & (1 << TIM2EN))==(1 << TIM2EN)) ?  1 : 0;
+	return retval;
 }
 
 /* non-blocking function which initiates a data transfer to the neopixel array

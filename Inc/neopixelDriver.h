@@ -312,6 +312,7 @@ extern uint8_t * rawdata_ptr;
 #define SEND_STATE_BUFFER_UNDERRUN 4
 #endif
 
-void engineState(uint8_t); // enginestate gets called by the task manager therefore it must be mocked for the hardware independent tests
+void setEngineState(uint8_t); // enginestate gets called by the task manager therefore it must be mocked for the hardware independent tests
+uint8_t getEngineState();
 
 #endif

@@ -77,7 +77,12 @@
  * \subsection destroyCommand Destroy Color Sequence / Interpolator
  * `DESTROY(lampnr)`
  * 
- * lampnr: the neopixel whose interpolator should be destroyed, 255 for every neopixel/all interpolators.
+  * lampnr: the neopixel whose interpolator should be destroyed, 255 for every neopixel/all interpolators.
+ * \subsection npEngingeCommand Switch Neopixel Engine On/Off
+ * `NPENGINGE(flag)`
+ * 
+ * switches the neopixel engine on or off, if off no interrupts are generated, the neopixel itself keeps the color last set.
+ * off if flag is 0, on if flag is 1
  * \subsection saveCommand Save Command
  * `SAVE`
  * 
@@ -152,6 +157,7 @@
 #include "systemClock.h"
 #include "systick.h"
 #include "uart.h"
+#include "spi_sdcard.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
 #include "bufferedInputHandler.h"
@@ -159,6 +165,7 @@
 #include "interpolators.h"
 #include "stringFunctions.h"
 #include "taskManager.h"
+#include "neopixelCommands.h"
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -243,6 +250,7 @@ int main(void)
 	#ifdef STM32
 	enableFpu();
 	#endif
+
     setupClock();
 	initSystickTimer();
 
@@ -264,6 +272,7 @@ int main(void)
 	initGpio();
 	initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
+	initSpi();
 
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
@@ -290,7 +299,7 @@ int main(void)
 	}
 
 
-	printf("BallLamp v1.0running\r\n");
+	printf("Microsys v1.0running\r\n");
 
     /* Loop forever */
 	for(;;)

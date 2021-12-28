@@ -11,11 +11,6 @@
 #ifndef TASKMANAGER_H_
 #define TASKMANAGER_H_
 
-#define N_COLOR_COMMANDS 16 //!< the number of commands which set all neopixels to the same color
-#define TASK_STATE_STOPPED 0 //!< enum value: the command is stopped
-#define TASK_STATE_RUNNING 1 //!< enum value: the command is running
-#define TASK_STATE_PAUSED 2 //!< enum value: the command is paused
-
 #define CONTEXT_TYPE_NONE 0 //!< the second argument passed to commandFct in is a null pointer
 #define CONTEXT_TYPE_RGBSTREAM 1 //!< the second argment passed to commandFct is a RgbStream
 #define CONTEXT_TYPE_INTERPOLATORS 2 //!< the second argment passed to commandFct is a Tasks data structure
