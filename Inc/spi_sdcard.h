@@ -41,8 +41,8 @@
 void initSpi();
 void sendDummyBytes(uint16_t cnt,uint8_t targetbyte);
 uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
-
 uint8_t initSdCard();
+uint8_t readSector(uint8_t* sect, uint32_t address);
 
 #define SD_CARD_VERSION_2 1
 #define SD_CARD_VERSION_1 5

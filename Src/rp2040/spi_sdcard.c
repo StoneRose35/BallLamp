@@ -265,7 +265,7 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
 
     c=0;
     cSect = 0;
-    uint8_t dataBeginMarker=0;;
+    uint8_t dataBeginMarker=0;
     while(cSect < 512 && c < 1024)
     {
         while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
