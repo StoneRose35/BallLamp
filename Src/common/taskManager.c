@@ -58,6 +58,7 @@ UserCommandType userCommands[] = {
 	{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
 	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
 	{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
+	{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

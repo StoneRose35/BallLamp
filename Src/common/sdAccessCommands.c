@@ -4,13 +4,32 @@
 #include "uart.h"
 #include "spi_sdcard.h"
 #include "stringFunctions.h"
+#include "fatLib.h"
+static uint8_t card_init = 0;
 
 void sdInitCommand(char * cmd,void* context)
 {
     char nrbfr[4];
     uint8_t retcode;
-    printf("\r\rInitializing SD Card..\r\nReturn Code is: ");
-    retcode = initSdCard();
+    if (card_init == 0)
+    {
+        printf("\r\rInitializing SD Card..\r\nReturn Code is: ");
+        retcode = initSdCard();
+        if (retcode > 0)
+        {
+            UInt8ToChar(retcode,nrbfr);
+            printf(nrbfr);
+        }
+        else
+        {
+            printf("OK (0)");
+        }
+        //card_init = 1;
+    }
+    
+    printf("\r\n");
+    printf("mounting first FAT32 Partition\r\n");
+    retcode = initFatSDCard();
     if (retcode > 0)
     {
         UInt8ToChar(retcode,nrbfr);
@@ -20,6 +39,24 @@ void sdInitCommand(char * cmd,void* context)
     {
         printf("OK (0)");
     }
-    printf("\r\n");
+    
+}
 
+void mountCommand(char * cmd,void* context)
+{
+    char nrbfr[4];
+    uint8_t retcode;
+    printf("\r\n");
+    printf("mounting first FAT32 Partition\r\n");
+    retcode = initFatSDCard();
+    if (retcode > 0)
+    {
+        UInt8ToChar(retcode,nrbfr);
+        printf(nrbfr);
+    }
+    else
+    {
+        printf("OK (0)");
+    }
+    
 }

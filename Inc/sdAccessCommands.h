@@ -3,4 +3,6 @@
 
 void sdInitCommand(char * cmd,void* context);
 
+void mountCommand(char * cmd,void* context);
+
 #endif

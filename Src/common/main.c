@@ -301,7 +301,7 @@ int main(void)
 	*/
 
 
-	printf("Microsys v1.0running\r\n");
+	printf("Microsys v1.0 running\r\n");
 
     /* Loop forever */
 	for(;;)
