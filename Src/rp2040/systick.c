@@ -2,7 +2,7 @@
 #include "systick.h"
 #include "system.h"
 
-uint32_t ticks=0;
+static uint32_t ticks=0;
 
 void isr_systick()
 {
@@ -27,4 +27,11 @@ void stopSystickTimer()
     *M0PLUS_SYST_CVR = F_SYS/100;
     *M0PLUS_SYST_RVR = F_SYS/100;
     *M0PLUS_SYST_CSR &= ~(1 << M0PLUS_SYST_CSR_ENABLE_LSB);
+}
+
+void waitSysticks(uint32_t dticks)
+{
+    uint32_t t0;
+    t0 = ticks;
+    while (ticks < t0+dticks);
 }

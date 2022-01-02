@@ -157,7 +157,7 @@
 #include "systemClock.h"
 #include "systick.h"
 #include "uart.h"
-#include "spi_sdcard.h"
+#include "spi_sdcard_display.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
 #include "bufferedInputHandler.h"

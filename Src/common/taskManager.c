@@ -18,6 +18,7 @@
 #include "neopixelCommands.h"
 #include "utilCommands.h"
 #include "sdAccessCommands.h"
+#include "displayCommands.h"
 #include "uart.h"
 
 
@@ -59,6 +60,7 @@ UserCommandType userCommands[] = {
 	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
 	{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
 	{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
+	{"INITDISPLAY",&initDisplayCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

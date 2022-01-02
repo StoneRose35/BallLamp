@@ -14,6 +14,11 @@
 
 
 #define BAUD_RATE 57600
+#define UART_USB_RX 1
+#define UART_USB_TX 0
+
+#define UART_BT_RX 9
+#define UART_BT_TX 8
 
 #ifdef STM32
 typedef volatile uint32_t reg;
@@ -42,6 +47,32 @@ typedef struct
 
 #ifdef RP2040_FEATHER
 #endif
+
+#define UART_UARTIBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTIBRD_OFFSET))
+#define UART_UARTFBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTFBRD_OFFSET))
+#define UART_UARTCR ((volatile uint32_t*)(UART0_BASE+UART_UARTCR_OFFSET))
+#define UART_UARTLCR_H ((volatile uint32_t*)(UART0_BASE+UART_UARTLCR_H_OFFSET))
+#define UART_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_USB_RX))
+#define UART_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_USB_TX))
+#define UART_UARTIMSC ((volatile uint32_t*)(UART0_BASE+UART_UARTIMSC_OFFSET))
+#define UART_UARTMIS ((volatile uint32_t*)(UART0_BASE+UART_UARTMIS_OFFSET))
+#define UART_UARTCR ((volatile uint32_t*)(UART0_BASE+UART_UARTCR_OFFSET))
+#define UART_UARTDR ((volatile uint32_t*)(UART0_BASE+UART_UARTDR_OFFSET))
+#define UART_UARTRIS ((volatile uint32_t*)(UART0_BASE+UART_UARTRIS_OFFSET))
+#define UART_UARTFR ((volatile uint32_t*)(UART0_BASE+UART_UARTFR_OFFSET))
+
+#define UARTBT_UARTIBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTIBRD_OFFSET))
+#define UARTBT_UARTFBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTFBRD_OFFSET))
+#define UARTBT_UARTCR ((volatile uint32_t*)(UART1_BASE+UART_UARTCR_OFFSET))
+#define UARTBT_UARTLCR_H ((volatile uint32_t*)(UART1_BASE+UART_UARTLCR_H_OFFSET))
+#define UARTBT_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_BT_RX))
+#define UARTBT_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_BT_TX))
+#define UARTBT_UARTIMSC ((volatile uint32_t*)(UART1_BASE+UART_UARTIMSC_OFFSET))
+#define UARTBT_UARTMIS ((volatile uint32_t*)(UART1_BASE+UART_UARTMIS_OFFSET))
+#define UARTBT_UARTCR ((volatile uint32_t*)(UART1_BASE+UART_UARTCR_OFFSET))
+#define UARTBT_UARTDR ((volatile uint32_t*)(UART1_BASE+UART_UARTDR_OFFSET))
+#define UARTBT_UARTRIS ((volatile uint32_t*)(UART1_BASE+UART_UARTRIS_OFFSET))
+#define UARTBT_UARTFR ((volatile uint32_t*)(UART1_BASE+UART_UARTFR_OFFSET))
 
 
 void initUart(uint16_t baudrate);

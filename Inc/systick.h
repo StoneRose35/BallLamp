@@ -30,6 +30,7 @@
 uint32_t getTickValue();
 void initSystickTimer();
 void stopSystickTimer();
+void waitSysticks(uint32_t);
 
 #endif
 

@@ -2,7 +2,7 @@
 #include "sdAccessCommands.h"
 #include <stdint.h>
 #include "uart.h"
-#include "spi_sdcard.h"
+#include "spi_sdcard_display.h"
 #include "stringFunctions.h"
 #include "fatLib.h"
 static uint8_t card_init = 0;

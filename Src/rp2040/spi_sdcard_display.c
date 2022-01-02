@@ -1,5 +1,6 @@
 
-#include "spi_sdcard.h"
+#include "spi_sdcard_display.h"
+#include "systick.h"
 
 
 void initSpi()
@@ -18,31 +19,40 @@ void initSpi()
     *MISO_PIN_CNTR = 1;
     *MOSI_PIN_CNTR = 1;
     *SCK_PIN_CNTR = 1;
-    *CS_PIN_CNTR = 1;
 
-    // control the cs pin by software 
-    //*GPIO_OE &= ~(1 << CS);
-	//*GPIO_OUT &= ~(1 << CS);
-    //*CS_PIN_CNTR = 5;
-	//*GPIO_OE |= (1 << CS);
+
+    // switch off sd card cs when initializing the spi interface
+    *GPIO_OE |= (1 << CS_SDCARD);
+	*(GPIO_OUT + 1) = (1 << CS_SDCARD);
+    *CS_SDCARD_PIN_CNTR = 5;
+
+    // control the display cs pin by software 
+    *GPIO_OE |= (1 << CS_DISPLAY);
+	*(GPIO_OUT + 1) = (1 << CS_DISPLAY);
+    *CS_DISPLAY_PIN_CNTR = 5;
 
     // enable pullups on miso
     *MISO_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    *MISO_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);     
+    *MISO_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);    
 
-    // configure control register 0: 8-bit data, 200 as SCR resuting in a initial clock rate of 300 kHz at 120 MHz
-    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (200 << SPI_SSPCR0_SCR_LSB);
+    // enable output on reset and command/data pin
+    *GPIO_OE |= (1 << DISPLAY_RESET);
+    *GPIO_OE |= (1 << DISPLAY_CD); 
+
+    // configure control register 0: 8-bit data, 199 as SCR resuting in a initial clock rate of 300 kHz at 120 MHz
+    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_INIT << SPI_SSPCR0_SCR_LSB);
     // configure clock divider
     *SSPCPSR = 2;
     // configure control register 1: enable by setting synchronous operation
     *SSPCR1 = 1 << SPI_SSPCR1_SSE_LSB;
 }
 
+
 void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
 {
     uint8_t dummy = 0;
-
-    //*(GPIO_OUT + 2) = (1 << CS); 
+    csDisableDisplay();
+    csEnableSDCard();
     if (targetbyte > 0)
     {
         uint16_t c=0;
@@ -65,7 +75,7 @@ void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
         }
     }
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    //*(GPIO_OUT + 1) = (1 << CS); 
+
 }
 
 uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
@@ -121,6 +131,9 @@ uint8_t initSdCard()
     uint8_t resp[5];
     uint8_t retcode;
 
+    csDisableDisplay();
+    csEnableSDCard();
+    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_INIT << SPI_SSPCR0_SCR_LSB);
     // send 10 dummy bytes
     sendDummyBytes(10,0);
 
@@ -163,7 +176,7 @@ uint8_t initSdCard()
             }
         }
 
-        while(resp[0] & 0x01 == 0x01)
+        while((resp[0] & 0x01) == 0x01)
         {
             // send CMD55
             cmd[0] = 0x40 + 55;
@@ -248,13 +261,38 @@ uint8_t initSdCard()
 }
 
 
+void csEnableSDCard()
+{
+    *CS_SDCARD_PIN_CNTR = 1;
+}
+
+void csDisableSDCard()
+{
+    *CS_SDCARD_PIN_CNTR = 5;
+    *(GPIO_OUT + 1) = (1 << CS_SDCARD);
+}
+
+void csEnableDisplay()
+{    
+    *CS_DISPLAY_PIN_CNTR = 5;
+    *(GPIO_OUT + 2) = (1 << CS_DISPLAY);
+}
+
+void csDisableDisplay()
+{
+    *CS_DISPLAY_PIN_CNTR = 5;
+    *(GPIO_OUT + 1) = (1 << CS_DISPLAY);
+}
+
 uint8_t readSector(uint8_t* sect, uint32_t address)
 {
     uint8_t cmd[6];
     uint8_t retcode;
     uint16_t c,cSect;
-    uint8_t crc1,crc2;
-
+    //uint8_t crc1,crc2;
+    csDisableDisplay();
+    csEnableSDCard();    
+    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_MEDIUM << SPI_SSPCR0_SCR_LSB);
     // send CMD17 (read one block)
     cmd[0]=17 + 0x40;
     cmd[1] = address>>24 & 0xFF;
@@ -290,11 +328,107 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
         c++;
     }
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    crc1 =  *SSPDR & 0xFF;
+    //crc1 =  *SSPDR & 0xFF;
     *SSPDR = 0xFF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    crc2 = *SSPDR & 0xFF;   
+    //crc2 = *SSPDR & 0xFF;   
     *SSPDR = 0xFF;
     *SSPDR = 0xFF;
+    return 0;
+}
+
+
+void initDisplay()
+{
+
+    csDisableSDCard();
+    csEnableDisplay();
+    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
+
+    // pull reset down
+    *(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
+    waitSysticks(1);
+    // pull up reset
+    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
+    // wait 120ms
+    waitSysticks(12);
+
+    // software reset
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x01;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+
+    // wait 120ms
+    waitSysticks(12);
+
+    // sleep out
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x11;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+
+    // wait 120ms
+    waitSysticks(12);
+
+    // color mode 16bit
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x3A;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    *SSPDR = 0x5;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+
+    // blank screen
+
+    // display on
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x29;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+}
+
+
+uint8_t blankScreen()
+{
+    const uint8_t r = 10 << 3;
+    const uint8_t g = 20 << 2;
+    const uint8_t b = 30 << 3;
+
+    // CASET
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x29;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    *SSPDR = 0x0;
+    *SSPDR = 0x0;
+    *SSPDR = 0x0;
+    *SSPDR = 0x9F;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );  
+
+    // RASET
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x2B;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    *SSPDR = 0x0;
+    *SSPDR = 0x0;
+    *SSPDR = 0x0;
+    *SSPDR = 0x7F;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );      
+
+    // RAMWR
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x2C;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    
+    uint16_t pCnt = 0;
+    uint8_t cbyte1, cbyte2;
+    while(pCnt < 128*160)
+    {
+        cbyte1 = (r & 0xF8) | ((g >> 5) & 0x7);
+        cbyte2 = ((g & 0x7) << 5) | ((b & 0xF8) >> 3);
+        while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
+        *SSPDR = cbyte1;
+        while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
+        *SSPDR = cbyte2;
+    }
     return 0;
 }

@@ -5,7 +5,7 @@
 #include "fatLib.h"
 
 #ifdef HARDWARE
-#include "spi_sdcard.h"
+#include "spi_sdcard_display.h"
 
 #else
 static FILE * fid;
@@ -306,7 +306,7 @@ uint8_t initFatSDCard()
 {
     uint8_t retcode;
     uint8_t sector[512];
-    for (uint16_t c=0;c<515;c++)
+    for (uint16_t c=0;c<512;c++)
     {
         sector[c]=0;
     }
