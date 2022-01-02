@@ -13,14 +13,16 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/pads_bank0.h"
 #include "hardware/regs/sio.h"
+#include "hardware/regs/pwm.h"
 
 #define CS_SDCARD 5
-#define CS_DISPLAY 0
+#define CS_DISPLAY 12
 #define MISO 20
 #define MOSI 19
 #define SCK 18
-#define DISPLAY_RESET 0
-#define DISPLAY_CD 0
+#define DISPLAY_RESET 24
+#define DISPLAY_CD 25
+#define DISPLAY_BACKLIGHT 8 
 
 
 #define SCK_SDCARD_INIT 199 // SPI clock divider for SD-Card initialization
@@ -44,6 +46,12 @@
 #define DISPLAY_RESET_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_RESET))
 #define DISPLAY_CD_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_CD))
 
+#define PWM_CH0_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*DISPLAY_BACKLIGHT))
+#define PWM_CH0_DIV ((volatile uint32_t*)(PWM_BASE + PWM_CH0_DIV_OFFSET + 10*DISPLAY_BACKLIGHT))
+#define PWM_CH0_CC ((volatile uint16_t*)(PWM_BASE + PWM_CH0_CC_OFFSET + 10*DISPLAY_BACKLIGHT + (DISPLAY_BACKLIGHT & 1)*2))
+#define PWM_CH0_TOP ((volatile uint32_t*)(PWM_BASE + PWM_CH0_TOP_OFFSET + 10*DISPLAY_BACKLIGHT))
+#define DISPLAY_BACKLIGHT_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_BACKLIGHT))
+
 #define GPIO_OE ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OE_OFFSET))
 #define GPIO_OUT ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OUT_OFFSET))
 
@@ -62,6 +70,7 @@ void csEnableSDCard();
 
 void initDisplay();
 uint8_t blankScreen();
+void setBacklight(uint8_t);
 
 #define SD_CARD_VERSION_2 1
 #define SD_CARD_VERSION_1 5

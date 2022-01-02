@@ -5,4 +5,6 @@
 
 void initDisplayCommand(char * cmd,void* context);
 
+void setBacklightCommand(char * cmd,void* context);
+
 #endif

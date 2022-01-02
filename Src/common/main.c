@@ -238,6 +238,8 @@ void colorUpdate(RGB * color,uint32_t phase)
  */
 int main(void)
 {
+	//uint8_t retcode=0;
+	//char nrbfr[4];
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
@@ -272,7 +274,22 @@ int main(void)
 	initGpio();
 	initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
+	//printf("starting SPI\r\n");
 	initSpi();
+	//printf("initializing SD Card.. ");
+	//retcode=initSdCard();
+	//if(retcode==0)
+	//{
+	//	printf("OK\r\n");
+	//}
+	//else
+	//{
+	//	printf("Failure, Code ");
+	//	UInt8ToChar(retcode,nrbfr);
+	//	printf(nrbfr);
+	//	printf("\r\n");
+	//}
+	//initDisplay();
 
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);

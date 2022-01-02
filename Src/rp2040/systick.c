@@ -2,7 +2,7 @@
 #include "systick.h"
 #include "system.h"
 
-static uint32_t ticks=0;
+volatile static uint32_t ticks=0;
 
 void isr_systick()
 {
@@ -32,6 +32,8 @@ void stopSystickTimer()
 void waitSysticks(uint32_t dticks)
 {
     uint32_t t0;
-    t0 = ticks;
-    while (ticks < t0+dticks);
+    uint32_t tlim;
+    t0 = getTickValue();
+    tlim = t0+dticks;
+    while (getTickValue() <= tlim);
 }

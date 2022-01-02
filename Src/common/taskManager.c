@@ -61,6 +61,7 @@ UserCommandType userCommands[] = {
 	{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
 	{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
 	{"INITDISPLAY",&initDisplayCommand,CONTEXT_TYPE_NONE},
+	{"BACKLIGHT",&setBacklightCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };

@@ -38,6 +38,10 @@ void initSpi()
     // enable output on reset and command/data pin
     *GPIO_OE |= (1 << DISPLAY_RESET);
     *GPIO_OE |= (1 << DISPLAY_CD); 
+    *DISPLAY_RESET_PIN_CNTR = 5;
+    *DISPLAY_CD_PIN_CNTR = 5;
+    // set reset high
+    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
 
     // configure control register 0: 8-bit data, 199 as SCR resuting in a initial clock rate of 300 kHz at 120 MHz
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_INIT << SPI_SSPCR0_SCR_LSB);
@@ -338,6 +342,11 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
 }
 
 
+void setBacklight(uint8_t brightness)
+{
+    *PWM_CH0_CC = brightness << 8; 
+}
+
 void initDisplay()
 {
 
@@ -347,7 +356,7 @@ void initDisplay()
 
     // pull reset down
     *(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
-    waitSysticks(1);
+    waitSysticks(2);
     // pull up reset
     *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
     // wait 120ms
@@ -377,12 +386,26 @@ void initDisplay()
     *SSPDR = 0x5;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
-    // blank screen
+
 
     // display on
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     *SSPDR = 0x29;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+
+    // init backlight driver
+    *RESETS |= (1 << RESETS_RESET_PWM_LSB);
+    *RESETS &= ~(1 << RESETS_RESET_PWM_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_PWM_LSB)) == 0);
+
+    *PWM_CH0_TOP = 0xFFFF;
+    *PWM_CH0_CC = 0x7FFF; 
+    *PWM_CH0_CSR |= (1 << PWM_CH0_CSR_EN_LSB);
+    *GPIO_OE |= (1 << DISPLAY_BACKLIGHT);
+    *DISPLAY_BACKLIGHT_PIN_CNTR = 4;
+
+    // blank screen
+    blankScreen();
 }
 
 
@@ -391,7 +414,9 @@ uint8_t blankScreen()
     const uint8_t r = 10 << 3;
     const uint8_t g = 20 << 2;
     const uint8_t b = 30 << 3;
-
+    //TODO: adapt for horizontal mode
+    csDisableSDCard();
+    csEnableDisplay();
     // CASET
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     *SSPDR = 0x29;
@@ -400,7 +425,7 @@ uint8_t blankScreen()
     *SSPDR = 0x0;
     *SSPDR = 0x0;
     *SSPDR = 0x0;
-    *SSPDR = 0x9F;
+    *SSPDR = 0x7F; //TODO: reset to 0x9F
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );  
 
     // RASET
@@ -411,14 +436,14 @@ uint8_t blankScreen()
     *SSPDR = 0x0;
     *SSPDR = 0x0;
     *SSPDR = 0x0;
-    *SSPDR = 0x7F;
+    *SSPDR = 0x9F; //TODO: reset to 0x7F
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );      
 
     // RAMWR
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     *SSPDR = 0x2C;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
     uint16_t pCnt = 0;
     uint8_t cbyte1, cbyte2;
     while(pCnt < 128*160)
@@ -429,6 +454,7 @@ uint8_t blankScreen()
         *SSPDR = cbyte1;
         while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
         *SSPDR = cbyte2;
+        pCnt++;
     }
     return 0;
 }
