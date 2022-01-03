@@ -15,6 +15,9 @@
 #include "hardware/regs/sio.h"
 #include "hardware/regs/pwm.h"
 
+// --------------------
+// - pin declarations
+// --------------------
 #define CS_SDCARD 5
 #define CS_DISPLAY 12
 #define MISO 20
@@ -24,11 +27,16 @@
 #define DISPLAY_CD 25
 #define DISPLAY_BACKLIGHT 8 
 
-
+// -----------------------
+// - SCK Divider values
+// -----------------------
 #define SCK_SDCARD_INIT 199 // SPI clock divider for SD-Card initialization
 #define SCK_SDCARD_MEDIUM 5 // resulting in 10 MHz clock rate
-#define SCK_DISPLAY_SLOW 59 // resulting in 1 MHz spi clock for display
+#define SCK_DISPLAY_SLOW 5 // resulting in 10 MHz spi clock for display
 
+// ------------------------
+// - register definitions
+// ------------------------
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
 #define SSPCR0 ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPCR0_OFFSET))
@@ -40,11 +48,11 @@
 #define MOSI_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*MOSI))
 #define SCK_PIN_CNTR  ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SCK))
 #define MISO_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*MISO))
-#define CS_SDCARD_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_SDCARD))
-#define CS_DISPLAY_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_DISPLAY))
+#define CS_SDCARD_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_SDCARD))
+#define CS_DISPLAY_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_DISPLAY))
 
-#define DISPLAY_RESET_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_RESET))
-#define DISPLAY_CD_PIN_CNTR   ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_CD))
+#define DISPLAY_RESET_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_RESET))
+#define DISPLAY_CD_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_CD))
 
 #define PWM_CH0_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*DISPLAY_BACKLIGHT))
 #define PWM_CH0_DIV ((volatile uint32_t*)(PWM_BASE + PWM_CH0_DIV_OFFSET + 10*DISPLAY_BACKLIGHT))
@@ -84,4 +92,11 @@ void setBacklight(uint8_t);
 #define ERROR_V2_CMD8_RESPONSE 3
 #define ERROR_ILLEGAL_COMMAND 4
 #define ERROR_READ_FAILURE 5
+
+#define ST7735_MADCTL_MY 7
+#define ST7735_MADCTL_MX 6
+#define ST7735_MADCTL_MV 5
+#define ST7735_MADCTL_ML 4
+#define ST7735_MADCTL_RGB 3
+#define ST7735_MADCTL_MH 2
 #endif

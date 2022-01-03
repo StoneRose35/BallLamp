@@ -386,7 +386,13 @@ void initDisplay()
     *SSPDR = 0x5;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
-
+    //x-y exchange
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x36;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    *SSPDR = (1 << ST7735_MADCTL_MV);
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
     // display on
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
