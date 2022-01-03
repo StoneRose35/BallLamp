@@ -1,5 +1,12 @@
 {
-    "configurations": [    
+    "configurations": [
+        {
+            "name": "Python: Aktuelle Datei",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
         {
             "name": "Debug Tests",
             "type": "cppdbg",
@@ -19,7 +26,7 @@
                     "ignoreFailures": true
                 },
                 {
-                    "description":  "Disassemblierungsvariante auf Intel festlegen",
+                    "description": "Disassemblierungsvariante auf Intel festlegen",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
                 }
@@ -41,7 +48,9 @@
             ],
             "svdFile": "/home/philipp/pico/pico-sdk/src/rp2040/hardware_regs/rp2040.svd",
             "runToEntryPoint": "main",
-            "searchDir": ["/home/philipp/pico/openocd/tcl"]
+            "searchDir": [
+                "/home/philipp/pico/openocd/tcl"
+            ]
         }
     ]
 }
