@@ -226,12 +226,6 @@ typedef struct {
 #define PIO_SM1_TXF ((volatile uint32_t*)(PIO0_BASE+PIO_TXF1_OFFSET))
 #define PIO_SM1_INSTR  ((volatile uint32_t*)(PIO0_BASE+PIO_SM1_INSTR_OFFSET))
 
-#define DMA_CH0_WRITE_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH0_WRITE_ADDR_OFFSET))
-#define DMA_CH0_READ_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH0_READ_ADDR_OFFSET))
-#define DMA_CH0_CTRL_TRIG ((volatile uint32_t*)(DMA_BASE+DMA_CH0_CTRL_TRIG_OFFSET))
-#define DMA_CH0_TRANS_COUNT ((volatile uint32_t*)(DMA_BASE+DMA_CH0_TRANS_COUNT_OFFSET))
-#define DMA_INTE0 ((volatile uint32_t*)(DMA_BASE+DMA_INTE0_OFFSET))
-#define DMA_INTS0 ((volatile uint32_t*)(DMA_BASE+DMA_INTS0_OFFSET))
 
 #define NEOPIXEL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*NEOPIXEL_PIN))
 #ifdef ITSYBITSY

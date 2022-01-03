@@ -1,8 +1,8 @@
 import math
 
-if __name__ == "__main__":
 
-    # computed the possible division factors for the pll
+def oscillator_freq_calc():
+        # computed the possible division factors for the pll
     f_xosc = 12000000.
 
     f_ws2818 = 800000.
@@ -63,5 +63,11 @@ if __name__ == "__main__":
     print("ws2812 Frequency: {}".format(bestparams["f_ws2812"]))
 
 
+def st7735_encode_color(r,g,b):
+    msb = (r & 0xF8) | ((g >> 5) & 0x7)
+    lsb = ((g & 0x7) << 5) | ((b & 0xF8) >> 3)
+    print("encoded color, msb: {}, lsb: {}".format(hex(msb),hex(lsb)))
 
 
+if __name__ == "__main__":
+    st7735_encode_color(254, 255, 179)

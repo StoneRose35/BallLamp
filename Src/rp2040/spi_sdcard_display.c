@@ -1,7 +1,12 @@
 
 #include "spi_sdcard_display.h"
 #include "systick.h"
+#include "dma.h"
 
+/**
+ * @brief Driver for https://www.adafruit.com/product/358
+ * 
+ */
 
 void initSpi()
 {
@@ -19,7 +24,6 @@ void initSpi()
     *MISO_PIN_CNTR = 1;
     *MOSI_PIN_CNTR = 1;
     *SCK_PIN_CNTR = 1;
-
 
     // switch off sd card cs when initializing the spi interface
     *GPIO_OE |= (1 << CS_SDCARD);
@@ -52,7 +56,7 @@ void initSpi()
 }
 
 
-void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
+void sendSdCardDummyBytes(uint16_t cnt,uint8_t targetbyte)
 {
     uint8_t dummy = 0;
     csDisableDisplay();
@@ -82,13 +86,13 @@ void sendDummyBytes(uint16_t cnt,uint8_t targetbyte)
 
 }
 
-uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
+uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
 {
 
     uint8_t c = 0;
     uint8_t retval,returncode=0;
     uint16_t retcnt=0;
-    sendDummyBytes(2,0);
+    sendSdCardDummyBytes(2,0);
     for(c=0;c<6;c++) // send all commands at once
     {
         *SSPDR = cmd[c];
@@ -125,7 +129,7 @@ uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
         }
     }
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    sendDummyBytes(2,0);
+    sendSdCardDummyBytes(2,0);
     return returncode;
 }
 
@@ -139,7 +143,7 @@ uint8_t initSdCard()
     csEnableSDCard();
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_INIT << SPI_SSPCR0_SCR_LSB);
     // send 10 dummy bytes
-    sendDummyBytes(10,0);
+    sendSdCardDummyBytes(10,0);
 
     // send command 0
     cmd[0] = 0x40;
@@ -148,7 +152,7 @@ uint8_t initSdCard()
     cmd[3] = 0x0;
     cmd[4] = 0x0;
     cmd[5] = 0x95;
-    retcode = sendCommand(cmd,resp,1);
+    retcode = sendSdCardCommand(cmd,resp,1);
     if (retcode != 0)
     {
         return retcode;
@@ -165,7 +169,7 @@ uint8_t initSdCard()
     cmd[3] = 0x1;
     cmd[4] = 0xAA;
     cmd[5] = 0x87;
-    retcode = sendCommand(cmd,resp,5);
+    retcode = sendSdCardCommand(cmd,resp,5);
     if (retcode != 0)
     {
         return retcode;
@@ -189,7 +193,7 @@ uint8_t initSdCard()
             cmd[3] = 0x0;
             cmd[4] = 0x0;
             cmd[5] = 0xFF;
-            retcode = sendCommand(cmd,resp,1);
+            retcode = sendSdCardCommand(cmd,resp,1);
             if (retcode != 0)
             {
                 return retcode;
@@ -201,7 +205,7 @@ uint8_t initSdCard()
             cmd[3] = 0x0;
             cmd[4] = 0x0;
             cmd[5] = 0xFF;
-            retcode = sendCommand(cmd,resp,5);
+            retcode = sendSdCardCommand(cmd,resp,5);
             if (retcode != 0)
             {
                 return retcode;
@@ -216,7 +220,7 @@ uint8_t initSdCard()
         cmd[3] = 0x0;
         cmd[4] = 0x0;
         cmd[5] = 0xFF;
-        retcode = sendCommand(cmd,resp,1);
+        retcode = sendSdCardCommand(cmd,resp,1);
         if (retcode != 0)
         {
             return retcode;
@@ -230,7 +234,7 @@ uint8_t initSdCard()
     cmd[3] = 0x0;
     cmd[4] = 0x0;
     cmd[5] = 0xFF;
-    retcode = sendCommand(cmd,resp,5);
+    retcode = sendSdCardCommand(cmd,resp,5);
     if (retcode != 0)
     {
         return retcode;
@@ -252,7 +256,7 @@ uint8_t initSdCard()
     cmd[3] = 0x2;
     cmd[4] = 0x0;
     cmd[5] = 0xFF;
-    retcode = sendCommand(cmd,resp,1);
+    retcode = sendSdCardCommand(cmd,resp,1);
     if (retcode != 0)
     {
         return retcode;
@@ -261,31 +265,40 @@ uint8_t initSdCard()
     {
         return ERROR_ILLEGAL_COMMAND;
     }
+
+
+    // setup dma channel 1 for reading a block of information from the sd card
+
+	//place data into the TX fifo of PIO0's SM0
+	*DMA_CH1_READ_ADDR = SPI0_BASE + SPI_SSPDR_OFFSET;
+	//increase read address at each transfer, select DREQ16 (DREQ_SPI0_RX) as data send request
+	// choose byte-sized transfers
+	*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_INCR_WRITE_LSB) | (17 << DMA_CH1_CTRL_TRIG_TREQ_SEL_LSB) | (0 << DMA_CH1_CTRL_TRIG_DATA_SIZE_LSB);
+	//define the number of data sent
+
+    // write to memory
+	//*DMA_CH1_WRITE_ADDR = (uint32_t)rawdata_ptr;
+	*DMA_CH1_TRANS_COUNT = 512;
+
     return 0;
 }
 
-
-void csEnableSDCard()
+void sendDisplayCommand(uint8_t cmd,uint8_t * data,uint32_t dataLen)
 {
-    *CS_SDCARD_PIN_CNTR = 1;
-}
-
-void csDisableSDCard()
-{
-    *CS_SDCARD_PIN_CNTR = 5;
-    *(GPIO_OUT + 1) = (1 << CS_SDCARD);
-}
-
-void csEnableDisplay()
-{    
-    *CS_DISPLAY_PIN_CNTR = 5;
-    *(GPIO_OUT + 2) = (1 << CS_DISPLAY);
-}
-
-void csDisableDisplay()
-{
-    *CS_DISPLAY_PIN_CNTR = 5;
-    *(GPIO_OUT + 1) = (1 << CS_DISPLAY);
+    csDisableSDCard();
+    csEnableDisplay();
+    setSckDisplay();
+    uint32_t cnt=0;
+    
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = cmd;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    for(cnt=0;cnt<dataLen;cnt++)
+    {
+        *SSPDR = *(data+cnt);
+        while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
+    }
 }
 
 uint8_t readSector(uint8_t* sect, uint32_t address)
@@ -296,15 +309,15 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
     //uint8_t crc1,crc2;
     csDisableDisplay();
     csEnableSDCard();    
-    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_MEDIUM << SPI_SSPCR0_SCR_LSB);
+    setSckSdCard();
     // send CMD17 (read one block)
     cmd[0]=17 + 0x40;
     cmd[1] = address>>24 & 0xFF;
-    cmd[2] = address>>16  & 0xFF;
-    cmd[3] = address>>8  & 0xFF;
+    cmd[2] = address>>16 & 0xFF;
+    cmd[3] = address>>8 & 0xFF;
     cmd[2] = address & 0xFF;
     cmd[5] = 0xFF;
-    retcode = sendCommand(cmd,sect,1);
+    retcode = sendSdCardCommand(cmd,sect,1);
     if (retcode != 0)
     {
         return ERROR_TIMEOUT;
@@ -420,9 +433,9 @@ uint8_t blankScreen()
     const uint8_t r = 10 << 3;
     const uint8_t g = 20 << 2;
     const uint8_t b = 30 << 3;
-    //TODO: adapt for horizontal mode
     csDisableSDCard();
     csEnableDisplay();
+    setSckDisplay();
     // CASET
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     *SSPDR = 0x29;
@@ -431,7 +444,7 @@ uint8_t blankScreen()
     *SSPDR = 0x0;
     *SSPDR = 0x0;
     *SSPDR = 0x0;
-    *SSPDR = 0x7F; //TODO: reset to 0x9F
+    *SSPDR = 0x9F;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );  
 
     // RASET
@@ -442,7 +455,7 @@ uint8_t blankScreen()
     *SSPDR = 0x0;
     *SSPDR = 0x0;
     *SSPDR = 0x0;
-    *SSPDR = 0x9F; //TODO: reset to 0x7F
+    *SSPDR = 0x7F;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );      
 
     // RAMWR

@@ -66,15 +66,46 @@
 #endif
 
 void initSpi();
-void sendDummyBytes(uint16_t cnt,uint8_t targetbyte);
-uint8_t sendCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
+void sendSdCardDummyBytes(uint16_t cnt,uint8_t targetbyte);
+uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
 uint8_t initSdCard();
 uint8_t readSector(uint8_t* sect, uint32_t address);
+void sendDisplayCommand(uint8_t cmd,uint8_t * data,uint32_t dataLen);
 
-void csDisableDisplay();
-void csEnableDisplay();
-void csDisableSDCard();
-void csEnableSDCard();
+inline void csEnableDisplay()
+{    
+    *CS_DISPLAY_PIN_CNTR = 5;
+    *(GPIO_OUT + 2) = (1 << CS_DISPLAY);
+}
+
+inline void csDisableDisplay()
+{
+    *CS_DISPLAY_PIN_CNTR = 5;
+    *(GPIO_OUT + 1) = (1 << CS_DISPLAY);
+}
+
+inline void setSckDisplay()
+{
+    *SSPCR0 &= ~SPI_SSPCR0_SCR_BITS;
+    *SSPCR0 |= (SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
+}
+
+inline void setSckSdCard()
+{
+    *SSPCR0 &= ~SPI_SSPCR0_SCR_BITS;
+    *SSPCR0 |= (SCK_SDCARD_MEDIUM << SPI_SSPCR0_SCR_LSB);
+}
+
+inline void csEnableSDCard()
+{
+    *CS_SDCARD_PIN_CNTR = 1;
+}
+
+inline void csDisableSDCard()
+{
+    *CS_SDCARD_PIN_CNTR = 5;
+    *(GPIO_OUT + 1) = (1 << CS_SDCARD);
+}
 
 void initDisplay();
 uint8_t blankScreen();

@@ -157,6 +157,7 @@
 #include "systemClock.h"
 #include "systick.h"
 #include "uart.h"
+#include "dma.h"
 #include "spi_sdcard_display.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
@@ -255,6 +256,7 @@ int main(void)
 
     setupClock();
 	initSystickTimer();
+	initDMA();
 
     initConsole(&usbConsole);
     initConsole(&btConsole);

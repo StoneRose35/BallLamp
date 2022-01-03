@@ -10,6 +10,7 @@
 
 #include "neopixelDriver.h"
 #include "system.h"
+#include "dma.h"
 
 #include "gen/pioprogram.h"
 #include "hardware/regs/pio.h"
@@ -98,11 +99,6 @@ void initNeopixels()
 	*(GPIO_OUT + 1) = (1 << NEOPIXEL_POWER_PIN);
 	#endif
     
-	// enable the dma block
-	*RESETS |= (1 << RESETS_RESET_DMA_LSB);
-    *RESETS &= ~(1 << RESETS_RESET_DMA_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_DMA_LSB)) == 0);
-
 	// read from the raw data array in memory
 	*DMA_CH0_READ_ADDR = (uint32_t)rawdata_ptr;
 	//place data into the TX fifo of PIO0's SM0
