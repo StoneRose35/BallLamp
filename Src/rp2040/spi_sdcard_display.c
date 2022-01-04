@@ -355,6 +355,65 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
 }
 
 
+uint8_t writeSector(uint8_t* sect, uint32_t address)
+{
+    uint8_t cmd[6];
+    uint8_t retcode;
+    uint16_t cSect;
+    uint8_t resp[2];
+    csDisableDisplay();
+    csEnableSDCard();    
+    setSckSdCard();
+    // send CMD24 (write one block)
+    cmd[0]=24 + 0x40;
+    cmd[1] = address>>24 & 0xFF;
+    cmd[2] = address>>16 & 0xFF;
+    cmd[3] = address>>8 & 0xFF;
+    cmd[2] = address & 0xFF;
+    cmd[5] = 0xFF;
+    retcode = sendSdCardCommand(cmd,resp,1);
+    if (retcode != 0)
+    {
+        return ERROR_TIMEOUT;
+    }
+    if(sect[0]!= 0x0)
+    {
+        return ERROR_READ_FAILURE;
+    }
+    
+    *SSPDR = 0xFF;
+    *SSPDR = 0xFF;
+    cSect = 0;
+    *SSPDR = 0xFE;
+    while(cSect < 512)
+    {
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+        *SSPDR = *(sect + cSect++);
+    }
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *SSPDR = 0xFF;
+    *SSPDR = 0xFF;
+
+    // send mandatory command 13
+    cmd[0]=13+ 0x40;
+    cmd[1] = 0x0;
+    cmd[2] = 0x0;
+    cmd[3] = 0x0;
+    cmd[2] = 0x0;
+    cmd[5] = 0xFF;
+    retcode = sendSdCardCommand(cmd,resp,2);
+    if (retcode != 0)
+    {
+        return ERROR_TIMEOUT;
+    }
+    if (resp[1] !=0 || resp[0] != 0)
+    {
+        return ERROR_WRITE_FAILURE;
+    }
+    return 0;
+}
+
+
 void setBacklight(uint8_t brightness)
 {
     *PWM_CH0_CC = brightness << 8; 

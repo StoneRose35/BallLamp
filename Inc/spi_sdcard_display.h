@@ -69,8 +69,9 @@ void initSpi();
 void sendSdCardDummyBytes(uint16_t cnt,uint8_t targetbyte);
 uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
 uint8_t initSdCard();
-uint8_t readSector(uint8_t* sect, uint32_t address);
-void sendDisplayCommand(uint8_t cmd,uint8_t * data,uint32_t dataLen);
+uint8_t readSector(uint8_t*, uint32_t);
+uint8_t writeSector(uint8_t*, uint32_t);
+void sendDisplayCommand(uint8_t,uint8_t *,uint32_t);
 
 inline void csEnableDisplay()
 {    
@@ -123,6 +124,7 @@ void setBacklight(uint8_t);
 #define ERROR_V2_CMD8_RESPONSE 3
 #define ERROR_ILLEGAL_COMMAND 4
 #define ERROR_READ_FAILURE 5
+#define ERROR_WRITE_FAILURE 6
 
 #define ST7735_MADCTL_MY 7
 #define ST7735_MADCTL_MX 6
