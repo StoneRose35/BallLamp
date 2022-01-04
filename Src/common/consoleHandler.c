@@ -15,6 +15,26 @@
 #include "taskManager.h"
 #include "system.h"
 
+static char currentPath[CURRENT_PATH_MAX_FOLDERDEPTH][CURRENT_PATH_MAX_FOLDERLENGTH];
+
+void setPathEntry(uint8_t depth,char * folder)
+{
+	uint8_t c=0;
+	while(*((uint8_t*)folder + c)!=0)
+	{
+		currentPath[depth][c] = *(folder + c);
+	}
+}
+
+void clearPathEntry(uint8_t depth)
+{
+	uint8_t c=0;
+	for(c=0;c<CURRENT_PATH_MAX_FOLDERLENGTH;c++)
+	{
+		currentPath[depth][c] = 0;
+	}
+}
+
 /**
  * @brief initializes all buffers with zeros
  * 
@@ -22,7 +42,7 @@
  */
 void initConsole(Console console)
 {
-	uint16_t cnt;
+	uint16_t cnt,c2;
 
 	for (cnt=0;cnt<COMMAND_BUFFER_SIZE*COMMAND_HISTORY_SIZE;cnt++)
 	{
@@ -40,6 +60,14 @@ void initConsole(Console console)
 	console->cbfIdx=0;
 	console->cursor=0;
 	console->mode=0;
+
+	for(cnt=0;cnt<CURRENT_PATH_MAX_FOLDERDEPTH;cnt++)
+	{
+		for(c2=0;c2<CURRENT_PATH_MAX_FOLDERLENGTH;c2++)
+		{
+			currentPath[cnt][c2]=0;
+		}
+	}
 }
 
 const char * consolePrefix = CONSOLE_PREFIX; //!< command line prefix, every shell line starts with that
@@ -60,8 +88,8 @@ const char * cmd_arrow_down = "[B"; //!< special character sequence for "arrow d
  */
 char* onCharacterReception(BufferedInput binput,uint8_t charin)
 {
-	uint8_t c1=0;
-	uint8_t obCnt=0;
+	uint8_t c1=0,c2=1;
+	uint16_t obCnt=0;
 
     clearOutBuffer(binput->console);
 	if (charin == 13 && binput->console->mode == 0) // convert \r into \r\n, print a new console line
@@ -75,6 +103,30 @@ char* onCharacterReception(BufferedInput binput,uint8_t charin)
 			c1++;
 			obCnt++;
 		}
+		if (currentPath[0][0] != 0) // filesystem mounted
+		{
+			obCnt--;
+			binput->console->outBfr[obCnt++]='/';	
+			while(currentPath[c2][0] != 0)
+			{
+				if(c2>0)
+				{
+					c1=0;
+					while(currentPath[c2][c1]!=0)
+					{
+						binput->console->outBfr[obCnt++]=currentPath[c2][c1];
+					}
+				}
+				binput->console->outBfr[obCnt++]='/';
+			}
+			obCnt--;
+			binput->console->outBfr[obCnt++] = '$';
+		}
+		else{
+			binput->console->outBfr[obCnt++] = '>';
+		}
+		binput->console->outBfr[obCnt] = 0;
+
 
 
 		// copy the possibly edited command into the first position of the shadow command buffer
