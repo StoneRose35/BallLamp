@@ -116,6 +116,10 @@ void handleCommand(char * cmd,void* caller)
 	{
 		while(userCommands[cnt].commandFct != 0 && cmdFound == 0)
 		{
+			if(*((uint8_t*)cmd)>=97 && *((uint8_t*)cmd)<=122)
+			{
+				toUpper(cmd);
+			}
 			if (startsWith(cmd,userCommands[cnt].commandName) > 0)
 			{
 				callUserFunction(userCommands[cnt].commandFct,cmd,userCommands[cnt].contextType,caller);
