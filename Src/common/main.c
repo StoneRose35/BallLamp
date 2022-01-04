@@ -159,6 +159,7 @@
 #include "uart.h"
 #include "dma.h"
 #include "spi_sdcard_display.h"
+#include "fatLib.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
 #include "bufferedInputHandler.h"
@@ -239,8 +240,8 @@ void colorUpdate(RGB * color,uint32_t phase)
  */
 int main(void)
 {
-	//uint8_t retcode=0;
-	//char nrbfr[4];
+	uint8_t retcode=0;
+	char nrbfr[4];
 	uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
@@ -278,19 +279,37 @@ int main(void)
 	initUart(BAUD_RATE);
 	//printf("starting SPI\r\n");
 	initSpi();
-	//printf("initializing SD Card.. ");
-	//retcode=initSdCard();
-	//if(retcode==0)
-	//{
-	//	printf("OK\r\n");
-	//}
-	//else
-	//{
-	//	printf("Failure, Code ");
-	//	UInt8ToChar(retcode,nrbfr);
-	//	printf(nrbfr);
-	//	printf("\r\n");
-	//}
+	printf("initializing SD Card.. ");
+	retcode=initSdCard();
+	if(retcode==0)
+	{
+		printf("OK\r\n");
+	}
+	else
+	{
+		printf("Failure, Code ");
+		UInt8ToChar(retcode,nrbfr);
+		printf(nrbfr);
+		printf("\r\n");
+	}
+	if (retcode == 0)
+	{
+		printf("mounting SD Card.. ");
+		retcode = initFatSDCard();
+		if(retcode==0)
+		{
+			printf("OK\r\n");
+			setPathEntry(0,"SDCard");
+		}
+		else
+		{
+			printf("Failure, Code ");
+			UInt8ToChar(retcode,nrbfr);
+			printf(nrbfr);
+			printf("\r\n");
+		}
+	}
+
 	//initDisplay();
 
 
