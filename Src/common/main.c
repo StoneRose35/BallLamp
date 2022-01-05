@@ -188,6 +188,8 @@ volatile uint8_t context;
 extern CommBufferType usbCommBuffer;
 extern CommBufferType btCommBuffer;
 
+DirectoryPointerType cwd;
+
 /**
  * @brief updates the color along a hue shift with the phase going from 0 to 1535
  * @param color the color data to update
@@ -299,7 +301,9 @@ int main(void)
 		if(retcode==0)
 		{
 			printf("OK\r\n");
-			setPathEntry(0,"SDCard");
+			openRootDirectory(&cwd);
+			setPathEntry(0,"root");
+
 		}
 		else
 		{

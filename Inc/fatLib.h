@@ -36,7 +36,8 @@ typedef struct
 typedef struct 
 {
     uint32_t clusterLbaBegin;
-    uint32_t fatLbaBgin;
+    uint32_t fatLbaBegin;
+    uint32_t fat2LbaBegin;
 } DerivedFATDataType;
 
 typedef struct 
@@ -71,7 +72,7 @@ typedef struct
 } DirectoryPointerType;
 
 #ifndef HARDWARE
-void readSector(uint8_t*,uint64_t);
+uint8_t readSector(uint8_t*,uint64_t);
 #endif
 void getPartitionInfo(uint8_t *,uint8_t,PartitionInfoType*);
 void getVolumeId(uint8_t *,VolumeIdType* );
@@ -90,8 +91,11 @@ uint32_t getNextCluster(uint32_t clusterNr);
 
 uint8_t initFatSDCard();
 uint8_t openFile(DirectoryEntryType * dirEntry,FilePointerType * fp);
+uint8_t openRootDirectory(DirectoryPointerType * fp);
 uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryPointerType * fp);
 uint16_t readFile(FilePointerType * fp);
+uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName);
+uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
 
 
 /******************
@@ -102,9 +106,9 @@ uint16_t readFile(FilePointerType * fp);
 #define FATLIB_WRONG_PART_TYPE 13
 #define FATLIB_NO_FILE 14
 #define FATLIB_DIRECTORY_NOT_FOUND 15
-
 #define FATLIB_MEMORY_ALLOC_FAILURE 16
 #define FATLIB_FOLDERDELETE_TOO_MANY_CLUSTERS 17
+#define FATLIB_CREATEDIR_ALREADY_EXISTS 18
 
 
 /******************

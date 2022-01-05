@@ -58,5 +58,4 @@ void mountCommand(char * cmd,void* context)
     {
         printf("OK (0)");
     }
-    
 }
