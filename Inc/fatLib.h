@@ -82,9 +82,13 @@ uint32_t getClusterLbaBegin(PartitionInfoType* ,VolumeIdType*);
 uint32_t getClusterLba(uint32_t);
 uint16_t getDirectoryEntries(uint8_t*,DirectoryEntryType**);
 uint16_t getFilesInDirectory(uint32_t directoryClusterLba,DirectoryEntryType ** res);
+uint8_t copyDirectoryPointer(DirectoryPointerType ** src,DirectoryPointerType ** dest);
+uint16_t getDirectoryContentSize(DirectoryPointerType * fp);
+uint8_t createDirectoryPointer(DirectoryPointerType ** dp);
+uint8_t destroyDirectoryPointer(DirectoryPointerType ** dp);
 uint32_t getNextFreeCluster();
 //#ifdef HARDWARE
-uint32_t getNextCluster(uint32_t clusterNr);
+uint32_t getNextCluster(uint8_t*,uint32_t clusterNr);
 //#else
 //uint32_t getNextCluster(FILE * fid,uint32_t clusterNr,PartitionInfoType* partInfo,VolumeIdType* volumeId);
 //#endif
@@ -96,6 +100,8 @@ uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryP
 uint16_t readFile(FilePointerType * fp);
 uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName);
 uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
+uint8_t createFile(DirectoryPointerType * fp,char * fileName);
+uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp);
 
 
 /******************
@@ -109,6 +115,8 @@ uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * 
 #define FATLIB_MEMORY_ALLOC_FAILURE 16
 #define FATLIB_FOLDERDELETE_TOO_MANY_CLUSTERS 17
 #define FATLIB_CREATEDIR_ALREADY_EXISTS 18
+#define FATLIB_DIRECTORY_NOT_EMPTY 19
+#define FATLIB_DISK_FULL 0xFFFFFFFF
 
 
 /******************
