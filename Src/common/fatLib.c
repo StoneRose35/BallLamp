@@ -319,6 +319,36 @@ uint32_t getNextCluster(uint8_t * sector, uint32_t clusterNr)
     return *((uint32_t*)sector + (clusterNr & 0x7F));
 }
 
+uint32_t getPreviousCluster(uint8_t * sector,uint32_t clusterNr)
+{
+    uint32_t c=0;
+    uint32_t c2;
+    uint32_t backwardsIdx=2;
+    while (c < sdCardInfo.volumeId.sectorsPerFat)
+    {
+        readSector(sector,c);
+        if (c==0)
+        {
+            c2=2;
+        }
+        else
+        {
+            c2=0;
+        }
+        while(c2 < 128)
+        {
+            if (*((uint32_t*)sector + c2) == clusterNr)
+            {
+                return backwardsIdx;
+            }
+            c2++;
+            backwardsIdx++;
+        }
+        c++;
+    }
+    return 0;
+}
+
 
 /**
  * @brief deep-copies a directory information structure. Useful for directory walks after a directory has been opened

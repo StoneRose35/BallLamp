@@ -87,11 +87,10 @@ uint16_t getDirectoryContentSize(DirectoryPointerType * fp);
 uint8_t createDirectoryPointer(DirectoryPointerType ** dp);
 uint8_t destroyDirectoryPointer(DirectoryPointerType ** dp);
 uint32_t getNextFreeCluster();
-//#ifdef HARDWARE
+
 uint32_t getNextCluster(uint8_t*,uint32_t clusterNr);
-//#else
-//uint32_t getNextCluster(FILE * fid,uint32_t clusterNr,PartitionInfoType* partInfo,VolumeIdType* volumeId);
-//#endif
+uint32_t getPreviousCluster(uint8_t*,uint32_t clusterNr);
+
 
 uint8_t initFatSDCard();
 uint8_t openRootDirectory(DirectoryPointerType * fp);
