@@ -189,6 +189,7 @@ extern CommBufferType usbCommBuffer;
 extern CommBufferType btCommBuffer;
 
 DirectoryPointerType * cwd;
+DirectoryPointerType * ndir;
 
 /**
  * @brief updates the color along a hue shift with the phase going from 0 to 1535
@@ -302,6 +303,7 @@ int main(void)
 		{
 			printf("OK\r\n");
 			createDirectoryPointer(&cwd);
+			createDirectoryPointer(&ndir);
 			openRootDirectory(cwd);
 			addToPath("");
 		}
