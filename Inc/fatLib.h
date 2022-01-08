@@ -94,14 +94,18 @@ uint32_t getNextCluster(uint8_t*,uint32_t clusterNr);
 //#endif
 
 uint8_t initFatSDCard();
-uint8_t openFile(DirectoryEntryType * dirEntry,FilePointerType * fp);
 uint8_t openRootDirectory(DirectoryPointerType * fp);
+uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerType * fp);
 uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryPointerType * fp);
-uint16_t readFile(FilePointerType * fp);
 uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName);
-uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
 uint8_t createFile(DirectoryPointerType * fp,char * fileName);
+uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
+uint16_t readFile(FilePointerType * fp);
+uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes);
 uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp);
+
+// filename helper functions
+uint8_t filenameEquals(DirectoryEntryType * entry,char * fileName);
 
 
 /******************
@@ -116,6 +120,7 @@ uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp);
 #define FATLIB_FOLDERDELETE_TOO_MANY_CLUSTERS 17
 #define FATLIB_CREATEDIR_ALREADY_EXISTS 18
 #define FATLIB_DIRECTORY_NOT_EMPTY 19
+#define FATLIB_FILE_NOT_FOUND 20
 #define FATLIB_DISK_FULL 0xFFFFFFFF
 
 

@@ -67,7 +67,7 @@ void main(int argc,char ** argv)
     initFatSDCard();
     printf("Welcome to the FAT Access Library\r\n");
 
-    printf("trying out Napa rocking boot code\r\n");
+    printf("trying out Napa's rocking boot code\r\n");
     readSector(sector,0);
     char * napa="Kohl Rock Breisser King";
     uint8_t c=0;
@@ -77,7 +77,6 @@ void main(int argc,char ** argv)
         c++;
     }
     writeSector(sector,0);
-
     readSector(sector,0);
 
     printf("the signature is: %x %x\r\n",sector[510],sector[511]);
@@ -97,41 +96,39 @@ void main(int argc,char ** argv)
     printf("Root Directory First Cluster: %d\r\n",volumeId.rootDirectoryFirstCluster);
     uint32_t rootDirClusterLba = getClusterLba(volumeId.rootDirectoryFirstCluster);
 
+    createDirectoryPointer(&dparent);
+    openRootDirectory(dparent);
     uint16_t sec_cnt = 0;
-    while(sec_cnt < volumeId.sectorsPerCluster && fcnt == 0x10)
+    for (uint16_t c=0;c<dparent->entriesLength;c++)
     {
-        printf("**** Reading Sector %d\r\n", sec_cnt);
-        readSector(sector,rootDirClusterLba + sec_cnt);
-        fcnt = getFilesInDirectory(rootDirClusterLba,&filesOfSector); // getDirectoryEntries(sector,&filesOfSector);
-        for (uint8_t q=0;q<fcnt;q++)
+        if (((*dparent->entries + c)->attrib & 0x0F) != 0x0F)
         {
-            if ((filesOfSector[q].attrib & 0x0F) != 0x0F)
+            uint8_t uu=0;
+            for(uint8_t u=0;u<8;u++)
             {
-                uint8_t uu=0;
-                for(uint8_t u=0;u<8;u++)
+                if((*dparent->entries + c)->filename[u] != ' ')
                 {
-                    if(filesOfSector[q].filename[u] != 0x20)
-                    {
-                        fnameDisplay[uu++] = filesOfSector[q].filename[u];
-                    }
+                    fnameDisplay[uu++] = (*dparent->entries + c)->filename[u];
                 }
+            }
+            if ((*dparent->entries + c)->attrib == 0x20)
+            {
                 fnameDisplay[uu++] = '.';
                 for(uint8_t u=0;u<3;u++)
                 {
-                    if(filesOfSector[q].fileext[u] != 0x20)
+                    if((*dparent->entries + c)->fileext[u] != ' ')
                     {
-                        fnameDisplay[uu++] = filesOfSector[q].fileext[u];
+                        fnameDisplay[uu++] = (*dparent->entries + c)->fileext[u];
                     }
                 }
-                fnameDisplay[uu]=0;
-                if(strncmp(fnameDisplay,"TEST1",5)==0)
-                {
-                    openFile((filesOfSector + q),&fp);
-                }
-                printf("\tFilename: %s,\t Attrib: %i,\t Size %i,\t first Cluster: %i\r\n",fnameDisplay,filesOfSector[q].attrib,filesOfSector[q].size,filesOfSector[q].firstCluster);
             }
+            fnameDisplay[uu]=0;
+            if(strncmp(fnameDisplay,"TEST1",5)==0)
+            {
+                openFile(dparent,"TEST1.TXT",&fp);
+            }
+            printf("\tFilename: %s,\t Attrib: %i,\t Size %i,\t first Cluster: %i\r\n",fnameDisplay,(*dparent->entries + c)->attrib,(*dparent->entries + c)->size,(*dparent->entries + c)->firstCluster);
         }
-        sec_cnt++;
     }
     if(fp.dirEntry != 0)
     {
@@ -158,9 +155,7 @@ void main(int argc,char ** argv)
     }
 
     printf("testing library functions: openRootDirectory(DirectoryPointerType * fp)\r\n");
-    createDirectoryPointer(&dparent);
     createDirectoryPointer(&dnew);
-    openRootDirectory(dparent);
     printf("opening subdirectory NDIR\r\n");
     openDirectory(dparent,"NDIR",dnew);
 
@@ -168,10 +163,27 @@ void main(int argc,char ** argv)
     retcode = createDirectory(dparent,"MYDIR");
     if(retcode > 0)
     {
-        openDirectory(dparent,"MYDIR",dnew);
-        deleteDirectory(dparent,dnew);
+        printf("directory already exists\r\n");
+        //openDirectory(dparent,"MYDIR",dnew);
+        //deleteDirectory(dparent,dnew);
     }
-
+    openDirectory(dparent,"MYDIR",dnew);
+    copyDirectoryPointer(&dnew,&dparent);
+    retcode = createFile(dparent,"log4.net");
+    if (retcode == 0)
+    {
+        openFile(dparent,"log4.net",&fp);
+        char * exampletext="This is not Log4J\r\nAs instead ... its a c-based recreation of the end of the world";
+        uint16_t c1=0;
+        while (*(exampletext + c1) != 0)
+        {
+            *(fp.sectorBuffer + c1) =  *(exampletext + c1);
+            c1++;
+        }
+        *(fp.sectorBuffer + c1) = 0;
+        writeFile(dparent,&fp,c1);
+    }
+    
     // copy back to drive
     fid = fopen(devicePath,"wb");
     fwrite(fakeFilesys,1,size,fid);
@@ -524,24 +536,34 @@ uint16_t getDirectoryContentSize(DirectoryPointerType * fp)
 /**
  * @brief opens a file, stores the information pointer in fp
  * 
- * @param dirEntry the directory entry to open
- * @param fp the resulting file pointer
+ * @param parentDir the directory which contains the file to be opened
+ * @param filename the name of the file to be opened
+ * @param fp the file pointer structure used to handle the file (read, write, delete)
  * @return uint8_t 0 if successful, an errorcode otherwise
  */
-uint8_t openFile(DirectoryEntryType * dirEntry,FilePointerType * fp)
+uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerType * fp)
 {
-    if (((dirEntry->attrib & 0xF)==0xF) || dirEntry->size == 0)
+    uint16_t fileIndex=0xFFFF;
+    for (uint16_t c=0;c<(parentDir)->entriesLength;c++)
     {
-        return FATLIB_NO_FILE;
+        if ((*(parentDir)->entries+c)->attrib == 0x20)
+        {
+            if (filenameEquals(*(parentDir)->entries+c,filename)==1)
+            {
+                fileIndex = c;
+            }
+        }
     }
-    else
+    if (fileIndex == 0xFFFF)
     {
-        fp->dirEntry = dirEntry;
-        fp->sectorPtr = 0;
-        fp->clusterPtr = fp->dirEntry->firstCluster;
-        fp->clusterCntr = 0;
-        return 0;
+        return FATLIB_FILE_NOT_FOUND;
     }
+
+    fp->dirEntry = (*(parentDir)->entries + fileIndex);
+    fp->sectorPtr = 0;
+    fp->clusterPtr = fp->dirEntry->firstCluster;
+    fp->clusterCntr = 0;
+    return 0;
 }
 
 /**
@@ -624,22 +646,9 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     uint16_t c5=0;
     while(c5<fp->entriesLength && fnameEqual==0)
     {
-        uint8_t hasEnded=0;
         if( ((*fp->entries + c5)->attrib & 0x10) == 0x10 && (*fp->entries + c5)->attrib != 0x0F)
         {
-            fnameEqual=1;
-            for(c=0;c<8;c++)
-            {
-                if (directoryName[c]==0)
-                {
-                    hasEnded=1;
-                }
-                if (((*fp->entries + c5)->filename[c] != directoryName[c] && hasEnded==0) ||
-                    (hasEnded==1 && (*fp->entries + c5)->filename[c] != ' '))
-                {
-                    fnameEqual=0;
-                }
-            }
+            fnameEqual = filenameEquals((*fp->entries + c5),directoryName);
         }
         c5++;
     }
@@ -746,42 +755,7 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     uint16_t c5=0;
     while(c5<fp->entriesLength && fnameEqual==0)
     {
-        uint8_t hasEnded=0;
-        if( ((*fp->entries + c5)->attrib & 0x20) == 0x20 && (*fp->entries + c5)->attrib != 0x0F)
-        {
-            fnameEqual=1;
-            for(c=0;c<8;c++)
-            {
-                if (fileName[c]==0 || fileName[c]=='.')
-                {
-                    hasEnded=1;
-                }
-                else if (fileName[c]=='.')
-                {
-                    hasEnded=1;
-                    dotpos = c;
-                }
-                if (((*fp->entries + c5)->filename[c] != fileName[c] && hasEnded==0) ||
-                    (hasEnded==1 && (*fp->entries + c5)->filename[c] != ' '))
-                {
-                    fnameEqual=0;
-                }
-            }
-            if (fnameEqual == 1)
-            {
-                uint8_t c6=dotpos+1;
-                uint8_t c7=0;
-                while(fileName[c6] !=0 && c7 < 3)
-                {
-                    if ((*fp->entries + c5)->fileext[c7] != fileName[c6])
-                    {
-                        fnameEqual = 0;
-                    }
-                    c7++;
-                }
-            }
-        }
-        c5++;
+        fnameEqual = filenameEquals((*fp->entries+c5++),fileName);
     }
     if(fnameEqual==1)
     {
@@ -809,6 +783,28 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
 
     // add a file entry for the newly created file
+    
+    for (c=0;c<8;c++)
+    {
+        if(*((uint8_t*)fileName + c) == 0)
+        {
+            fnameEnd=1;
+        }
+        else if (*(fileName + c) == '.')
+        {
+            fnameEnd = 1;
+            dotpos = c;
+        }
+        if(fnameEnd==0)
+        {
+            (*fp->entries + fp->entriesLength)->filename[c] = *(fileName + c);
+        }
+        else
+        {
+            (*fp->entries + fp->entriesLength)->filename[c] = ' ';
+        }
+    }
+
     (*fp->entries + fp->entriesLength)->attrib =0x20;
     if (fileName[dotpos+1] != 0)
     {
@@ -835,21 +831,7 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
         (*fp->entries + fp->entriesLength)->fileext[2]=' ';
     }
 
-    for (c=0;c<8;c++)
-    {
-        if(*((uint8_t*)fileName + c) == 0 || (*fileName + c) == '.')
-        {
-            fnameEnd=1;
-        }
-        if(fnameEnd==0)
-        {
-            (*fp->entries + fp->entriesLength)->filename[c] = *(fileName + c);
-        }
-        else
-        {
-            (*fp->entries + fp->entriesLength)->filename[c] = ' ';
-        }
-    }
+
     (*fp->entries + fp->entriesLength)->firstCluster = freeCluster;
     (*fp->entries + fp->entriesLength)->size = 0;
     
@@ -1116,7 +1098,7 @@ uint16_t readFile(FilePointerType * fp)
  * @param fp 
  * @return uint16_t 
  */
-uint16_t writeFile(FilePointerType * fp,uint16_t nrbytes)
+uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes)
 {
     uint8_t sector[512];
     uint16_t retcode = 0;
@@ -1128,9 +1110,49 @@ uint16_t writeFile(FilePointerType * fp,uint16_t nrbytes)
         fp->clusterPtr =  getNextFreeCluster(sector,fp->clusterPtr);
         fp->clusterCntr++;
         fp->sectorPtr = 0;
-        // TODO update the FAT, set 0x0FFFFFFF at the position of the newly acquired position and the new cluster number at the position of the old cluster
+
+        readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (fp->clusterPtr >> 7));
+        *((uint32_t*)sector + (fp->clusterPtr & 0x7F))=0x0FFFFFFF; 
+        writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (fp->clusterPtr >> 7));
+
+        readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (oldcluster >> 7));
+        *((uint32_t*)sector + (oldcluster & 0x7F))=fp->clusterPtr; 
+        writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (oldcluster >> 7));
+    }
+    // update the file directory entry
+    uint8_t updIdx=0;
+    for(uint8_t c=0;c<parentDir->entriesLength;c++)
+    {
+        uint8_t fnameEqual=1;
+        if ((*parentDir->entries + c)->attrib == 0x20)
+        {
+            for(uint8_t c3=0;c3<8;c3++)
+            {
+                if (((*parentDir->entries + c))->filename[c3] != fp->dirEntry->filename[c3])
+                {
+                    fnameEqual=0;
+                }
+            }
+            if (fnameEqual == 1)
+            {
+                if ((((*parentDir->entries + c))->fileext[0] != fp->dirEntry->fileext[0]) ||
+                    (((*parentDir->entries + c))->fileext[1] != fp->dirEntry->fileext[1]) ||
+                    (((*parentDir->entries + c))->fileext[2] != fp->dirEntry->fileext[2])
+                )
+                {
+                    fnameEqual = 0;
+                }
+                if (fnameEqual == 1)
+                {
+                    updIdx=c;
+                }
+            }
+        }
 
     }
+    ((*parentDir->entries + updIdx))->size += nrbytes;
+    // write the sector of the parent directory affected by the change
+    entryToSector(sector,updIdx,parentDir,(*parentDir->entries + updIdx));
     return retcode;
 }
 
@@ -1172,3 +1194,46 @@ uint8_t initFatSDCard()
     sdCardInfo.derivedFATData.clusterLbaBegin = getClusterLbaBegin(&sdCardInfo.partitionInfo,&sdCardInfo.volumeId);
     return 0;
 }
+
+
+
+uint8_t filenameEquals(DirectoryEntryType * entry,char * fileName)
+{
+    uint8_t hasEnded=0;
+    uint8_t dotpos=8;
+    uint8_t fnameEqual;
+    fnameEqual=1;
+    for(uint8_t c=0;c<8;c++)
+    {
+        if (fileName[c]==0)
+        {
+            hasEnded=1;
+        }
+        else if (fileName[c]=='.')
+        {
+            hasEnded=1;
+            dotpos = c;
+        }
+        if ((entry->filename[c] != fileName[c] && hasEnded==0) ||
+            (hasEnded==1 && entry->filename[c] != ' '))
+        {
+            fnameEqual=0;
+        }
+    }
+    if (fnameEqual == 1 && dotpos < 8)
+    {
+        uint8_t c6=dotpos+1;
+        uint8_t c7=0;
+        while(fileName[c6] !=0 && c7 < 3)
+        {
+            if (entry->fileext[c7] != fileName[c6])
+            {
+                fnameEqual = 0;
+            }
+            c6++;
+            c7++;
+        }
+    }
+    return fnameEqual;
+}
+
