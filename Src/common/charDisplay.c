@@ -54,6 +54,7 @@ uint8_t writeString(char * str,uint8_t col,uint8_t row)
                 return 1;
             }
         }
+        strIndex++;
     }
     return 0;
 }
@@ -62,11 +63,11 @@ void writeChar(char chr,uint16_t posH,uint16_t posV)
 {
     uint32_t frameBufferCnt = 0;
     uint8_t charFrameBuffer[8*8*2];
-    for(uint8_t hcnt=0;hcnt<8;hcnt++)
+    for(uint8_t vcnt=0;vcnt<8;vcnt++)
     {
-        for(uint8_t vcnt=0;vcnt<8;vcnt++)
+        for(uint8_t hcnt=0;hcnt<8;hcnt++)
         {
-            if (((uint8_t)font8x8_basic[(uint8_t)chr][hcnt] & (1 << vcnt)) == 0)
+            if (((uint8_t)font8x8_basic[(uint8_t)chr][vcnt] & (1 << hcnt)) == 0)
             {
                 charFrameBuffer[frameBufferCnt++] = BGCOLOR_MSB;
                 charFrameBuffer[frameBufferCnt++] = BGCOLOR_LSB;
@@ -88,8 +89,8 @@ void casetCmd(uint16_t fontPosH,uint8_t fontSizeH)
     uint8_t cmdData[4];
     cmdData[0] = ((fontPosH << 3) & 0xFF00) >> 8;
     cmdData[1] = ((fontPosH << 3) & 0xFF);
-    cmdData[2] = (((fontPosH + 1) << 3) & 0xFF00) >> 8;
-    cmdData[3] = (((fontPosH + 1) << 3) & 0xFF);    
+    cmdData[2] = ((((fontPosH + 1) << 3)-1) & 0xFF00) >> 8;
+    cmdData[3] = ((((fontPosH + 1) << 3)-1) & 0xFF);    
     sendDisplayCommand(0x2A,cmdData,4);
 }
 
@@ -98,7 +99,7 @@ void rasetCmd(uint16_t fontPosV,uint8_t fontSizeV)
     uint8_t cmdData[4];
     cmdData[0] = ((fontPosV << 3) & 0xFF00) >> 8;
     cmdData[1] = ((fontPosV << 3) & 0xFF);
-    cmdData[2] = (((fontPosV + 1) << 3) & 0xFF00) >> 8;
-    cmdData[3] = (((fontPosV + 1) << 3) & 0xFF);    
+    cmdData[2] = ((((fontPosV + 1) << 3)-1) & 0xFF00) >> 8;
+    cmdData[3] = ((((fontPosV + 1) << 3)-1) & 0xFF);    
     sendDisplayCommand(0x2B,cmdData,4);
 }

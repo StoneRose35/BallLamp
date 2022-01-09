@@ -114,18 +114,22 @@ void lsCommand(char * cmd,void * context)
     char displayLine[16];
     uint16_t c=0;
     uint8_t dcnt=0;
+    printf("\r\n");
     for(c=0; c<cwd->entriesLength;c++){
-        dcnt = displayFilename(*cwd->entries + c,displayLine);
-        while(dcnt < 15)
+        if ((*cwd->entries + c)->attrib != 0x0F)
         {
-            displayLine[dcnt++]=' ';
+            dcnt = displayFilename(*cwd->entries + c,displayLine);
+            while(dcnt < 15)
+            {
+                displayLine[dcnt++]=' ';
+            }
+            displayLine[dcnt] = 0;
+            printf(displayLine);
+            printf("Size: ");
+            UInt32ToChar((*cwd->entries + c)->size,nrbfr);
+            printf(nrbfr);
+            printf("\r\n");
         }
-        displayLine[dcnt] = 0;
-        printf(displayLine);
-        printf("Size: ");
-        UInt32ToChar((*cwd->entries + c)->size,nrbfr);
-        printf(nrbfr);
-        printf("\r\n");
     } 
 }
 
@@ -193,6 +197,14 @@ void rmdirCommand(char * cmd,void * context)
 uint8_t validateDirName(char *dirName)
 {
     uint8_t c=0;
+    if(*dirName== '.' && *(dirName + 1) == '.' && *(dirName+2) == 0) // let pass ".."
+    {
+        return 0;
+    }
+    if (*dirName== '.' && *(dirName + 1) == 0) // let pass "."
+    {
+        return 0;
+    }
     while(*(dirName + c)!= 0)
     {
         if (*((uint8_t*)dirName + c) == '"' 

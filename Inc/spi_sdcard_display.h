@@ -31,7 +31,7 @@
 // - SCK Divider values
 // -----------------------
 #define SCK_SDCARD_INIT 199 // SPI clock divider for SD-Card initialization
-#define SCK_SDCARD_MEDIUM 5 // resulting in 10 MHz clock rate
+#define SCK_SDCARD_MEDIUM 5 // 
 #define SCK_DISPLAY_SLOW 5 // resulting in 10 MHz spi clock for display
 
 // ------------------------

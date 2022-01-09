@@ -296,7 +296,7 @@ uint32_t getNextFreeCluster()
     uint8_t sector[512];
     uint32_t* fatEntries;
     readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin);
-    while(res==0 && sectorCnt < sdCardInfo.volumeId.sectorsPerFat)
+    while(sectorCnt < sdCardInfo.volumeId.sectorsPerFat)
     {
         readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + sectorCnt);
         fatEntries = (uint32_t*)sector;
@@ -308,6 +308,7 @@ uint32_t getNextFreeCluster()
             }
             res++;
         }
+        sectorCnt++;
     }
     return FATLIB_DISK_FULL; // error: disk full
 }
@@ -668,6 +669,7 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     uint8_t sect[512];
     uint32_t freeCluster;
     DirectoryEntryType *entriesBfr;
+    DirectoryEntryType * dotEntry;
     uint8_t c=0;
     uint8_t fnameEnd=0;
 
@@ -741,33 +743,34 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     DirectoryPointerType * ndir;
     createDirectoryPointer(&ndir);
     openDirectory(fp,directoryName,ndir);
-    DirectoryEntryType dotEntry;
-    dotEntry.attrib = 0x10;
-    dotEntry.fileext[0]=' ';
-    dotEntry.fileext[1]=' ';
-    dotEntry.fileext[2]=' ';
-    dotEntry.filename[0]='.';
+    dotEntry=(DirectoryEntryType*)malloc(sizeof(DirectoryEntryType));
+    dotEntry->attrib = 0x10;
+    dotEntry->fileext[0]=' ';
+    dotEntry->fileext[1]=' ';
+    dotEntry->fileext[2]=' ';
+    dotEntry->filename[0]='.';
     for(uint8_t c3=1;c3<8;c3++)
     {
-        dotEntry.filename[c3]=' ';
+        dotEntry->filename[c3]=' ';
     }
-    dotEntry.firstCluster = freeCluster;
-    dotEntry.size=0;
-    entryToSector(sect,0,ndir,&dotEntry);
-    dotEntry.attrib = 0x10;
-    dotEntry.fileext[0]=' ';
-    dotEntry.fileext[1]=' ';
-    dotEntry.fileext[2]=' ';
-    dotEntry.filename[0]='.';
-    dotEntry.filename[1]='.';
+    dotEntry->firstCluster = freeCluster;
+    dotEntry->size=0;
+    entryToSector(sect,0,ndir,dotEntry);
+    dotEntry->attrib = 0x10;
+    dotEntry->fileext[0]=' ';
+    dotEntry->fileext[1]=' ';
+    dotEntry->fileext[2]=' ';
+    dotEntry->filename[0]='.';
+    dotEntry->filename[1]='.';
     for(uint8_t c3=2;c3<8;c3++)
     {
-        dotEntry.filename[c3]=' ';
+        dotEntry->filename[c3]=' ';
     }
-    dotEntry.firstCluster = fp->dirEntry->firstCluster;
-    dotEntry.size=0;
-    entryToSector(sect,1,ndir,&dotEntry);
+    dotEntry->firstCluster = fp->dirEntry->firstCluster;
+    dotEntry->size=0;
+    entryToSector(sect,1,ndir,dotEntry);
     destroyDirectoryPointer(&ndir);
+    free(dotEntry);
     return 0;
 }
 

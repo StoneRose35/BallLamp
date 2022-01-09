@@ -124,7 +124,7 @@ void handleCommand(char * cmd,void* caller)
 		{
 			if(*((uint8_t*)cmd)>=97 && *((uint8_t*)cmd)<=122)
 			{
-				toUpper(cmd);
+				toUpper(cmd,'(');
 			}
 			if (startsWith(cmd,userCommands[cnt].commandName) > 0)
 			{

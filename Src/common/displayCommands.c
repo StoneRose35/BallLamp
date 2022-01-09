@@ -80,7 +80,7 @@ void writeStringCommand(char * cmd,void * context)
         }
         cmdCnt++;
     }
-    while(c2 < cmdCnt - firstBracketPos)
+    while(c2 < cmdCnt - firstBracketPos-2)
     {
         *(cmd + c2) = *(cmd + c2 + firstBracketPos + 1);
         c2++;

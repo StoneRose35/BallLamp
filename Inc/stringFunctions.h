@@ -26,7 +26,7 @@ void toPercentChar(float,char*);
 
 
 uint8_t startsWith(const char*,const char*);
-void toUpper(char *);
+void toUpper(char *,char);
 void getBracketContent(const char*,char*);
 void stripWhitespaces(char *);
 

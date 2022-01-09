@@ -305,7 +305,7 @@ int main(void)
 			createDirectoryPointer(&cwd);
 			createDirectoryPointer(&ndir);
 			openRootDirectory(cwd);
-			addToPath("");
+			addToPath(" ");
 		}
 		else
 		{
@@ -316,7 +316,8 @@ int main(void)
 		}
 	}
 
-	//initDisplay();
+	initDisplay();
+	
 
 
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);

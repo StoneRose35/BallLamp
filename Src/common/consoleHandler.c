@@ -21,10 +21,14 @@ static uint16_t currentPathCnt = 0;
 void addToPath(char * folder)
 {
 	uint8_t c=0;
-	currentPath[currentPathCnt++] = '/';
+	if(currentPathCnt != 1)
+	{
+		currentPath[currentPathCnt++] = '/';
+	}
 	while(*((uint8_t*)folder + c)!=' ' && c<8)
 	{
-		currentPath[currentPathCnt + c] = *(folder + c);
+		currentPath[currentPathCnt++] = *(folder + c);
+		c++;
 	}
 	currentPath[currentPathCnt]=0;
 }
@@ -69,6 +73,7 @@ void initConsole(Console console)
 	{
 		currentPath[cnt]=0;
 	}
+	currentPathCnt = 0;
 }
 
 const char * consolePrefix = CONSOLE_PREFIX; //!< command line prefix, every shell line starts with that
@@ -95,6 +100,20 @@ char* onCharacterReception(BufferedInput binput,uint8_t charin)
     clearOutBuffer(binput->console);
 	if (charin == 13 && binput->console->mode == 0) // convert \r into \r\n, print a new console line
 	{
+
+		// copy the possibly edited command into the first position of the shadow command buffer
+		copyCommandBetweenArrays(binput->console->cbfIdx,0,binput->console->commandBuffer,binput->console->commandBufferShadow);
+
+		// push command into history
+		for(uint8_t c=COMMAND_HISTORY_SIZE-1;c>0;c--)
+		{
+			copyCommand(c-1,c,binput->console->commandBufferShadow);
+		}
+
+		binput->console->cbfIdx=0;
+
+		handleCommand(binput->console->commandBufferShadow,binput);
+
 		binput->console->outBfr[obCnt++] = 13;
 		binput->console->outBfr[obCnt++] = 10;
 
@@ -118,19 +137,6 @@ char* onCharacterReception(BufferedInput binput,uint8_t charin)
 			binput->console->outBfr[obCnt++] = '>';
 		}
 		binput->console->outBfr[obCnt] = 0;
-
-		// copy the possibly edited command into the first position of the shadow command buffer
-		copyCommandBetweenArrays(binput->console->cbfIdx,0,binput->console->commandBuffer,binput->console->commandBufferShadow);
-
-		// push command into history
-		for(uint8_t c=COMMAND_HISTORY_SIZE-1;c>0;c--)
-		{
-			copyCommand(c-1,c,binput->console->commandBufferShadow);
-		}
-
-		binput->console->cbfIdx=0;
-
-		handleCommand(binput->console->commandBufferShadow,binput);
 
 		clearCommandBuffer(binput->console,binput->console->cbfIdx,binput->console->commandBufferShadow);
 

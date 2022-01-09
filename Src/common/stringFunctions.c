@@ -246,16 +246,21 @@ uint8_t startsWith(const char* ptrn,const char* target)
  * 
  * @param str 
  */
-void toUpper(char * str)
+void toUpper(char * str,char endchar)
 {
 	uint16_t c=0;
-	while((uint8_t)*(str+c) != 0)
+	uint8_t endcharFound=0;
+	while((uint8_t)*(str+c) != 0 && endcharFound == 0)
 	{
 		if ((uint8_t)*(str+c) >=97 && (uint8_t)*(str+c) <=122)
 		{
 			*((uint8_t*)str+c)=(uint8_t)*(str+c) - 32;
 		}
 		c++;
+		if(endchar > 0)
+		{
+			endcharFound = *(str+c) == endchar;
+		}
 	}
 }
 
