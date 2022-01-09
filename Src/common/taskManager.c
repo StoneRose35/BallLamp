@@ -66,6 +66,8 @@ UserCommandType userCommands[] = {
 	{"RMDIR",&rmdirCommand,CONTEXT_TYPE_NONE},	
 	{"INITDISPLAY",&initDisplayCommand,CONTEXT_TYPE_NONE},
 	{"BACKLIGHT",&setBacklightCommand,CONTEXT_TYPE_NONE},
+	{"SETCURSOR",&setCursorCommand,CONTEXT_TYPE_NONE},
+	{"DWRITE",&writeStringCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };
