@@ -112,23 +112,36 @@ void lsCommand(char * cmd,void * context)
 {
     char nrbfr[16];
     char displayLine[16];
+    uint8_t entriesRead=0x10;
     uint16_t c=0;
     uint8_t dcnt=0;
     printf("\r\n");
-    for(c=0; c<cwd->entriesLength;c++){
-        if ((*cwd->entries + c)->attrib != 0x0F)
+    DirectoryEntryType entriesArray[16];
+    DirectoryEntryType * entries = entriesArray;
+    uint8_t sector[512];
+    cwd->clusterPtr = cwd->dirEntry->firstCluster;
+    cwd->sectorPtr=0;
+    cwd->clusterCntr=0;
+    while(entriesRead == 0x10)
+    {
+        readSector(sector,getClusterLba(cwd->clusterPtr) + cwd->sectorPtr);
+        entriesRead = getDirectoryEntries(sector,&entries);
+        for(c=0;c<entriesRead;c++)
         {
-            dcnt = displayFilename(*cwd->entries + c,displayLine);
-            while(dcnt < 15)
+            if ((*(entries + c)).attrib != 0x0F)
             {
-                displayLine[dcnt++]=' ';
-            }
-            displayLine[dcnt] = 0;
-            printf(displayLine);
-            printf("Size: ");
-            UInt32ToChar((*cwd->entries + c)->size,nrbfr);
-            printf(nrbfr);
-            printf("\r\n");
+                dcnt = displayFilename(entries + c,displayLine);
+                while(dcnt < 15)
+                {
+                    displayLine[dcnt++]=' ';
+                }
+                displayLine[dcnt] = 0;
+                printf(displayLine);
+                printf("Size: ");
+                UInt32ToChar((*(entries + c)).size,nrbfr);
+                printf(nrbfr);
+                printf("\r\n");
+            }   
         }
     } 
 }

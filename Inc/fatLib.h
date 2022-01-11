@@ -57,7 +57,7 @@ typedef union
 typedef struct 
 {
     DirectoryEntryType * dirEntry;
-    uint16_t clusterPtr;
+    uint32_t clusterPtr;
     uint16_t sectorPtr; // in sectors, should be increased at every read/write Operation
     uint16_t clusterCntr;
     uint8_t sectorBuffer[512];
@@ -67,8 +67,11 @@ typedef struct
 {
     DirectoryEntryType * dirEntry;
     uint32_t clusterLbaPtr;
-    uint16_t entriesLength;
-    DirectoryEntryType ** entries;
+    //uint16_t entriesLength;
+    //DirectoryEntryType ** entries;
+    uint32_t clusterPtr;
+    uint16_t sectorPtr; // in sectors, should be increased at every read/write Operation
+    uint16_t clusterCntr;
 } DirectoryPointerType;
 
 #ifndef HARDWARE
