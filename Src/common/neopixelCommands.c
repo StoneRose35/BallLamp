@@ -91,7 +91,7 @@ void colorCommand(char * cmd,void * context)
 
 	for (cnt=0;cnt<N_COLOR_COMMANDS;cnt++)
 	{
-		if (startsWith(cmd,colorCommands[cnt]) > 0)
+		if (startsWith(cmd,(char*)colorCommands[cnt]) > 0)
 		{
 			idx = cnt;
 		}

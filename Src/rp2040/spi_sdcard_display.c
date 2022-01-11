@@ -343,11 +343,9 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
         *SSPDR = 0xFF;
         c++;
     }
+    *SSPDR = 0xFF;
+    *SSPDR = 0xFF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    *SSPDR = 0xFF;
-    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );  
-    *SSPDR = 0xFF;
-    *SSPDR = 0xFF;
     return 0;
 }
 
@@ -407,6 +405,9 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     {
         return ERROR_WRITE_FAILURE;
     }
+    *SSPDR = 0xFF;
+    *SSPDR = 0xFF;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
     return 0;
 }
 

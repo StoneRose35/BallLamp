@@ -25,7 +25,7 @@ void addToPath(char * folder)
 	{
 		currentPath[currentPathCnt++] = '/';
 	}
-	while(*((uint8_t*)folder + c)!=' ' && c<8)
+	while(*((uint8_t*)folder + c)!=0 && *((uint8_t*)folder + c)!=' ' && c<8)
 	{
 		currentPath[currentPathCnt++] = *(folder + c);
 		c++;
@@ -40,7 +40,15 @@ void removeLastPath()
 	{
 		currentPath[c--] = 0;
 	}
-	currentPathCnt=c+1;
+	if (c==0) // keep the initial slash
+	{
+		currentPathCnt=1;
+	}
+	else
+	{
+		currentPath[c]=0;
+		currentPathCnt=c;
+	}
 }
 
 /**

@@ -24,7 +24,7 @@ typedef struct
 } VolumeIdType;
 
 
-typedef struct 
+typedef volatile struct 
 {
     char filename[8];
     char fileext[3];
@@ -63,12 +63,10 @@ typedef struct
     uint8_t sectorBuffer[512];
 } FilePointerType;
 
-typedef struct 
+typedef volatile struct 
 {
     DirectoryEntryType * dirEntry;
     uint32_t clusterLbaPtr;
-    //uint16_t entriesLength;
-    //DirectoryEntryType ** entries;
     uint32_t clusterPtr;
     uint16_t sectorPtr; // in sectors, should be increased at every read/write Operation
     uint16_t clusterCntr;
@@ -84,7 +82,6 @@ uint32_t getFatLbaBegin(PartitionInfoType*,VolumeIdType*);
 uint32_t getClusterLbaBegin(PartitionInfoType* ,VolumeIdType*);
 uint32_t getClusterLba(uint32_t);
 uint16_t getDirectoryEntries(uint8_t*,DirectoryEntryType**);
-uint16_t getFilesInDirectory(uint32_t directoryClusterLba,DirectoryEntryType ** res);
 uint8_t copyDirectoryPointer(DirectoryPointerType ** src,DirectoryPointerType ** dest);
 uint16_t getDirectoryContentSize(DirectoryPointerType * fp);
 uint8_t createDirectoryPointer(DirectoryPointerType ** dp);

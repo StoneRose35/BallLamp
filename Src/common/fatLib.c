@@ -432,7 +432,7 @@ uint8_t copyDirectoryPointer(DirectoryPointerType ** src,DirectoryPointerType **
     {
         if((*dest)->dirEntry != 0)
         {
-            free((*dest)->dirEntry);
+            free((void*)(*dest)->dirEntry);
             (*dest)->dirEntry=0;
         }
     }
@@ -471,8 +471,8 @@ uint8_t destroyDirectoryPointer(DirectoryPointerType ** dp)
     //    free(*(*dp)->entries);
     //}
     //free((*dp)->entries);
-    free((*dp)->dirEntry);
-    free(*dp);
+    free((void*)(*dp)->dirEntry);
+    free((void*)*dp);
     *dp=0;
     return 0;
 }
@@ -510,43 +510,6 @@ void entryToSector(uint8_t * sect, uint8_t position,DirectoryPointerType * fp,Di
 
 }
 
-/**
- * @brief Get the Files In Directory 
- * 
- * @param directoryClusterLba the lba address of the current cluster
- * @param res the array containing the raw file information, is allocated dynamically
- * @return uint16_t the nnumber of raw directory entries found
- */
-uint16_t getFilesInDirectory(uint32_t directoryClusterLba,DirectoryEntryType ** res)
-{
-    uint8_t sector[512];
-    uint8_t fcnt =0x10;
-    uint16_t sec_cnt = 0;
-    uint16_t total_cnt = 0;
-    DirectoryEntryType * resBfr;
-    resBfr = (DirectoryEntryType*)malloc(0x20*sizeof(DirectoryEntryType));
-    *res = (DirectoryEntryType*)malloc(0x20*sizeof(DirectoryEntryType));
-    while(sec_cnt < sdCardInfo.volumeId.sectorsPerCluster && fcnt == 0x10)
-    {
-        readSector(sector,directoryClusterLba + sec_cnt);
-        fcnt = getDirectoryEntries(sector,res);
-        total_cnt += fcnt;
-        if (fcnt==0x10) // increase size if 16 entries have been read
-        {
-            free(resBfr);
-            resBfr = (DirectoryEntryType*)malloc(total_cnt*sizeof(DirectoryEntryType));
-            for (uint16_t c2=0;c2<total_cnt;c2++)
-            {
-                *(resBfr+c2)=*(*res+c2);
-            }
-            free(res);
-            *res = (DirectoryEntryType*)malloc((total_cnt+0x10)*sizeof(DirectoryEntryType));
-        }
-        sec_cnt++;
-    }
-    free(resBfr);
-    return total_cnt;
-}
 
 /**
  * @brief returns the number of files and subfolders in a directory exclusiding the dot-entries
@@ -705,7 +668,7 @@ uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryP
         entriesRead = getDirectoryEntries(sector,&entries);
         for( c=0;c<entriesRead;c++) 
         {
-            if(((*(entries + c)).attrib & 0x10) == 0x10 && startsWith((*(entries + c)).filename,dirname)== 1)
+            if(((*(entries + c)).attrib & 0x10) == 0x10 && startsWith((char*)(*(entries + c)).filename,dirname)== 1)
             {
                 if(fp->dirEntry == 0)
                 {
@@ -720,8 +683,17 @@ uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryP
                 {
                     fp->dirEntry->filename[c2] = (*(entries + c)).filename[c2];
                 }
-                fp->dirEntry->firstCluster = (*(entries + c)).firstCluster;
+                if ((*(entries + c)).firstCluster == 0) // the ".."-entry back to the root folder seems to have 0 as cluster reference
+                {                                       // this must be replaces with the actual root folder's first cluster
+                    fp->dirEntry->firstCluster = sdCardInfo.volumeId.rootDirectoryFirstCluster;
+                } else
+                {
+                    fp->dirEntry->firstCluster = (*(entries + c)).firstCluster;
+                }
                 fp->dirEntry->size = (*(entries + c)).size;
+                fp->clusterPtr = fp->dirEntry->firstCluster;
+                fp->sectorPtr = 0;
+                fp->clusterCntr = 0;
                 dirFound = 1;
             }
         }
@@ -744,7 +716,6 @@ uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryP
     else
     {
         fp->clusterLbaPtr = getClusterLba(fp->dirEntry->firstCluster);
-        //fp->entriesLength = getFilesInDirectory(fp->clusterLbaPtr,fp->entries);
         return 0;
     }
 }
@@ -803,53 +774,11 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     // get next free cluster
     freeCluster = getNextFreeCluster();
     
-    // increase allocated entries vector by 16 if entries Length is a multiple of 16
-    /*
-    if ((fp->entriesLength & 0x0F) == 0)
-    {
-
-        entriesBfr = realloc(*fp->entries,fp->entriesLength+16);
-        if (entriesBfr == 0)
-        {
-            return FATLIB_MEMORY_ALLOC_FAILURE;
-        }
-        *fp->entries = entriesBfr;
-    }
-    */
-
     // write 0xFFFFFF0F to sector of the fat where the free cluster is
     readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
     *((uint32_t*)sect + (freeCluster & 0x7F))=0x0FFFFFFF; 
     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
 
-
-    // add a directory entry for the newly created directory
-    // TODO remove begin -----------------------------
-    /*
-    (*fp->entries + fp->entriesLength)->attrib =0x10;
-    (*fp->entries + fp->entriesLength)->fileext[0]=' ';
-    (*fp->entries + fp->entriesLength)->fileext[1]=' ';
-    (*fp->entries + fp->entriesLength)->fileext[2]=' ';
-    for (c=0;c<8;c++)
-    {
-        if(*((uint8_t*)directoryName + c) == 0)
-        {
-            fnameEnd=1;
-        }
-        if(fnameEnd==0)
-        {
-            (*fp->entries + fp->entriesLength)->filename[c] = *(directoryName + c);
-        }
-        else
-        {
-            (*fp->entries + fp->entriesLength)->filename[c] = ' ';
-        }
-
-    }
-    (*fp->entries + fp->entriesLength)->firstCluster = freeCluster;
-    (*fp->entries + fp->entriesLength)->size = 0;
-    */
-    // remove end -----------------------------------
 
     fp->clusterPtr = fp->dirEntry->firstCluster;
     fp->sectorPtr=0;
