@@ -73,38 +73,40 @@ void cdCommand(char * cmd,void * context)
     switch(validateDirName(dirname))
     {
         case 0:
-        retcode = openDirectory(cwd,dirname,ndir);
-        if (retcode != 0)
-        {
-            printf("\r\nfailure opening directory: ");
-            UInt8ToChar(retcode,nrbfr);
-            printf(nrbfr);
-            printf("\r\n");
-            return;
-        }
-        retcode = copyDirectoryPointer(&ndir,&cwd);
-        if (retcode != 0)
-        {
-            printf("failure copying directory pointers: ");
-            UInt8ToChar(retcode,nrbfr);
-            printf(nrbfr);
-            printf("\r\n");
-            return;
-        }
-        if (dirname[0]=='.' && dirname[1]=='.')
-        {
-            removeLastPath();
-        }
-        else
-        {
-            addToPath(dirname);
-        }
-        break;
+            retcode = openDirectory(cwd,dirname,ndir);
+            if (retcode != 0)
+            {
+                printf("\r\nfailure opening directory: ");
+                UInt8ToChar(retcode,nrbfr);
+                printf(nrbfr);
+                printf("\r\n");
+                return;
+            }
+            retcode = copyDirectoryPointer(&ndir,&cwd);
+            if (retcode != 0)
+            {
+                printf("failure copying directory pointers: ");
+                UInt8ToChar(retcode,nrbfr);
+                printf(nrbfr);
+                printf("\r\n");
+                return;
+            }
+            if (dirname[0]=='.' && dirname[1]=='.')
+            {
+                removeLastPath();
+            }
+            else
+            {
+                addToPath(dirname);
+            }
+            break;
         case SDACCESS_INVALID_DIRNAME:
             printf("\r\nInvalid Directory Name\r\n");
             break;
         case SDACCESS_DIRNAME_TOO_LONG:
             printf("\r\nDirectory name too long, only 8.3-Format supported\r\n");
+        default:
+            break;
     }
 }
 
@@ -128,7 +130,7 @@ void lsCommand(char * cmd,void * context)
         entriesRead = getDirectoryEntries(sector,&entries);
         for(c=0;c<entriesRead;c++)
         {
-            if ((*(entries + c)).attrib != 0x0F)
+            if ((*(entries + c)).attrib != 0x0F && (*(entries + c)).filename[0]!=(char)0xE5)
             {
                 dcnt = displayFilename(entries + c,displayLine);
                 while(dcnt < 15)
@@ -216,7 +218,7 @@ uint8_t validateDirName(char *dirName)
     }
     if (*dirName== '.' && *(dirName + 1) == 0) // let pass "."
     {
-        return 0;
+        return 1;
     }
     while(*(dirName + c)!= 0)
     {

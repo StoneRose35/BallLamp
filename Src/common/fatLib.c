@@ -318,10 +318,19 @@ uint32_t getNextFreeCluster()
     uint32_t res=0;
     uint8_t sector[512];
     uint32_t* fatEntries;
-    readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin);
+    uint8_t retcode;
+    retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin);
+    if(retcode > 0)
+    {
+        return FATLIB_DISK_FULL;
+    }
     while(sectorCnt < sdCardInfo.volumeId.sectorsPerFat)
     {
-        readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + sectorCnt);
+        retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + sectorCnt);
+        if(retcode > 0)
+        {
+            return FATLIB_DISK_FULL;
+        }
         fatEntries = (uint32_t*)sector;
         for(uint8_t c=0;c<128;c++)
         {
@@ -339,40 +348,17 @@ uint32_t getNextFreeCluster()
 
 uint32_t getNextCluster(uint8_t * sector, uint32_t clusterNr)
 {
-    readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (clusterNr >> 7));
-    return *((uint32_t*)sector + (clusterNr & 0x7F));
-}
-
-uint32_t getPreviousCluster(uint8_t * sector,uint32_t clusterNr)
-{
-    uint32_t c=0;
-    uint32_t c2;
-    uint32_t backwardsIdx=2;
-    while (c < sdCardInfo.volumeId.sectorsPerFat)
+    uint8_t retcode;
+    retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (clusterNr >> 7));
+    if(retcode > 0)
     {
-        readSector(sector,c);
-        if (c==0)
-        {
-            c2=2;
-        }
-        else
-        {
-            c2=0;
-        }
-        while(c2 < 128)
-        {
-            if (*((uint32_t*)sector + c2) == clusterNr)
-            {
-                return backwardsIdx;
-            }
-            c2++;
-            backwardsIdx++;
-        }
-        c++;
+        return FATLIB_DISK_FULL; //TODO correct errorcodes
     }
-    return 0;
+    else
+    {
+        return *((uint32_t*)sector + (clusterNr & 0x7F));
+    }
 }
-
 
 /**
  * @brief deep-copies a directory information structure. Useful for directory walks after a directory has been opened
@@ -387,30 +373,7 @@ uint8_t copyDirectoryPointer(DirectoryPointerType ** src,DirectoryPointerType **
     (*dest)->clusterPtr = (*src)->clusterPtr;
     (*dest)->clusterCntr = (*src)->clusterCntr;
     (*dest)->sectorPtr = (*src)->sectorPtr;
-    /*
-    if((*dest)->entriesLength < (*src)->entriesLength)
-    {
-        *((*dest)->entries)=realloc(*((*dest)->entries),(*src)->entriesLength*sizeof(DirectoryEntryType));
-        if(*((*dest)->entries)==NULL)
-        {
-            return FATLIB_MEMORY_ALLOC_FAILURE;
-        }
-    }
-    for(uint8_t c=0;c<(*src)->entriesLength;c++)
-    {
-        (*((*dest)->entries) + c)->attrib = (*((*src)->entries) + c)->attrib;
-        (*((*dest)->entries) + c)->fileext[0]=(*((*src)->entries) + c)->fileext[0];
-        (*((*dest)->entries) + c)->fileext[1]=(*((*src)->entries) + c)->fileext[1];
-        (*((*dest)->entries) + c)->fileext[2]=(*((*src)->entries) + c)->fileext[2];
-        for(uint8_t c2=0;c2<8;c2++)
-        {
-            (*((*dest)->entries) + c)->filename[c2]=(*((*src)->entries) + c)->filename[c2];
-        }
-        (*((*dest)->entries) + c)->firstCluster=(*((*src)->entries) + c)->firstCluster;
-        (*((*dest)->entries) + c)->size = (*((*src)->entries) + c)->size;
-    } 
-    (*dest)->entriesLength = (*src)->entriesLength;
-    */
+
     if((*src)->dirEntry != 0)
     {
         if ((*dest)->dirEntry == 0)
@@ -485,10 +448,15 @@ uint8_t destroyDirectoryPointer(DirectoryPointerType ** dp)
  * @param fp the directory in which the entry should be save
  * @param entry the entry to save
  */
-void entryToSector(uint8_t * sect, uint8_t position,DirectoryPointerType * fp,DirectoryEntryType * entry)
+uint8_t entryToSector(uint8_t * sect, uint8_t position,DirectoryPointerType * fp,DirectoryEntryType * entry)
 {
     uint8_t c,c2;
-    readSector(sect,fp->clusterLbaPtr + (position >> 4));
+    uint8_t retcode;
+    retcode = readSector(sect,fp->clusterLbaPtr + (position >> 4));
+    if (retcode > 0)
+    {
+        return ERROR_READ_TIMEOUT;
+    }
     c=position & 0x0F;
     for(c2=0;c2<32;c2++) // clear directory entry
     {
@@ -507,7 +475,7 @@ void entryToSector(uint8_t * sect, uint8_t position,DirectoryPointerType * fp,Di
     *((uint16_t*)(sect + (c<<5)+0x1A)) = (uint16_t)(entry->firstCluster & 0x0000FFFF);
     *((uint32_t*)(sect + (c<<5) + 0x1C)) = entry->size;
     writeSector(sect,fp->clusterLbaPtr + (position >> 4));
-
+    return 0;
 }
 
 
@@ -523,12 +491,17 @@ uint16_t getDirectoryContentSize(DirectoryPointerType * fp)
     DirectoryEntryType entriesArray[16];
     DirectoryEntryType * entries = entriesArray;
     uint8_t entriesRead=0x10;
+    uint8_t retcode;
     fp->clusterPtr = fp->dirEntry->firstCluster;
     fp->sectorPtr=0;
     fp->clusterCntr=0;
     while(entriesRead == 0x10)
     {
-        readSector(sector,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(sector,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return 0; // an directory always has at least two entries (. and ..), so zeros is a good error indicator in this case
+        }
         entriesRead = getDirectoryEntries(sector,&entries);
         for(c=0;c<entriesRead;c++)
         {
@@ -566,6 +539,7 @@ uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerTyp
 {
     uint16_t fileIndex=0xFFFF;
     uint8_t sector[512];
+    uint8_t retcode;
     parentDir->clusterPtr = parentDir->dirEntry->firstCluster;
     parentDir->sectorPtr=0;
     parentDir->clusterCntr=0;
@@ -574,7 +548,11 @@ uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerTyp
     DirectoryEntryType * entries = entriesArray;
     while(entriesRead==0x10)
     {
-        readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        retcode = readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sector,&entries);
         for (uint16_t c=0;c<entriesRead;c++)
         {
@@ -658,13 +636,18 @@ uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryP
     DirectoryEntryType entriesArray[16];
     DirectoryEntryType * entries = entriesArray;
     uint8_t c=0;
+    uint8_t retcode;
     uint8_t dirFound=0;
     parentDir->clusterPtr = parentDir->dirEntry->firstCluster;
     parentDir->sectorPtr=0;
     parentDir->clusterCntr=0;
     while (entriesRead == 0x10)
     {
-        readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        retcode = readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sector,&entries);
         for( c=0;c<entriesRead;c++) 
         {
@@ -734,6 +717,7 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     DirectoryEntryType dotEntry;
     uint8_t c=0;
     uint8_t fnameEnd=0;
+    uint8_t retcode;
 
     //check if filename already exists
     uint8_t fnameEqual=0;
@@ -748,7 +732,11 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     fp->clusterCntr=0;
     while(entriesRead==0x10)
     {
-        readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect,&entries);
         while(c5<entriesRead && fnameEqual==0)
         {
@@ -775,7 +763,11 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     freeCluster = getNextFreeCluster();
     
     // write 0xFFFFFF0F to sector of the fat where the free cluster is
-    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+    if (retcode > 0)
+    {
+        return retcode;
+    }
     *((uint32_t*)sect + (freeCluster & 0x7F))=0x0FFFFFFF; 
     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
 
@@ -787,7 +779,11 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
     c5=0;
     while(entriesRead==0x10 && entryIndex==0xFFFF)
     {
-        readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect, &entries);
         for(c=0;c<entriesRead;c++)
         {
@@ -809,10 +805,18 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName)
 
                     // write 0xFFFFFF0F to sector of the fat where the free cluster is
                     // write the free cluster to the position of the current cluster
-                    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+                    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+                    if (retcode > 0)
+                    {
+                        return retcode;
+                    }
                     *((uint32_t*)sect + (freeCluster & 0x7F))=0x0FFFFFFF; 
                     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
-                    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + ((fp->clusterPtr) >> 7));
+                    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + ((fp->clusterPtr) >> 7));
+                    if (retcode > 0)
+                    {
+                        return retcode;
+                    }
                     *((uint32_t*)sect + ((fp->clusterPtr) & 0x7F))=freeCluster; 
                     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  ((fp->clusterPtr) >> 7));
                 }
@@ -902,6 +906,7 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     uint8_t fnameEnd=0;
     uint8_t dotpos=0;
     uint8_t entriesRead=0x10;
+    uint8_t retcode;
     DirectoryEntryType entriesArray[16];
     DirectoryEntryType *entries = entriesArray;
 
@@ -913,7 +918,11 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     fp->clusterCntr=0;
     while(entriesRead==0x10)
     {
-        readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect,&entries);
         while(c5<entriesRead && fnameEqual==0)
         {
@@ -943,7 +952,11 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     freeCluster = getNextFreeCluster();
     
     // write 0xFFFFFF0F to sector of the fat where the free cluster is
-    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+    if (retcode > 0)
+    {
+        return retcode;
+    }
     *((uint32_t*)sect + (freeCluster & 0x7F))=0x0FFFFFFF; 
     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
 
@@ -958,7 +971,11 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
     c5=0;
     while(entriesRead==0x10 && entryIndex==0xFFFF)
     {
-        readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(sect,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect, &entries);
         for(c=0;c<entriesRead;c++)
         {
@@ -980,10 +997,18 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName)
 
                     // write 0xFFFFFF0F to sector of the fat where the free cluster is
                     // write the free cluster to the position of the current cluster
-                    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+                    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + (freeCluster >> 7));
+                    if (retcode > 0)
+                    {
+                        return retcode;
+                    }
                     *((uint32_t*)sect + (freeCluster & 0x7F))=0x0FFFFFFF; 
                     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  (freeCluster >> 7));
-                    readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + ((fp->clusterPtr) >> 7));
+                    retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + ((fp->clusterPtr) >> 7));
+                    if (retcode > 0)
+                    {
+                        return retcode;
+                    }
                     *((uint32_t*)sect + ((fp->clusterPtr) & 0x7F))=freeCluster; 
                     writeSector(sect,sdCardInfo.derivedFATData.fatLbaBegin +  ((fp->clusterPtr) >> 7));
                 }
@@ -1073,6 +1098,7 @@ uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * 
     DirectoryEntryType entriesArray[16];
     DirectoryEntryType * entries = entriesArray;
     uint8_t nClusters=0,nSectors=0;
+    uint8_t retcode;
     uint16_t delIdx=0,delIdxLocal=0;
     uint32_t clusterList[FATLIB_FOLDER_MAX_CLUSTERS];
     uint32_t sectorsList[FATLIB_FOLDER_MAX_CLUSTERS];
@@ -1118,7 +1144,11 @@ uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * 
     }
     for(uint8_t c4=0;c4<nSectors;c4++)
     {
-        readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + sectorsList[c4]);
+        retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + sectorsList[c4]);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         for(uint8_t c5=0;c5<nClusters-1;c5++)
         {
             if(clusterList[c5] >> 7 == sectorsList[c4])
@@ -1134,7 +1164,11 @@ uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * 
     uint8_t fnameEqual=0;
     while(entriesRead==0x10 && fnameEqual==0)
     {
-        readSector(sect,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        retcode = readSector(sect,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect,&entries);
         for (uint16_t c=0;c<entriesRead;c++)
         {
@@ -1198,6 +1232,7 @@ uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp)
     DirectoryEntryType * entries = entriesArray;
     uint8_t nClusters=0,nSectors=0;
     uint16_t delIdx=0,delIdxLocal=0;
+    uint8_t retcode;
     uint32_t clusterList[FATLIB_FOLDER_MAX_CLUSTERS];
     uint32_t sectorsList[FATLIB_FOLDER_MAX_CLUSTERS];
 
@@ -1238,7 +1273,11 @@ uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp)
     }
     for(uint8_t c4=0;c4<nSectors;c4++)
     {
-        readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + sectorsList[c4]);
+        retcode = readSector(sect,sdCardInfo.derivedFATData.fatLbaBegin + sectorsList[c4]);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         for(uint8_t c5=0;c5<nClusters-1;c5++)
         {
             if(clusterList[c5] >> 7 == sectorsList[c4])
@@ -1257,7 +1296,11 @@ uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp)
     parentDir->clusterCntr=0;
     while(entriesRead==0x10 && fnameEqual==0)
     {
-        readSector(sect,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        retcode = readSector(sect,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sect,&entries);
         for (uint16_t c=0;c<entriesRead;c++)
         {
@@ -1325,7 +1368,11 @@ uint16_t readFile(FilePointerType * fp)
     uint32_t bytes_read = (fp->sectorPtr + fp->clusterCntr * sdCardInfo.volumeId.sectorsPerCluster) << 9;
     if (bytes_read < fp->dirEntry->size)
     {
-        readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        retcode = readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         if (bytes_read + 512 > fp->dirEntry->size)
         {
             for (uint16_t c = fp->dirEntry->size - (fp->sectorPtr << 9);c< 512;c++)
@@ -1375,11 +1422,19 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
         fp->clusterCntr++;
         fp->sectorPtr = 0;
 
-        readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (fp->clusterPtr >> 7));
+        retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (fp->clusterPtr >> 7));
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         *((uint32_t*)sector + (fp->clusterPtr & 0x7F))=0x0FFFFFFF; 
         writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (fp->clusterPtr >> 7));
 
-        readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (oldcluster >> 7));
+        retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (oldcluster >> 7));
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         *((uint32_t*)sector + (oldcluster & 0x7F))=fp->clusterPtr; 
         writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (oldcluster >> 7));
     }
@@ -1389,7 +1444,11 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
     parentDir->clusterCntr=0;
     while(entriesRead==0x10)
     {
-        readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        retcode=readSector(sector,getClusterLba(parentDir->clusterPtr) + parentDir->sectorPtr);
+        if (retcode > 0)
+        {
+            return retcode;
+        }
         entriesRead = getDirectoryEntries(sector,&entries);
         for (uint16_t c=0;c<entriesRead;c++)
         {
@@ -1460,7 +1519,11 @@ uint8_t initFatSDCard()
     {
         return FATLIB_WRONG_PART_TYPE;
     }
-    readSector(sector,sdCardInfo.partitionInfo.lbaStart);
+    retcode = readSector(sector,sdCardInfo.partitionInfo.lbaStart);
+    if (retcode > 0)
+    {
+        return retcode;
+    }
     if(sector[510] != 0x55 || sector[511] != 0xAA)
     {
         return  FATLIB_WRONG_VOLUMEID_SIG;

@@ -17,6 +17,6 @@ uint8_t displayFilename(DirectoryEntryType * entry,char * res);
 // ERROR_CODES
 //
 
-#define SDACCESS_INVALID_DIRNAME 1
-#define SDACCESS_DIRNAME_TOO_LONG 2
+#define SDACCESS_INVALID_DIRNAME 2
+#define SDACCESS_DIRNAME_TOO_LONG 3
 #endif

@@ -81,6 +81,7 @@ void getVolumeId(uint8_t *,VolumeIdType* );
 uint32_t getFatLbaBegin(PartitionInfoType*,VolumeIdType*);
 uint32_t getClusterLbaBegin(PartitionInfoType* ,VolumeIdType*);
 uint32_t getClusterLba(uint32_t);
+uint8_t entryToSector(uint8_t * sect, uint8_t position,DirectoryPointerType * fp,DirectoryEntryType * entry);
 uint16_t getDirectoryEntries(uint8_t*,DirectoryEntryType**);
 uint8_t copyDirectoryPointer(DirectoryPointerType ** src,DirectoryPointerType ** dest);
 uint16_t getDirectoryContentSize(DirectoryPointerType * fp);

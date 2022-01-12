@@ -305,7 +305,8 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
 {
     uint8_t cmd[6];
     uint8_t retcode;
-    uint16_t c,cSect;
+    uint16_t cSect;
+    uint32_t c;
     csDisableDisplay();
     csEnableSDCard();    
     setSckSdCard();
@@ -330,7 +331,7 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
     c=0;
     cSect = 0;
     uint8_t dataBeginMarker=0;
-    while(cSect < 512)
+    while(cSect < 512 && c < SD_CARD_READ_TIMEOUT)
     {
         while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
         if (dataBeginMarker != 0xFE)
@@ -346,7 +347,14 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
     *SSPDR = 0xFF;
     *SSPDR = 0xFF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    return 0;
+    if (c == SD_CARD_READ_TIMEOUT)
+    {
+        return ERROR_READ_TIMEOUT;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 
@@ -356,6 +364,8 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     uint8_t retcode;
     uint16_t cSect;
     uint8_t resp[2];
+    uint16_t c=0;
+    uint8_t rCode;
     csDisableDisplay();
     csEnableSDCard();    
     setSckSdCard();
@@ -382,13 +392,42 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     *SSPDR = 0xFE;
     while(cSect < 512)
     {
+        rCode=*SSPDR;
         while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
         *SSPDR = *(sect + cSect++);
     }
-    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    *SSPDR = 0xFF;
-    *SSPDR = 0xFF;
+    
+    while(c < SD_CARD_READ_TIMEOUT)
+    {
+        *SSPDR = 0xFF;
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+        rCode = *SSPDR & 0xFF;
+        if (rCode != 0xFF)
+        {
+            break;
+        }
+        c++;
+    }
+    c=0;
+    if ((rCode & 0x1F) == 0x05)
+    {
+        while(c < SD_CARD_WRITE_TIMEOUT)
+        {
+            *SSPDR = 0xFF;
+            while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+            rCode = (*SSPDR & 0xFF);
+            if(rCode != 0x00)
+            {
+                break;
+            }
+        }
+        c++;
+    }
 
+    *SSPDR = 0xFF;
+    *SSPDR = 0xFF;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    /*
     // send mandatory command 13
     cmd[0]=13+ 0x40;
     cmd[1] = 0x0;
@@ -408,6 +447,7 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     *SSPDR = 0xFF;
     *SSPDR = 0xFF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    */
     return 0;
 }
 

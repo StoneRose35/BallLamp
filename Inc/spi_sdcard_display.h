@@ -119,17 +119,27 @@ void setBacklight(uint8_t);
 #define R1_ILLEGAL_COMMAND 2
 #define R1_CRC_ERROR 3
 
+// -------------------------
+// -  Error Codes
+// -------------------------
 #define ERROR_TIMEOUT 1
 #define ERROR_CARD_UNRESPONSIVE 2
 #define ERROR_V2_CMD8_RESPONSE 3
 #define ERROR_ILLEGAL_COMMAND 4
 #define ERROR_READ_FAILURE 5
 #define ERROR_WRITE_FAILURE 6
+#define ERROR_READ_TIMEOUT 7
 
+// -------------------------- 
+// -  ST7735 bit definitions
+// --------------------------
 #define ST7735_MADCTL_MY 7
 #define ST7735_MADCTL_MX 6
 #define ST7735_MADCTL_MV 5
 #define ST7735_MADCTL_ML 4
 #define ST7735_MADCTL_RGB 3
 #define ST7735_MADCTL_MH 2
+
+#define SD_CARD_READ_TIMEOUT 100000
+#define SD_CARD_WRITE_TIMEOUT 312500
 #endif
