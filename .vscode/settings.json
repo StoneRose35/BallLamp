@@ -12,7 +12,8 @@
         "malloc.h": "c",
         "stdint.h": "c",
         "memoryaccess.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "clocks.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

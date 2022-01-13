@@ -14,4 +14,6 @@ void apiCommand(char * cmd,void* context);
 void consoleCommand(char * cmd,void* context);
 void setupBluetoothCommand(char * cmd,void* context);
 void sysInfoCommand(char * cmd,void*context);
+void setDateTimeCommand(char* cmd,void*context);
+
 #endif

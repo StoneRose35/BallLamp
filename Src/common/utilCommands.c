@@ -10,6 +10,7 @@
 #include "stringFunctions.h"
 #include "neopixelDriver.h"
 #include "uart.h"
+#include "datetimeClock.h"
 
 /**
  * @brief prints a brief overview of the commands
@@ -48,6 +49,23 @@ void helpCommand(char * cmd,void* context)
 	printf("   also command line history and editing is possible\r\n");
 	printf(" * SETUPBT: changes the bluetooth interface name and pin, sets bluetooth speed to 57600\r\n");
 	printf(" * SYSINFO: displays system and memory infos\r\n");
+	printf(" * SETDT: sets date and time of the RTC, format is SETDT(year,month,day,hour,minute,second)\r\n");
+	printf("   with year as 4-digit year, month and day starting at 1 and hour, minute,second, starting at 0, all number shouls\r\n");
+	printf("   be entered as integers without leading zeros\r\n");
+	printf(" * SDINIT: reintializes the SD-Card\r\n");
+	printf(" * MOUNT: mounts the first Partition (must be FAT32) of the SD-Card\r\n");
+	printf(" * CD: changes the current directory, format: CD(folder). As opposed to the gnu lix cd command only one \r\n");
+	printf("   relative folder is supported\r\n");
+	printf(" * LS: prints the content of the current folder\r\n");
+	printf(" * MKDIR: creates a directory within the current directory, call as MKDIR(directory)\r\n");
+	printf(" * RMDIR: remove a directory within the current directory, is must be empty, calls as RMDIR(directory\r\n");
+	printf(" * INITDISPLAY: reinitializes the TFT Display\r\n");
+	printf(" * BACKLIGHT: sets the backlight intensity of the TFT Display, takes one argument from 0 to 255\r\n");
+	printf(" * SETCURSOR: sets the cursor on the display, takes the horizontal and vertical position\r\n");
+	printf("   as an argument, th horizontal position goes from 0 to 19, th vertical from 0 to 15");
+	printf(" * DWRITE: write the current string starting at the current cursor position on the TFT screen\r\n");
+	printf("   the cursor is not increased after writing, assumes that the closing bracket is the last character before \r\n");
+	printf("   the termination zero, so no escape characters must be used from the brackets\r\n");
 
 }
 
@@ -113,11 +131,15 @@ void sysInfoCommand(char * cmd,void*context)
 	struct mallinfo heapInfo;
 	uint32_t nticks;
 	uint8_t npEngineState;
-	char nrbfr[16];
+	char nrbfr[32];
 	heapInfo = mallinfo();
 	nticks = getTickValue();
 	printf("\r\n\r\nTicks since Start: ");
 	UInt32ToChar(nticks,nrbfr);
+	printf(nrbfr);
+	printf("\r\n");
+	printf("Date and Time: ");
+	getDateTime(nrbfr);
 	printf(nrbfr);
 	printf("\r\n");
 	printf("Current Stack Pointer Location (bytes): ");
@@ -142,4 +164,33 @@ void sysInfoCommand(char * cmd,void*context)
 	{
 		printf("Off\r\n");
 	}
+}
+
+
+void setDateTimeCommand(char* cmd,void*context)
+{
+	char bfr[32];
+	char nrbfrArray[8];
+	char * nrbfr = nrbfrArray;
+	uint16_t v2;
+	uint8_t v1;
+	getBracketContent(cmd,bfr);
+	nrbfr = strtok(bfr,",");
+	v2 = toUInt16(nrbfr);
+	setYear(v2);
+	nrbfr = strtok(0,",");
+	v1 = toUInt8(nrbfr);
+	setMonth(v1);
+	nrbfr = strtok(0,",");
+	v1 = toUInt8(nrbfr);
+	setDay(v1);
+	nrbfr = strtok(0,",");
+	v1 = toUInt8(nrbfr);
+	setHour(v1);
+	nrbfr = strtok(0,",");
+	v1 = toUInt8(nrbfr);
+	setMinute(v1);
+	nrbfr = strtok(0,",");
+	v1 = toUInt8(nrbfr);
+	setSecond(v1);
 }

@@ -11,7 +11,7 @@
 #define CONSOLEHANDLER_H_
 
 
-#define CONSOLE_PREFIX "microSys:"
+#define CONSOLE_PREFIX "Microsys:"
 #define CONSOLE_MAX_PATHLENGTH 256
 
 void initConsole(Console);

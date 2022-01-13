@@ -17,6 +17,7 @@ void UInt16ToChar(uint16_t, char*);
 void UInt32ToChar(uint32_t, char*);
 uint8_t toUInt8(char*);
 int16_t toInt16(char*);
+int16_t toUInt16(char*);
 uint32_t toUInt32(char*);
 
 void UInt32ToHex(uint32_t,char*);

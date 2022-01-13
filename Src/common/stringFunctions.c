@@ -331,6 +331,20 @@ int16_t toInt16(char * chr)
 	return res;
 }
 
+
+int16_t toUInt16(char * chr)
+{
+	uint16_t res=0;
+	uint16_t cnt=0;
+	while (chr[cnt]!=0)
+	{
+		res *= 10;
+		res += (chr[cnt] - 0x30);
+		cnt++;
+	}
+	return res;
+}
+
 /**
  * @brief returns the content within the brackts of a string. Doens't do any specific validity checks. For example for "RGB(123,32,34,0-17)"
  * the function would return "123,32,34,0-17"

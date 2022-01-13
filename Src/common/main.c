@@ -156,6 +156,7 @@
 #include "core.h"
 #include "systemClock.h"
 #include "systick.h"
+#include "datetimeClock.h"
 #include "uart.h"
 #include "dma.h"
 #include "spi_sdcard_display.h"
@@ -178,8 +179,8 @@ uint32_t bit_cnt = 0;
 uint8_t rawdata[N_LAMPS*24+1];
 uint8_t* rawdata_ptr = rawdata;
 
-TaskType interpolatorsArray[N_LAMPS];
-TasksType interpolators;
+//TaskType interpolatorsArray[N_LAMPS];
+//TasksType interpolators;
 
 
 volatile uint32_t task;
@@ -244,8 +245,9 @@ void colorUpdate(RGB * color,uint32_t phase)
 int main(void)
 {
 	uint8_t retcode=0;
+	uint16_t sdInitCnt=0;
 	char nrbfr[4];
-	uint8_t tasksDone = 1;
+	//uint8_t tasksDone = 1;
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
 	ApiType usbApi;
@@ -280,20 +282,31 @@ int main(void)
 	initGpio();
 	initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
-	//printf("starting SPI\r\n");
+
+	initDatetimeClock();
+
 	initSpi();
 	printf("initializing SD Card.. ");
-	retcode=initSdCard();
-	if(retcode==0)
+	retcode = 1;
+	while (sdInitCnt < 25 && retcode != 0)
 	{
-		printf("OK\r\n");
+		retcode=initSdCard();
+		if(retcode==0)
+		{
+			printf("OK\r\n");
+		}
+		else
+		{
+			waitSysticks(4);
+		}
+		sdInitCnt++;
 	}
-	else
+	if (sdInitCnt == 25)
 	{
 		printf("Failure, Code ");
 		UInt8ToChar(retcode,nrbfr);
 		printf(nrbfr);
-		printf("\r\n");
+		printf(" after timeout\r\n");
 	}
 	if (retcode == 0)
 	{
@@ -319,7 +332,7 @@ int main(void)
 	initDisplay();
 	
 
-
+	/*
 	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
 	printf("initializing color interpolators\r\n");
 
@@ -332,6 +345,7 @@ int main(void)
 	setSendState(SEND_STATE_RTS);
 
 	initNeopixels();
+	*/
 
 	/**
 	 * set initial color upon start
@@ -351,13 +365,13 @@ int main(void)
     /* Loop forever */
 	for(;;)
 	{
-		
+		/*	
 		if (getSendState()==SEND_STATE_RTS)//(READY_TO_SEND)
 		{
 			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
 			tasksDone = 0;
 		}
-		
+		*/
 
 		if ((task & (1 << TASK_USB_CONSOLE))==(1 << TASK_USB_CONSOLE))
 		{
@@ -377,6 +391,7 @@ int main(void)
 		//
 		// Time slot for handling tasks
 		// 
+		/*
 		if (tasksDone == 0)
 		{
 			for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
@@ -388,10 +403,11 @@ int main(void)
 			}
 			tasksDone=1;
 		}
+		*/
 
 		// if the tasks are finished after the fps time has elapsed the next frame doesn't show
 		// the correct data due to a buffer underrun
-		
+		/*
 		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
 		{
 			// potential error handling
@@ -403,7 +419,7 @@ int main(void)
 		{
 			decompressRgbArray(lamps,N_LAMPS);
 		}
-		
+		*/
 		sendCharAsyncUsb();
 		sendCharAsyncBt();
 
