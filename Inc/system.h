@@ -64,8 +64,10 @@
 
 
 
-#define TASK_USB_CONSOLE 0 //!< bit position of the task bit array, set: the task for handling the usb console should be called
-#define TASK_BT_CONSOLE 1 //!< bit position of the task bit array, set: the task for handling the bluetooth console should be called
+#define TASK_USB_CONSOLE_RX 0 //!< bit position of the task bit array, set: the task for handling the usb console on receiving characters should be called
+#define TASK_BT_CONSOLE_RX 1 //!< bit position of the task bit array, set: the task for handling the bluetooth console on receiving characters should be called
+#define TASK_USB_CONSOLE_TX 2 //!< bit position of the task bit array, set: the task for handling the usb console on sending characters should be called
+#define TASK_BT_CONSOLE_TX 3 //!< bit position of the task bit array, set: the task for handling the bluetooth console on sending characters should be called
 
 #define CONTEXT_USB 0 //!<bit position: if set output of prints is routed to the USB console
 #define CONTEXT_BT 1 //!<bit position: if set output of prints is routed to the bluetooth console

@@ -86,7 +86,7 @@ UserCommandType userCommands[] = {
  */
 void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType,void* callerContext)
 {
-	extern TasksType interpolators;
+	//extern TasksType interpolators;
 	extern RGBStream * lamps;
 
 	switch(contextType)
@@ -94,9 +94,9 @@ void callUserFunction(void(*userFct)(char*,void*),char *cmd,uint8_t contextType,
 	case CONTEXT_TYPE_RGBSTREAM:
 		(*userFct)(cmd,(void*)lamps);
 		break;
-	case CONTEXT_TYPE_INTERPOLATORS:
-		(*userFct)(cmd,(void*)&interpolators);
-		break;
+	//case CONTEXT_TYPE_INTERPOLATORS:
+	//	(*userFct)(cmd,(void*)&interpolators);
+	//	break;
 	case CONTEXT_TYPE_BUFFEREDINPUT:
 		(*userFct)(cmd,(void*)callerContext);
 		break;

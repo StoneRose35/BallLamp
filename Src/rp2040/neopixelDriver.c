@@ -46,24 +46,6 @@ void isr_pio0_irq0_irq7()
 
 
 
-// function to be called to switch off clocking out colors 
-// this happens when the dma has transferred the necessary color information
-// for all lamps 
-void isr_dma_irq0_irq11()
-{
-	if ((*DMA_INTS0 & (1<<0))==(1 << 0)) // if from channel 0
-	{
-		// clear interrupt
-		*DMA_INTS0 |= (1<<0);
-
-		// disable dma
-		*DMA_CH0_CTRL_TRIG &= ~(1 << 0);
-
-		sendState = SEND_STATE_SENT;
-	}
-	return;
-}
-
 // converts the structured color data for all lamp (frame) into a streamable array handleable by the driver
 // should modify the array pointed to by rawdata_ptr
 void decompressRgbArray(RGBStream * frame,uint8_t length)

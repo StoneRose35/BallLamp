@@ -266,20 +266,6 @@ uint8_t initSdCard()
         return ERROR_ILLEGAL_COMMAND;
     }
 
-
-    // setup dma channel 1 for reading a block of information from the sd card
-
-	//place data into the TX fifo of PIO0's SM0
-	*DMA_CH1_READ_ADDR = SPI0_BASE + SPI_SSPDR_OFFSET;
-	//increase read address at each transfer, select DREQ16 (DREQ_SPI0_RX) as data send request
-	// choose byte-sized transfers
-	*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_INCR_WRITE_LSB) | (17 << DMA_CH1_CTRL_TRIG_TREQ_SEL_LSB) | (0 << DMA_CH1_CTRL_TRIG_DATA_SIZE_LSB);
-	//define the number of data sent
-
-    // write to memory
-	//*DMA_CH1_WRITE_ADDR = (uint32_t)rawdata_ptr;
-	*DMA_CH1_TRANS_COUNT = 512;
-
     return 0;
 }
 

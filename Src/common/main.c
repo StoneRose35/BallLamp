@@ -373,20 +373,28 @@ int main(void)
 		}
 		*/
 
-		if ((task & (1 << TASK_USB_CONSOLE))==(1 << TASK_USB_CONSOLE))
+		if ((task & (1 << TASK_USB_CONSOLE_RX))==(1 << TASK_USB_CONSOLE_RX))
 		{
 			context = (1 << CONTEXT_USB);
 			processInputBuffer(&usbInput);
 
-			task &= ~(1 << TASK_USB_CONSOLE);
+			task &= ~(1 << TASK_USB_CONSOLE_RX);
 		}
 
-		if ((task & (1 << TASK_BT_CONSOLE))==(1 << TASK_BT_CONSOLE))
+		if ((task & (1 << TASK_BT_CONSOLE_RX))==(1 << TASK_BT_CONSOLE_RX))
 		{
 			context = (1 << CONTEXT_BT);
 			processInputBuffer(&btInput);
 
-			task &= ~(1 << TASK_BT_CONSOLE);
+			task &= ~(1 << TASK_BT_CONSOLE_RX);
+		}
+
+		if ((task & (1 << TASK_USB_CONSOLE_TX))==(1 << TASK_USB_CONSOLE_TX))
+		{
+			if (sendCharAsyncUsb()==1) // only disable the task when a new dma transfer has been instantiated
+			{
+				task &= ~(1 << TASK_BT_CONSOLE_TX);
+			}
 		}
 		//
 		// Time slot for handling tasks
@@ -420,7 +428,7 @@ int main(void)
 			decompressRgbArray(lamps,N_LAMPS);
 		}
 		*/
-		sendCharAsyncUsb();
+		//sendCharAsyncUsb();
 		sendCharAsyncBt();
 
 	}
