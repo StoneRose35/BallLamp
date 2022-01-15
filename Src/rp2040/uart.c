@@ -35,7 +35,6 @@ void isr_uart0_irq20()
 		usbCommBuffer.inputBuffer[usbCommBuffer.inputBufferCnt++]=*UART_UARTDR & 0xFF;
 		usbCommBuffer.inputBufferCnt &= (INPUT_BUFFER_SIZE-1);
 		task |= (1 << TASK_USB_CONSOLE_RX);
-		//*UART_UARTCR |= (1 << UART_UARTICR_RXIC_LSB); // clear interrupt flag
 	}
 }
 
@@ -47,7 +46,6 @@ void isr_uart1_irq21()
 		btCommBuffer.inputBuffer[btCommBuffer.inputBufferCnt++]=*UARTBT_UARTDR & 0xFF;
 		btCommBuffer.inputBufferCnt &= (INPUT_BUFFER_SIZE-1);
 		task |= (1 << TASK_BT_CONSOLE_RX);
-		//*UARTBT_UARTCR |= (1 << UART_UARTICR_RXIC_LSB); // clear interrupt flag
 	}
 }
 
@@ -59,44 +57,24 @@ void isr_uart1_irq21()
  */
 uint8_t sendCharAsyncUsb()
 {
-	//uint32_t trans_cnt;
 	if (usbCommBuffer.outputBufferWriteCnt < usbCommBuffer.outputBufferReadCnt && (*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))//((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
 	{
-		//if ((*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))
-		//{
 		*DMA_CH1_READ_ADDR = (uint32_t)(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
 		*DMA_CH1_TRANS_COUNT = usbCommBuffer.outputBufferReadCnt - usbCommBuffer.outputBufferWriteCnt;
 		*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_EN_LSB);
 		usbCommBuffer.outputBufferWriteCnt = usbCommBuffer.outputBufferReadCnt;
-		//}
-
-		// write to memory
-		//*DMA_CH1_READ_ADDR = (uint32_t)(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
-		//*DMA_CH1_TRANS_COUNT = usbCommBuffer.outputBufferReadCnt - usbCommBuffer.outputBufferWriteCnt;
-
-		//*UART_UARTDR = *(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
-		//usbCommBuffer.outputBufferWriteCnt++;
 		return 0;
 	}
 	else if ((*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))
 	{
+		usbCommBuffer.outputBufferWriteCnt=0;
+		usbCommBuffer.outputBufferReadCnt=0;
 		return 1;
 	}
 	else
 	{
 		return 0;
 	}
-	//if (usbCommBuffer.outputBufferWriteCnt == usbCommBuffer.outputBufferReadCnt)
-	//{
- 	//	usbCommBuffer.outputBufferWriteCnt=0;
-	//	usbCommBuffer.outputBufferReadCnt=0;
-	//	return 1;
-	//}
-	//else
-	//{
-	//	return 0;
-	//}
-
 }
 
 uint8_t sendCharAsyncBt()
@@ -133,13 +111,16 @@ void printf(const char* data)
 
 			if (usbCommBuffer.outputBufferReadCnt==(OUTPUT_BUFFER_SIZE-1))
 			{
+				// disable dma interrupt for channel 1 during the blocked phase
+				*DMA_INTE0 &= ~(1 << 1);
 				// block and wait for the dma transfer to end
 				uint8_t sc_res = sendCharAsyncUsb();
 				while (sc_res == 0)
 				{
 					sc_res = sendCharAsyncUsb();
 				}
-				
+				// reenable it afterwards
+				*DMA_INTE0 |= (1 << 1);
 			}
 
 		}
@@ -161,6 +142,7 @@ void printf(const char* data)
 		cnt++;
 		cur_data = *(data + cnt);
 	}
+	sendCharAsyncUsb();
 }
 
 /* USB Uart, used for serial communication over usb
@@ -196,6 +178,9 @@ void initUart(uint16_t baudrate)
 
 	// enable interrupts in the nvic
 	*NVIC_ISER = (1 << 20);
+
+	// enable trasmit dma 
+	*UART_UARTDMACR = (1 << UART_UARTDMACR_TXDMAE_LSB);
 
 	// setup dma, write to the uart data register
 	*DMA_CH1_WRITE_ADDR = (uint32_t)UART_UARTDR;

@@ -11,6 +11,9 @@ void initDMA()
 	*RESETS |= (1 << RESETS_RESET_DMA_LSB);
     *RESETS &= ~(1 << RESETS_RESET_DMA_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_DMA_LSB)) == 0);
+
+	// enable the dma interrupt by default
+	*NVIC_ISER = (1 << 11);
 }
 
 

@@ -365,14 +365,6 @@ int main(void)
     /* Loop forever */
 	for(;;)
 	{
-		/*	
-		if (getSendState()==SEND_STATE_RTS)//(READY_TO_SEND)
-		{
-			sendToLed(); // non-blocking, returns long before the neopixel clock pulses have been sent
-			tasksDone = 0;
-		}
-		*/
-
 		if ((task & (1 << TASK_USB_CONSOLE_RX))==(1 << TASK_USB_CONSOLE_RX))
 		{
 			context = (1 << CONTEXT_USB);
@@ -396,42 +388,8 @@ int main(void)
 				task &= ~(1 << TASK_BT_CONSOLE_TX);
 			}
 		}
-		//
-		// Time slot for handling tasks
-		// 
-		/*
-		if (tasksDone == 0)
-		{
-			for(uint8_t c=0;c<interpolators.taskArrayLength;c++)
-			{
-				if ((interpolators.taskArray[c].state & 0x3) != TASK_STATE_STOPPED)
-				{
-					updateTask(&interpolators.taskArray[c],lamps);
-				}
-			}
-			tasksDone=1;
-		}
-		*/
 
-		// if the tasks are finished after the fps time has elapsed the next frame doesn't show
-		// the correct data due to a buffer underrun
-		/*
-		if(getSendState()==SEND_STATE_BUFFER_UNDERRUN)
-		{
-			// potential error handling
-			context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
-			printf("BufferUnderrun!!\r\n");
-		}
-
-		if (getSendState()==SEND_STATE_SENT || getSendState()==SEND_STATE_BUFFER_UNDERRUN)// is in wait state after after the data transfer
-		{
-			decompressRgbArray(lamps,N_LAMPS);
-		}
-		*/
-		//sendCharAsyncUsb();
 		sendCharAsyncBt();
-
-	}
 }
 #endif
 #endif

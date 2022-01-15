@@ -4,14 +4,17 @@
  *  Created on: 29.08.2021
  *      Author: philipp
  */
+
 #include "systemChoice.h"
-#include <stdint.h>
 
 #ifdef HARDWARE
 #ifndef UART_H_
 #define UART_H_
 
 
+#include <stdint.h>
+#include "hardware/regs/uart.h"
+#include "hardware/regs/addressmap.h"
 
 #define BAUD_RATE 57600
 #define UART_USB_RX 1
@@ -60,6 +63,7 @@ typedef struct
 #define UART_UARTDR ((volatile uint32_t*)(UART0_BASE+UART_UARTDR_OFFSET))
 #define UART_UARTRIS ((volatile uint32_t*)(UART0_BASE+UART_UARTRIS_OFFSET))
 #define UART_UARTFR ((volatile uint32_t*)(UART0_BASE+UART_UARTFR_OFFSET))
+#define UART_UARTDMACR ((volatile uint32_t*)(UART0_BASE+UART_UARTDMACR_OFFSET))
 
 #define UARTBT_UARTIBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTIBRD_OFFSET))
 #define UARTBT_UARTFBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTFBRD_OFFSET))
@@ -73,6 +77,7 @@ typedef struct
 #define UARTBT_UARTDR ((volatile uint32_t*)(UART1_BASE+UART_UARTDR_OFFSET))
 #define UARTBT_UARTRIS ((volatile uint32_t*)(UART1_BASE+UART_UARTRIS_OFFSET))
 #define UARTBT_UARTFR ((volatile uint32_t*)(UART1_BASE+UART_UARTFR_OFFSET))
+#define UARTBT_UARTDMACR ((volatile uint32_t*)(UART1_BASE+UART_UARTDMACR_OFFSET))
 
 
 void initUart(uint16_t baudrate);
