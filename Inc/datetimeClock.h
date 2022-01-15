@@ -17,7 +17,7 @@ uint8_t getHour();
 uint8_t getMinute();
 uint8_t getSecond();
 
-uint8_t getYear();
+uint16_t getYear();
 uint8_t getMonth();
 uint8_t getDay();
 

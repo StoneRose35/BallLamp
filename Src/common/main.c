@@ -169,6 +169,7 @@
 #include "stringFunctions.h"
 #include "taskManager.h"
 #include "neopixelCommands.h"
+#include "charDisplay.h"
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -246,8 +247,9 @@ int main(void)
 {
 	uint8_t retcode=0;
 	uint16_t sdInitCnt=0;
+	uint32_t ticksOld;
 	char nrbfr[4];
-	//uint8_t tasksDone = 1;
+	char dtbfr[24];
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
 	ApiType usbApi;
@@ -361,7 +363,7 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
-
+	ticksOld=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
@@ -390,6 +392,14 @@ int main(void)
 		}
 
 		sendCharAsyncBt();
+		if (getTickValue() - ticksOld > 24)
+		{
+			getDateTime(dtbfr);
+			writeString(dtbfr,0,4);
+			ticksOld=getTickValue();
+		}
+		
+	}
 }
 #endif
 #endif
