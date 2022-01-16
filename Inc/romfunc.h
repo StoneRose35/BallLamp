@@ -11,4 +11,8 @@ void flash_range_erase(uint32_t addr, uint32_t count, uint32_t block_size, uint8
 typedef void (*flash_range_program_fn)(uint32_t addr, const uint8_t *data, uint32_t count);
 void flash_range_program(uint32_t addr, const uint8_t *data, uint32_t count);
 
+typedef  float (*f_proc_fct)(float a,float b);
+typedef float(*f_proc_fct_conv)(uint32_t a);
+
+
 #endif
