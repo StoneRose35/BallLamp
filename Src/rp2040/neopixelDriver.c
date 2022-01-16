@@ -11,10 +11,12 @@
 #include "neopixelDriver.h"
 #include "system.h"
 #include "dma.h"
-
-#include "gen/pioprogram.h"
+#ifndef _PIO_0_H_
+#define PIO_0_H_
+#include "gen/pio0_pio.h"
+#endif
 #include "hardware/regs/pio.h"
-#include "hardware/pio.h"
+//#include "hardware/pio.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/resets.h"
@@ -100,13 +102,6 @@ void initNeopixels()
 	//
 	uint16_t instr_mem_cnt = 0;
 	uint16_t first_instr_pos;
-
-
-	// enable the PIO0 block
-	*RESETS |= (1 << RESETS_RESET_PIO0_LSB);
-    *RESETS &= ~(1 << RESETS_RESET_PIO0_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_PIO0_LSB)) == 0);
-
 
 	// ***********************************************************
 	// configure state machine 0 which drives the neopixels

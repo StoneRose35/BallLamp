@@ -159,6 +159,7 @@
 #include "datetimeClock.h"
 #include "uart.h"
 #include "dma.h"
+#include "pio.h"
 #include "spi_sdcard_display.h"
 #include "fatLib.h"
 #include "consoleHandler.h"
@@ -170,6 +171,8 @@
 #include "taskManager.h"
 #include "neopixelCommands.h"
 #include "charDisplay.h"
+#include "ds18b20.h"
+
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -265,6 +268,10 @@ int main(void)
     setupClock();
 	initSystickTimer();
 	initDMA();
+	initPio();
+	initGpio();
+	initSpi();
+	initDatetimeClock();
 
     initConsole(&usbConsole);
     initConsole(&btConsole);
@@ -281,13 +288,13 @@ int main(void)
     btInput.commBuffer=&btCommBuffer;
     btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
-	initGpio();
+
 	initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
 
-	initDatetimeClock();
 
-	initSpi();
+
+
 	printf("initializing SD Card.. ");
 	retcode = 1;
 	while (sdInitCnt < 25 && retcode != 0)
@@ -345,9 +352,13 @@ int main(void)
 	startInterpolators(&interpolators);
 
 	setSendState(SEND_STATE_RTS);
-
-	initNeopixels();
 	*/
+	initNeopixels();
+
+	initDs18b20();
+
+
+	
 
 	/**
 	 * set initial color upon start

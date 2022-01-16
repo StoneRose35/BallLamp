@@ -31,3 +31,53 @@ do_zero:
     jmp y--, looppt ; repeat instruction as long as y is not zero, decrease y for each iteration
     irq 1           ; assert interrupt (1 was chosen since this program is planned to run on state machine 1)
 .wrap
+
+
+
+.program ds18b20read
+
+.define N 1
+.define M 2
+
+; use with autopush and a push threshhold of 8bit
+; for a bit-wise reading
+ds18b20_read:
+.wrap_target
+set pindirs, 1 ; set as output
+set pins, 0 [N] ; pull low, wait 15 us
+set pindirs, 0 [N] ; define pin as input,wait 15us 
+in pins, 1 [M] ; sample pin, wait another 30us 
+.wrap
+
+
+; run with disinct prescaler resulting in a period of 60us
+; disable autopush and autopull
+.program ds18b20reset
+
+ds18b20_reset:
+set x,4 ; set number of samples to scratch x
+set pindirs, 1 ; set as output
+set pins, 0 [8] ; pull low, wait 480 us
+set pindirs, 0 ; set as input
+dr_loop:
+in pins, 1 [1]; sample pin, wait 60us
+jmp x--, dr_loop
+push
+irq wait 4
+
+.program ds18b20write
+.side_set 1
+
+
+ds18b20_write:
+set pindirs, 1 side 1; set as output
+.wrap_target
+dw_loop:
+out x, 1 side 1 [1]
+jmp !x, write_zero side 0 [1]
+jmp dw_loop side 1 [3]
+write_zero:
+nop side 0 [3]
+.wrap
+
+

@@ -103,15 +103,18 @@ out/%.o: Src/common/%.c
 out/%.o: Src/rp2040/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
-Src/rp2040/neopixelDriver.c: Inc/gen/pioprogram.h
+Src/rp2040/neopixelDriver.c: Inc/gen/pio0_pio.h
 
-Src/rp2040/simple_neopixel.c: Inc/gen/pioprogram.h
+Src/rp2040/simple_neopixel.c: Inc/gen/pio0_pio.h
 
-Src/rp2040/simple_timertest.c: Inc/gen/pioprogram.h
+Src/rp2040/simple_timertest.c: Inc/gen/pio0_pio.h
+
+Src/rp2040/ds18b20.c: Inc/gen/pio0_pio.h
 
 # pio assembler
-Inc/gen/pioprogram.h: Inc/gen tools/pioasm
-	./tools/pioasm -o c-sdk ./Src/rp2040/ws2812.pio ./Inc/gen/pioprogram.h
+Inc/gen/pio0_pio.h: Inc/gen tools/pioasm
+	./tools/pioasm -o c-sdk ./Src/rp2040/pio0.pio ./Inc/gen/pio0_pio.h
+
 
 # main linking and generating flashable content
 $(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common
