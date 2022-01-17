@@ -172,6 +172,7 @@
 #include "neopixelCommands.h"
 #include "charDisplay.h"
 #include "ds18b20.h"
+#include "remoteSwitch.h"
 
 
 
@@ -250,7 +251,8 @@ int main(void)
 {
 	uint8_t retcode=0;
 	uint16_t sdInitCnt=0;
-	uint32_t ticksOld;
+	uint32_t ticksOld,ticksOld2;
+	uint8_t switchState = 0;
 	char nrbfr[4];
 	char dtbfr[24];
 	ConsoleType usbConsole;
@@ -354,8 +356,12 @@ int main(void)
 	setSendState(SEND_STATE_RTS);
 	*/
 	initNeopixels();
+	setEngineState(0);
 
-	initDs18b20();
+	initRemoteSwitch();
+
+	//initDs18b20();
+	
 
 
 	
@@ -375,6 +381,7 @@ int main(void)
 
 	printf("Microsys v1.0 running\r\n");
 	ticksOld=getTickValue();
+	ticksOld2=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
@@ -409,6 +416,31 @@ int main(void)
 			writeString(dtbfr,0,4);
 			ticksOld=getTickValue();
 		}
+
+		if(getTickValue() - ticksOld2 > 500)
+		{
+			if(switchState== 0)
+			{
+				remoteSwitchOn();
+				lampsdata[0].rgb.g = 20;
+				lampsdata[0].rgb.r = 0;
+				lampsdata[0].rgb.b = 0;
+				decompressRgbArray(lampsdata,N_LAMPS);
+				sendToLed();
+				switchState = 1;
+			}
+			else{
+				remoteSwitchOff();
+				lampsdata[0].rgb.g = 0;
+				lampsdata[0].rgb.r = 0;
+				lampsdata[0].rgb.b = 0;
+				decompressRgbArray(lampsdata,N_LAMPS);
+				sendToLed();
+				switchState = 0;
+			}
+
+		}
+
 		
 	}
 }

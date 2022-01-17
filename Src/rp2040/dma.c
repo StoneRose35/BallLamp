@@ -17,9 +17,11 @@ void initDMA()
 }
 
 
-// function to be called to switch off clocking out colors 
-// this happens when the dma has transferred the necessary color information
-// for all lamps 
+/**
+ * @brief dma interrupt handler
+ * on channel 0 an interrupt is asserted when the neopixel data has been fully clocked out
+ * on channel 1 an interrupt is asserted when data has been sent over the usb uart
+ */
 void isr_dma_irq0_irq11()
 {
 	if ((*DMA_INTS0 & (1<<0))==(1 << 0)) // if from channel 0: neopixel  frame timer
@@ -35,6 +37,7 @@ void isr_dma_irq0_irq11()
 	else if ((*DMA_INTS0 & (1<<1))==(1 << 1)) // from channel 1: usb uart transmission done
 	{
 		*DMA_INTS0 |= (1<<1);
+		*DMA_CH1_CTRL_TRIG &= ~(1 << DMA_CH1_CTRL_TRIG_EN_LSB); // disable dma channel 1
 		task |= (1 << TASK_USB_CONSOLE_TX);
 	}
 	return;

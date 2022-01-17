@@ -81,3 +81,20 @@ nop side 0 [3]
 .wrap
 
 
+; put the same byte three times into the tx buffer
+; set limit to 24 bit, fill in three times the same command
+; one wait cycle should be 222us
+.program remoteswitch
+.side_set 1
+.wrap_target
+pull side 1 [2]
+;outerloop1:
+set y,24 side 0 [10]
+bitloop:
+jmp !x,do_zero side 1 [2]
+nop side 1 [5-2]
+jmp y-- bitloop side 0 [2]
+do_zero:
+jmp y-- bitloop side 0 [5]
+nop side 1 [2]
+.wrap

@@ -17,7 +17,7 @@ static volatile uint32_t tempreadTicks = 0;
 
 uint8_t initDs18b20()
 {
-    uint16_t instr_mem_cnt = 16;
+    uint16_t instr_mem_cnt = DS18B20_INSTR_MEM_OFFSET;
 	uint16_t first_instr_pos;
 
 	// enable pullup on the ds18b20 pin
@@ -71,7 +71,7 @@ uint8_t initDs18b20()
 uint8_t resetDs18b20()
 {
 	uint32_t rdata;
-    uint16_t instr_mem_cnt = 16;
+    uint16_t instr_mem_cnt = DS18B20_INSTR_MEM_OFFSET;
 	uint16_t first_instr_pos;
 
 	//disable pio0, sm2
@@ -123,7 +123,7 @@ uint8_t resetDs18b20()
 
 uint8_t writeDs18b20(uint8_t cmd)
 {
-    uint16_t instr_mem_cnt = 16;
+    uint16_t instr_mem_cnt = DS18B20_INSTR_MEM_OFFSET;
 	uint16_t first_instr_pos;
 
 	//disable pio0, sm2
@@ -147,7 +147,7 @@ uint8_t writeDs18b20(uint8_t cmd)
 	| ( (ds18b20write_wrap_target + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( (ds18b20write_wrap + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_TOP_LSB);
 	*PIO_SM2_SHIFTCTRL = PIO_SM2_SHIFTCTRL_RESET;
-	*PIO_SM2_SHIFTCTRL |= (1 << PIO_SM2_SHIFTCTRL_AUTOPULL_LSB);
+	*PIO_SM2_SHIFTCTRL |= (1 << PIO_SM2_SHIFTCTRL_AUTOPULL_LSB) | (8 << PIO_SM2_SHIFTCTRL_PULL_THRESH_LSB);
 
 	// set clock divider
 	*PIO_SM2_CLKDIV = DS18B20_CLKDIV << PIO_SM2_CLKDIV_INT_LSB;
@@ -174,7 +174,7 @@ uint8_t writeDs18b20(uint8_t cmd)
 uint8_t readDs18b20()
 {
 	uint32_t rdata;
-    uint16_t instr_mem_cnt = 16;
+    uint16_t instr_mem_cnt = DS18B20_INSTR_MEM_OFFSET;
 	uint16_t first_instr_pos;
 
 	//disable pio0, sm2
@@ -260,6 +260,7 @@ uint8_t readTemp(int16_t* res)
 			*res = -*res;
 		}
 		tempreadTicks=0;
+		resetDs18b20(); // send reset to terminate reading process
 		return 0;
 	}
 	else
