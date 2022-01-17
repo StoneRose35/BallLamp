@@ -438,7 +438,7 @@ int main(void)
 				sendToLed();
 				switchState = 0;
 			}
-
+			ticksOld2=getTickValue();
 		}
 
 		
