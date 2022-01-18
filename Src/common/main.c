@@ -173,6 +173,7 @@
 #include "charDisplay.h"
 #include "ds18b20.h"
 #include "remoteSwitch.h"
+#include "rotaryEncoder.h"
 
 
 
@@ -251,16 +252,20 @@ int main(void)
 {
 	uint8_t retcode=0;
 	uint16_t sdInitCnt=0;
-	uint32_t ticksOld,ticksOld2;
-	uint8_t switchState = 0;
-	char nrbfr[4];
-	char dtbfr[24];
+
+	uint8_t switchState = 2;
+	uint32_t encoderState = 0; 
+	char nrbfr[16];
+	char dispBfr[24];
+	uint32_t oldTicks,oldTicks2;
+	uint32_t testCnt=0;
+
 	ConsoleType usbConsole;
 	ConsoleType btConsole;
 	ApiType usbApi;
 	ApiType btApi;
 	BufferedInputType usbInput;
-	BufferedInputType btInput;
+	//BufferedInputType btInput;
 
 
 	#ifdef STM32
@@ -285,13 +290,13 @@ int main(void)
     usbInput.commBuffer=&usbCommBuffer;
     usbInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
-    btInput.api = &btApi;
-    btInput.console = &btConsole;
-    btInput.commBuffer=&btCommBuffer;
-    btInput.interfaceType=BINPUT_TYPE_CONSOLE;
+    //btInput.api = &btApi;
+    //btInput.console = &btConsole;
+    //btInput.commBuffer=&btCommBuffer;
+    //btInput.interfaceType=BINPUT_TYPE_CONSOLE;
 
 
-	initBTUart(BAUD_RATE);
+	//initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
 
 
@@ -360,6 +365,8 @@ int main(void)
 
 	initRemoteSwitch();
 
+	initRotaryEncoder();
+
 	//initDs18b20();
 	
 
@@ -380,8 +387,8 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
-	ticksOld=getTickValue();
-	ticksOld2=getTickValue();
+	oldTicks=getTickValue();
+	oldTicks2=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
@@ -392,15 +399,14 @@ int main(void)
 
 			task &= ~(1 << TASK_USB_CONSOLE_RX);
 		}
-
+		/*
 		if ((task & (1 << TASK_BT_CONSOLE_RX))==(1 << TASK_BT_CONSOLE_RX))
 		{
 			context = (1 << CONTEXT_BT);
 			processInputBuffer(&btInput);
 
 			task &= ~(1 << TASK_BT_CONSOLE_RX);
-		}
-
+		}*/
 		if ((task & (1 << TASK_USB_CONSOLE_TX))==(1 << TASK_USB_CONSOLE_TX))
 		{
 			if (sendCharAsyncUsb()==1) // only disable the task when a new dma transfer has been instantiated
@@ -409,39 +415,45 @@ int main(void)
 			}
 		}
 
-		sendCharAsyncBt();
-		if (getTickValue() - ticksOld > 24)
-		{
-			getDateTime(dtbfr);
-			writeString(dtbfr,0,4);
-			ticksOld=getTickValue();
-		}
 
-		if(getTickValue() - ticksOld2 > 500)
+		// tasks to do every 10 ticks/100ms
+		if (getTickValue()> oldTicks + 10)
 		{
-			if(switchState== 0)
+			if (getEncoderValue() != encoderState)
 			{
-				remoteSwitchOn();
-				lampsdata[0].rgb.g = 20;
-				lampsdata[0].rgb.r = 0;
-				lampsdata[0].rgb.b = 0;
-				decompressRgbArray(lampsdata,N_LAMPS);
-				sendToLed();
-				switchState = 1;
+				char * dispContent="Encoder: ";
+				writeString(dispContent,0,0);
+				UInt32ToHex(getEncoderValue(),nrbfr);
+				writeString(nrbfr,9,0);
+				encoderState=getEncoderValue();
 			}
-			else{
-				remoteSwitchOff();
-				lampsdata[0].rgb.g = 0;
-				lampsdata[0].rgb.r = 0;
-				lampsdata[0].rgb.b = 0;
-				decompressRgbArray(lampsdata,N_LAMPS);
-				sendToLed();
-				switchState = 0;
+			if (getSwitchValue() != switchState)
+			{
+				if(switchState == 0) // old was off, so now on
+				{
+					char * dispContent="Switch On";
+					writeString(dispContent,0,1);
+				}
+				else
+				{
+					char * dispContent="Switch Off";
+					writeString(dispContent,0,1);
+				}
+				switchState = getSwitchValue();
 			}
-			ticksOld2=getTickValue();
+			getDateTime(dispBfr);
+			writeString(dispBfr,0,2);
+			oldTicks=getTickValue();
+		}
+		if (getTickValue() > (oldTicks2))
+		{
+			UInt32ToHex(testCnt,nrbfr);
+			writeString(nrbfr,0,3);
+			testCnt++;
+			oldTicks2=getTickValue();
 		}
 
-		
+		//sendCharAsyncBt();		
 	}
 }
 #endif
