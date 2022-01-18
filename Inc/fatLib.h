@@ -60,6 +60,7 @@ typedef struct
     uint32_t clusterPtr;
     uint16_t sectorPtr; // in sectors, should be increased at every read/write Operation
     uint16_t clusterCntr;
+    uint16_t sectorBufferPtr;
     uint8_t sectorBuffer[512];
 } FilePointerType;
 
@@ -102,6 +103,8 @@ uint8_t createFile(DirectoryPointerType * fp,char * fileName);
 uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
 uint16_t readFile(FilePointerType * fp);
 uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes);
+uint8_t appendToFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint8_t * data, uint16_t datalen);
+uint8_t seekEnd(FilePointerType * fp);
 uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp);
 
 // filename helper functions

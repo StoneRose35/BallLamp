@@ -578,6 +578,7 @@ uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerTyp
                     fp->sectorPtr = 0;
                     fp->clusterPtr = fp->dirEntry->firstCluster;
                     fp->clusterCntr = 0;
+                    fp->sectorBufferPtr = 0;
                     return 0;
                 }
             }
@@ -1394,7 +1395,22 @@ uint16_t readFile(FilePointerType * fp)
             fp->sectorPtr = 0;
         }
     }
+    fp->sectorBufferPtr=retcode;
     return retcode;
+}
+
+uint8_t seekEnd(FilePointerType * fp)
+{
+    uint8_t sector[512];
+    while ((fp->clusterPtr & 0x0FFFFFF0) != 0x0FFFFFF0)
+    {
+        fp->clusterPtr= getNextCluster(sector,fp->clusterPtr);
+        fp->clusterCntr++;
+    }
+    fp->sectorPtr = (fp->dirEntry->size - ((sdCardInfo.volumeId.sectorsPerCluster*fp->clusterCntr) << 9)) >> 9;
+    readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+    fp->sectorBufferPtr = fp->dirEntry->size & 0x1F;
+    return 0;
 }
 
 /**
@@ -1490,6 +1506,32 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
         }
     }
     return retcode;
+}
+
+/**
+ * @brief appends an data array of length datalen to the end of a file in directory parentDir
+ * @param parentDir the parent directory of the file
+ * @param fp the pointer to the file containing the sector buffer used
+ * @param data the data to be written as a byte array
+ * @param datalen the length of the data vector
+ * @return uint8_t 
+ */
+uint8_t appendToFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint8_t * data, uint16_t datalen)
+{
+    uint16_t lastSectorFillSize = fp->dirEntry->size & 0x1FF;
+    uint32_t cnt=0;
+    uint16_t sectorBufferPtr=0;
+    for(cnt=0;cnt<datalen;cnt++)
+    {
+        if((cnt + lastSectorFillSize) >= 512)
+        {
+            writeFile(parentDir,fp,512);
+            sectorBufferPtr=0;
+        }
+        *(fp->sectorBuffer + sectorBufferPtr++) = *(data + cnt);
+    }
+    //writeFile(parentDir,fp,sectorBufferPtr);
+    return 0;
 }
 
 /**

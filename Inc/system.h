@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include "systemChoice.h"
 
-#define N_LAMPS (20) //!< the number of neopixel the system contains 
+#define N_LAMPS (1) //!< the number of neopixel the system contains 
 
 #define FRAMERATE (30) //!< frames or lamp images per second
 
