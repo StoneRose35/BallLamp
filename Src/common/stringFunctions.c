@@ -176,12 +176,12 @@ void UInt32ToHex(uint32_t val,char* nrbfr)
 		while (charcnt < 10)
 		{
 			// shift out left, discard leading zeros
-			nibbleval = cval >> 28;
-			if ((nibbleval < 10 && nibbleval > 0) || ( nibbleval < 10 && charcnt > 2))
+			nibbleval = (cval >> 28) & 0xF;
+			if (nibbleval < 10 ) 
 			{
 				nrbfr[charcnt++] = nibbleval + 0x30;
 			}
-			else if (nibbleval > 10)
+			else
 			{
 				nrbfr[charcnt++] = nibbleval + 0x61 - 10;
 			}
