@@ -1,4 +1,83 @@
 import math
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+import numpy as np
+import os.path
+
+
+c_template = """
+static const struct ST7735ImageType {}_streamimg = {{
+    .colorbytes =  {{
+{}
+}},
+    .rows = {},
+    .columns = {}
+}};
+"""
+
+c_template_font = """
+static const ST7735ImageType {}[]={{
+{}
+}}
+"""
+template_raw_struct = """
+{{
+    .colorbytes = {},
+    .rows = {},
+    .columns = {}
+}}
+"""
+
+def st7735_encode_color(r,g,b):
+    msb = (r & 0xF8) | ((g >> 5) & 0x7)
+    lsb = ((g & 0x7) << 5) | ((b & 0xF8) >> 3)
+    #print("encoded color, msb: {}, lsb: {}".format(hex(msb),hex(lsb)))
+    return msb, lsb
+
+def el_to_byte(el):
+    rval = int(el[0] * 255)
+    gval = int(el[1] * 255)
+    bval = int(el[2] * 255)
+    msb, lsb = st7735_encode_color(rval, gval, bval)
+    return hex(msb) + ", " + hex(lsb)
+
+
+def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png"):
+    img = mpimg.imread(fname)
+    imgname = fname.split(".")[0]
+    fp = open(imgname + ".h", "wt")
+    bytearray = ""
+    c = 0
+    for row in range(img.shape[0]):
+        colbytes = map(el_to_byte, img[row])
+        colbytes = ", ".join(colbytes)
+        colbytes += ",\r\n"
+        bytearray += colbytes
+
+    fcontent = c_template.format(imgname,bytearray, int(img.shape[0]), int(img.shape[1]))
+    fp.write(fcontent)
+    fp.close()
+
+
+def fontImageToArray(fname="16x16_sm_ascii.png", sizex=16, sizey=16, offsetx=0, offsety=0):
+    img = mpimg.imread(fname)
+    imgname = fname.split(".")[0]
+    fp = open(imgname + ".h", "wt")
+    asciientries = []
+    for col in range(int(img.shape[0]/sizex)):
+        for row in range(int(img.shape[1]/sizey)):
+            partimg = list(map(lambda x: x[row*sizey+offsety:(row+1)*sizey+offsety], img[col*sizex+offsetx:(col+1)*sizex+offsetx]))
+            colarr = np.reshape(partimg, (sizex*sizey, 4))
+            bytearray = map(el_to_byte, colarr)
+            bytearray = ", ".join(bytearray)
+            asciientries.append(template_raw_struct.format("{" + bytearray + "}", sizey, sizex))
+    asciientries = ", ".join(asciientries)
+    fonttable = c_template_font.format(imgname, asciientries)
+    fp.write(fonttable)
+    fp.close()
+
+
+
 
 
 def oscillator_freq_calc():
@@ -63,11 +142,9 @@ def oscillator_freq_calc():
     print("ws2812 Frequency: {}".format(bestparams["f_ws2812"]))
 
 
-def st7735_encode_color(r,g,b):
-    msb = (r & 0xF8) | ((g >> 5) & 0x7)
-    lsb = ((g & 0x7) << 5) | ((b & 0xF8) >> 3)
-    print("encoded color, msb: {}, lsb: {}".format(hex(msb),hex(lsb)))
 
 
 if __name__ == "__main__":
-    st7735_encode_color(254, 255, 179)
+    #fontImageToArray("Codepage737.png", 16, 9, 4, 4)
+    imageToCStream("kaltblut3.png")
+    #st7735_encode_color(254, 255, 179)

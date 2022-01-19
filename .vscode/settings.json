@@ -15,7 +15,8 @@
         "stdlib.h": "c",
         "clocks.h": "c",
         "m0plus.h": "c",
-        "bufferedinputhandler.h": "c"
+        "bufferedinputhandler.h": "c",
+        "imgdisplay.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": false
