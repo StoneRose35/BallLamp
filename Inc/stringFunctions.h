@@ -24,6 +24,7 @@ void UInt32ToHex(uint32_t,char*);
 
 void fillWithLeadingZeros(uint8_t minlength,char * nr);
 void toPercentChar(float,char*);
+void fixedPointUInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals);
 
 
 uint8_t startsWith(char*,char*);

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include "system.h"
 
-typedef struct 
+typedef struct ST7735ImageStruct
 {
     uint8_t * colorbytes;
     uint8_t rows;
@@ -12,7 +12,15 @@ typedef struct
 
 } ST7735ImageType;
 
-typedef ST7735ImageType* ST7735Image;
+typedef const ST7735ImageType* ST7735Image;
+
+typedef struct 
+{
+    uint8_t colorbytes[512];
+    uint8_t rows;
+    uint8_t columns;
+
+} ST7735Font16x16;
 
 inline uint16_t encodeColor(RGB * clr)
 {

@@ -1,0 +1,135 @@
+#include "uiStack.h"
+#include "imgDisplay.h"
+#include "charDisplay.h"
+#include "images/clock_32x32.h"
+#include "images/drafthorse_32x32.h"
+#include "images/bulb_on_24x24.h"
+#include "images/bulb_off_24x24.h"
+#include "datetimeClock.h"
+#include "stringFunctions.h"
+#include "apps/rootApp.h"
+#include <string.h>
+
+#define ROOT_ICON_0_X (80-20-32)
+#define ROOT_ICON_1_X (80+20-32)
+#define ROOT_ICON_Y (128-32-2)
+
+static struct TriopsBreeder
+{
+    uint16_t heaterValue; // from 0 to 1023
+    uint16_t temperature; //encoded as 4bit fractional fixed point
+    uint8_t lampState; // 0 or 1
+} triopsController;
+
+static struct RootAppContext
+{
+    uint8_t entrySelected;
+    RGB bgclr;
+    RGB entrySel;
+    RGB heaterClr;
+    RGB clrBlack;
+    char timeStr[12];
+} ctx;
+
+
+void rootAppDisplay()
+{
+    char tempString[8];
+    uint32_t heaterBarWidth;
+    // draw background
+    fillSquare(&ctx.bgclr,0,0,160,128);
+
+    // draw bottom icons, select the left one by default
+    fillSquare(&ctx.entrySel, ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
+    displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
+    displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+
+    // display the time on top
+    writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
+
+    // display the heater level
+    // heaterLevel*(width-16)/1024
+    // ------------------------------
+    // |       |        |        |        |
+    // |                |                 |
+    heaterBarWidth = ((triopsController.heaterValue*(160-16)) >> 10) & 0xFF;
+    fillSquare(&ctx.heaterClr,8,32,(uint8_t)heaterBarWidth,8);
+    fillSquare(&ctx.clrBlack,8,40,1,4);
+    fillSquare(&ctx.clrBlack,8+(160-16)/2,40,1,4);
+    fillSquare(&ctx.clrBlack,8+(160-16),40,1,4);
+    fillSquare(&ctx.clrBlack,8+(160-16)/4,40,1,2);
+    fillSquare(&ctx.clrBlack,8+(160-16)*3/4,40,1,2);
+
+    // display the temperature
+    fixedPointUInt16ToChar(tempString,triopsController.temperature,4);
+    writeText("T: ",24,48,FONT_TYPE_8X8);
+    writeText(tempString,24+2*8,48,FONT_TYPE_8X8);
+
+    // display the lamp state
+    if(triopsController.lampState == 0)
+    {
+        displayImage(&bulb_off_24x24_streamimg,40,64);
+    }
+    else
+    {
+        displayImage(&bulb_on_24x24_streamimg,40,64);
+    }
+
+}
+
+void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
+{
+    if(encoderIncr > 0 && ctx.entrySelected == 0)
+    {
+        ctx.entrySelected = 1;
+        fillSquare(&ctx.bgclr,80-40-2,126-32-2,32+4,32+4);
+        fillSquare(&ctx.entrySel,80+40-2,126-32-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,80-40,126-32);
+        displayImage(&clock_32x32_streamimg,80+40,126-32);
+    }
+    else if (encoderIncr < 0 && ctx.entrySelected == 1) 
+    {
+        ctx.entrySelected = 0;
+        fillSquare(&ctx.bgclr,80+40-2,126-32-2,32+4,32+4);
+        fillSquare(&ctx.entrySel,80-40-2,126-32-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,80-40,126-32);
+        displayImage(&clock_32x32_streamimg,80+40,126-32);
+    }
+    if (switchChange == -1)
+    {
+        if(ctx.entrySelected==1)
+        {
+            setPagePtr(1);
+        }
+        else
+        {
+            setPagePtr(2);
+        }
+        display();
+    }
+} 
+
+void createRootApp(SubApplicationType* app,uint8_t index)
+{
+    ctx.bgclr.r = 224;
+    ctx.bgclr.g = 255;
+    ctx.bgclr.b = 167;
+    ctx.entrySel.r = 160;
+    ctx.entrySel.g = 0;
+    ctx.entrySel.b = 0;
+    ctx.heaterClr.r = 0;
+    ctx.heaterClr.g = 60;
+    ctx.heaterClr.b = 0;
+    ctx.clrBlack.r=0;
+    ctx.clrBlack.g=0;
+    ctx.clrBlack.b=0;
+    ctx.entrySelected = 0;
+
+    triopsController.heaterValue = 0;
+    triopsController.lampState = 0;
+    triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
+    getTime(ctx.timeStr);
+    (app+index)->display = &rootAppDisplay;
+    (app+index)->encoderSwitchCallback = &rootAppEncoderSwitchCallback;
+}
+

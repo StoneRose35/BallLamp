@@ -42,6 +42,50 @@ void toPercentChar(float percentVal,char * out)
 	out[str_len+1] = 0;
 }
 
+void fixedPointUInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals)
+{
+	uint32_t fracBase=1;
+	uint8_t c=0,fracLength=0,strPtr;
+	uint32_t fracNr,intNr;
+	char fracStr[16];
+	for(c=0;c<fracDecimals;c++)
+	{
+		fracBase *= 5;
+	}
+	fracNr = (nr &  ((1 << fracDecimals) - 1))*fracBase;
+	UInt32ToChar(fracNr,fracStr);
+	c=0;
+	while(*(fracStr+c) != 0)
+	{
+		fracLength++;
+	}
+	intNr = nr >> fracDecimals;
+	UInt32ToChar(intNr,str);
+	c=0;
+	strPtr=0;
+	
+	while(c<fracDecimals+1)
+	{
+		if (*(str+strPtr) == 0 && c==0)
+		{
+			*(str+strPtr) = '.';
+			c++;
+		}
+		else if ( c > 0 && c < (fracDecimals - fracLength) + 1)
+		{
+			*(str+strPtr) = '0';
+			c++;
+		}
+		else
+		{
+			*(str+strPtr) = *(fracStr + c - 1);
+			c++;
+		}
+		strPtr++;
+	}
+	*(str+strPtr) = 0;
+}
+
 /**
  * @brief converts a uint8_t to a string
  * 

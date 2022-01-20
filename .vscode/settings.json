@@ -16,7 +16,9 @@
         "clocks.h": "c",
         "m0plus.h": "c",
         "bufferedinputhandler.h": "c",
-        "imgdisplay.h": "c"
+        "imgdisplay.h": "c",
+        "random": "c",
+        "voidapp.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": false

@@ -6,19 +6,23 @@ import os.path
 
 
 c_template = """
-static const struct ST7735ImageType {}_streamimg = {{
-    .colorbytes =  {{
-{}
-}},
-    .rows = {},
-    .columns = {}
+#include "imgDisplay.h"
+
+uint8_t {0}_clrdata[]= {{
+{1}
+}};
+
+static const struct ST7735ImageStruct {0}_streamimg = {{
+    .colorbytes = {0}_clrdata,
+    .rows = {2},
+    .columns = {3}
 }};
 """
 
 c_template_font = """
-static const ST7735ImageType {}[]={{
+static const {} uint8_t[{}][{}]={{
 {}
-}}
+}};
 """
 template_raw_struct = """
 {{
@@ -42,10 +46,13 @@ def el_to_byte(el):
     return hex(msb) + ", " + hex(lsb)
 
 
-def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png"):
+def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
     img = mpimg.imread(fname)
-    imgname = fname.split(".")[0]
-    fp = open(imgname + ".h", "wt")
+    imgname = fname.split(os.path.sep)[-1].split(".")[0]
+    if (len(outfolder) > 0):
+        fp = open(os.path.join(outfolder, imgname + ".h"), "wt")
+    else:
+        fp = open(imgname + ".h", "wt")
     bytearray = ""
     c = 0
     for row in range(img.shape[0]):
@@ -54,25 +61,27 @@ def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png"):
         colbytes += ",\r\n"
         bytearray += colbytes
 
-    fcontent = c_template.format(imgname,bytearray, int(img.shape[0]), int(img.shape[1]))
+    fcontent = c_template.format(imgname, bytearray, int(img.shape[0]), int(img.shape[1]))
     fp.write(fcontent)
     fp.close()
 
 
-def fontImageToArray(fname="16x16_sm_ascii.png", sizex=16, sizey=16, offsetx=0, offsety=0):
+def fontImageToArray(fname="sm_ascii_16x16.png", sizex=16, sizey=16, offsetx=0, offsety=0):
     img = mpimg.imread(fname)
     imgname = fname.split(".")[0]
     fp = open(imgname + ".h", "wt")
     asciientries = []
+    nfonts = 0
     for col in range(int(img.shape[0]/sizex)):
         for row in range(int(img.shape[1]/sizey)):
             partimg = list(map(lambda x: x[row*sizey+offsety:(row+1)*sizey+offsety], img[col*sizex+offsetx:(col+1)*sizex+offsetx]))
             colarr = np.reshape(partimg, (sizex*sizey, 4))
             bytearray = map(el_to_byte, colarr)
             bytearray = ", ".join(bytearray)
-            asciientries.append(template_raw_struct.format("{" + bytearray + "}", sizey, sizex))
-    asciientries = ", ".join(asciientries)
-    fonttable = c_template_font.format(imgname, asciientries)
+            asciientries.append("{" + bytearray + "}")
+            nfonts += 1
+    asciientries = "\r\n, ".join(asciientries)
+    fonttable = c_template_font.format(imgname,nfonts,sizex*sizey*2, asciientries)
     fp.write(fonttable)
     fp.close()
 
@@ -146,5 +155,14 @@ def oscillator_freq_calc():
 
 if __name__ == "__main__":
     #fontImageToArray("Codepage737.png", 16, 9, 4, 4)
-    imageToCStream("kaltblut3.png")
+    fontImageToArray("sm_ascii_16x16.png",16,16,0,0)
+    """
+    imageToCStream("../Assets/kaltblut3.png", "../Inc/images")
+    imageToCStream("../Assets/kaltblut2.png", "../Inc/images")
+    imageToCStream("../Assets/kaltblut1.png", "../Inc/images")
+    imageToCStream("../Assets/clock_32x32.png", "../Inc/images")
+    imageToCStream("../Assets/drafthorse_32x32.png", "../Inc/images")
+    imageToCStream("../Assets/bulb_off_24x24.png", "../Inc/images")
+    imageToCStream("../Assets/bulb_on_24x24.png", "../Inc/images")
+    """
     #st7735_encode_color(254, 255, 179)

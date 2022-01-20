@@ -21,16 +21,19 @@ uint8_t displayImage(ST7735Image img,uint8_t px,uint8_t py)
 
 uint8_t fillSquare(RGB * clr,uint8_t px,uint8_t py,uint8_t sx,uint8_t sy)
 {
-    uint16_t * squareBfr = (uint16_t*)malloc(sx*sy*2);
-    uint16_t clrEncoded = encodeColor(clr);
-    for (uint32_t c=0;c<sx*sy;c++)
+    if (sx > 0 && sy > 0)
     {
-        *(squareBfr + c) = clrEncoded;
+        uint16_t * squareBfr = (uint16_t*)malloc(sx*sy*2);
+        uint16_t clrEncoded = encodeColor(clr);
+        for (uint32_t c=0;c<sx*sy;c++)
+        {
+            *(squareBfr + c) = clrEncoded;
+        }
+        casetCmd(px,px+sx);
+        rasetCmd(py,py+sy);
+        sendDisplayCommand(0x2C,(uint8_t*)squareBfr,sx*sy*2);
+        free(squareBfr);
     }
-    casetCmd(px,px+sx);
-    rasetCmd(py,py+sy);
-    sendDisplayCommand(0x2C,(uint8_t*)squareBfr,sx*sy*2);
-    free(squareBfr);
     return 0;
 }
 

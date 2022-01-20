@@ -11,3 +11,4 @@
 /tools/pioasm_src/gen/*
 /Inc/gen/*.h
 /Doc/gen/*
+/Doc/.idea

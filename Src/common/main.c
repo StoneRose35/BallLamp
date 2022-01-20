@@ -175,6 +175,7 @@
 #include "remoteSwitch.h"
 #include "rotaryEncoder.h"
 #include "cliApiTask.h"
+#include "uiStack.h"
 
 
 
@@ -208,16 +209,20 @@ DirectoryPointerType * ndir;
  */
 int main(void)
 {
-	uint8_t retcode=0;
-	uint16_t sdInitCnt=0;
+	/*
+	
+
 
 	uint8_t switchState = 2;
 	uint32_t encoderState = 0; 
-	char nrbfr[16];
+	
 	char dispBfr[24];
 	uint32_t oldTicks,oldTicks2;
 	uint32_t testCnt=0;
-
+*/
+	uint16_t sdInitCnt=0;
+	uint8_t retcode=0;
+	char nrbfr[16];
 
 	/*
 	 *
@@ -294,18 +299,27 @@ int main(void)
 	initRotaryEncoder();
 
 	//initDs18b20();
-	
+
+	/*
+	 *
+	 * Initialize the Ui Application Layer
+	 * 
+	 * */
+	initUiStack();
+
 	printf("Microsys v1.0 running\r\n");
-	oldTicks=getTickValue();
-	oldTicks2=getTickValue();
+	//oldTicks=getTickValue();
+	//oldTicks2=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
 
 		cliApiTask(task);
 
+		uiStackTask(task);
 
 		// tasks to do every 10 ticks/100ms
+		/*
 		if (getTickValue()> oldTicks + 10)
 		{
 			if (getEncoderValue() != encoderState)
@@ -341,7 +355,7 @@ int main(void)
 			testCnt++;
 			oldTicks2=getTickValue();
 		}
-
+		*/
 		//sendCharAsyncBt();		
 	}
 }
