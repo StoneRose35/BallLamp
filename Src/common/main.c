@@ -174,6 +174,7 @@
 #include "ds18b20.h"
 #include "remoteSwitch.h"
 #include "rotaryEncoder.h"
+#include "cliApiTask.h"
 
 
 
@@ -188,6 +189,7 @@ uint8_t* rawdata_ptr = rawdata;
 //TaskType interpolatorsArray[N_LAMPS];
 //TasksType interpolators;
 
+//BufferedInputType btInput;
 
 volatile uint32_t task;
 volatile uint8_t context;
@@ -198,50 +200,6 @@ extern CommBufferType btCommBuffer;
 DirectoryPointerType * cwd;
 DirectoryPointerType * ndir;
 
-/**
- * @brief updates the color along a hue shift with the phase going from 0 to 1535
- * @param color the color data to update
- * @param phase the phase value going from 0x0 to 0x600, the hue shifts starts/ends with red
- * */
-void colorUpdate(RGB * color,uint32_t phase)
-{
-	if (phase < 0x100)
-	{
-		color->r = 0xFF;
-		color->g = phase & 0xFF;
-		color->b = 0x00;
-	}
-	else if (phase < 0x200)
-	{
-		color->r = 0x1FF - phase;
-		color->g = 0xFF;
-		color->b = 0x00;
-	}
-	else if (phase < 0x300)
-	{
-		color->r = 0x00;
-		color->g = 0xFF;
-		color->b = phase - 0x200;
-	}
-	else if (phase < 0x400)
-	{
-		color->r = 0x00;
-		color->g = 0x3FF - phase;
-		color->b = 0xFF;
-	}
-	else if (phase < 0x500)
-	{
-		color->r = phase - 0x400;
-		color->g = 0x00;
-		color->b = 0xFF;
-	}
-	else
-	{
-		color->r = 0xFF;
-		color->g = 0x00;
-		color->b = 0x5FF - phase;
-	}
-}
 
 /**
  * @brief the main entry point, should never exit
@@ -260,18 +218,15 @@ int main(void)
 	uint32_t oldTicks,oldTicks2;
 	uint32_t testCnt=0;
 
-	ConsoleType usbConsole;
-	ConsoleType btConsole;
-	ApiType usbApi;
-	ApiType btApi;
-	BufferedInputType usbInput;
-	//BufferedInputType btInput;
 
-
+	/*
+	 *
+	 * Initialize Hardware components
+	 * 
+	 * */
 	#ifdef STM32
 	enableFpu();
 	#endif
-
     setupClock();
 	initSystickTimer();
 	initDMA();
@@ -279,29 +234,16 @@ int main(void)
 	initGpio();
 	initSpi();
 	initDatetimeClock();
-
-    initConsole(&usbConsole);
-    initConsole(&btConsole);
-    initApi(&usbApi);
-    initApi(&btApi);
-
-    usbInput.api = &usbApi;
-    usbInput.console = &usbConsole;
-    usbInput.commBuffer=&usbCommBuffer;
-    usbInput.interfaceType=BINPUT_TYPE_CONSOLE;
-
-    //btInput.api = &btApi;
-    //btInput.console = &btConsole;
-    //btInput.commBuffer=&btCommBuffer;
-    //btInput.interfaceType=BINPUT_TYPE_CONSOLE;
-
-
-	//initBTUart(BAUD_RATE);
 	initUart(BAUD_RATE);
 
 
 
-
+	/*
+	 *
+	 * Initialise Component-specific drivers
+	 * 
+	 * */
+	initCliApi();
 	printf("initializing SD Card.. ");
 	retcode = 1;
 	while (sdInitCnt < 25 && retcode != 0)
@@ -346,74 +288,21 @@ int main(void)
 	}
 
 	initDisplay();
-	
-
-	/*
-	context |= (1 << CONTEXT_USB) | (1 << CONTEXT_BT);
-	printf("initializing color interpolators\r\n");
-
-	interpolators.taskArray=(TaskType*)interpolatorsArray;
-	interpolators.taskArrayLength=N_LAMPS;
-	initInterpolators(&interpolators);
-
-	startInterpolators(&interpolators);
-
-	setSendState(SEND_STATE_RTS);
-	*/
 	initNeopixels();
 	setEngineState(0);
-
 	initRemoteSwitch();
-
 	initRotaryEncoder();
 
 	//initDs18b20();
 	
-
-
-	
-
-	/**
-	 * set initial color upon start
-	 */
-	/*
-	for (uint8_t c=0;c<N_LAMPS;c++)
-	{
-		lamps[c].rgb.r = 245;
-		lamps[c].rgb.g = 140;
-		lamps[c].rgb.b = 40;
-	}
-	*/
-
-
 	printf("Microsys v1.0 running\r\n");
 	oldTicks=getTickValue();
 	oldTicks2=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
-		if ((task & (1 << TASK_USB_CONSOLE_RX))==(1 << TASK_USB_CONSOLE_RX))
-		{
-			context = (1 << CONTEXT_USB);
-			processInputBuffer(&usbInput);
 
-			task &= ~(1 << TASK_USB_CONSOLE_RX);
-		}
-		/*
-		if ((task & (1 << TASK_BT_CONSOLE_RX))==(1 << TASK_BT_CONSOLE_RX))
-		{
-			context = (1 << CONTEXT_BT);
-			processInputBuffer(&btInput);
-
-			task &= ~(1 << TASK_BT_CONSOLE_RX);
-		}*/
-		if ((task & (1 << TASK_USB_CONSOLE_TX))==(1 << TASK_USB_CONSOLE_TX))
-		{
-			if (sendCharAsyncUsb()==1) // only disable the task when a new dma transfer has been instantiated
-			{
-				task &= ~(1 << TASK_BT_CONSOLE_TX);
-			}
-		}
+		cliApiTask(task);
 
 
 		// tasks to do every 10 ticks/100ms

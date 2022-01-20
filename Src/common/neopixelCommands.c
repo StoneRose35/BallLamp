@@ -529,3 +529,49 @@ void npEngineCommand(char * cmd,void*context)
 		printf("Couldn't parse arguments\r\n");
 	}
 }
+
+
+/**
+ * @brief updates the color along a hue shift with the phase going from 0 to 1535
+ * @param color the color data to update
+ * @param phase the phase value going from 0x0 to 0x600, the hue shifts starts/ends with red
+ * */
+void colorUpdate(RGB * color,uint32_t phase)
+{
+	if (phase < 0x100)
+	{
+		color->r = 0xFF;
+		color->g = phase & 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x200)
+	{
+		color->r = 0x1FF - phase;
+		color->g = 0xFF;
+		color->b = 0x00;
+	}
+	else if (phase < 0x300)
+	{
+		color->r = 0x00;
+		color->g = 0xFF;
+		color->b = phase - 0x200;
+	}
+	else if (phase < 0x400)
+	{
+		color->r = 0x00;
+		color->g = 0x3FF - phase;
+		color->b = 0xFF;
+	}
+	else if (phase < 0x500)
+	{
+		color->r = phase - 0x400;
+		color->g = 0x00;
+		color->b = 0xFF;
+	}
+	else
+	{
+		color->r = 0xFF;
+		color->g = 0x00;
+		color->b = 0x5FF - phase;
+	}
+}
