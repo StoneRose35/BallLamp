@@ -269,7 +269,7 @@ uint8_t initSdCard()
     return 0;
 }
 
-void sendDisplayCommand(uint8_t cmd,uint8_t * data,uint32_t dataLen)
+void sendDisplayCommand(uint8_t cmd,const uint8_t * data,uint32_t dataLen)
 {
     csDisableSDCard();
     csEnableDisplay();

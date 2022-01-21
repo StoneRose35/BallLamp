@@ -71,7 +71,7 @@ uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len);
 uint8_t initSdCard();
 uint8_t readSector(uint8_t*, uint32_t);
 uint8_t writeSector(uint8_t*, uint32_t);
-void sendDisplayCommand(uint8_t,uint8_t *,uint32_t);
+void sendDisplayCommand(uint8_t,const uint8_t *,uint32_t);
 
 inline void csEnableDisplay()
 {    

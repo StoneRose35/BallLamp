@@ -133,13 +133,14 @@ void writeText(char * str,uint16_t posH,uint16_t posV,uint8_t fontType)
         switch (fontType)
         {
             case FONT_TYPE_8X8:
-                hCurrent += 8;
+                hCurrent += 1;
                 break;
             case FONT_TYPE_16X16:
                 hCurrent += 16;
                 break;
             default: break;
         }
+        cnt++;
     }
 }
 

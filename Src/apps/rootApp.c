@@ -8,10 +8,11 @@
 #include "datetimeClock.h"
 #include "stringFunctions.h"
 #include "apps/rootApp.h"
+#include "systick.h"
 #include <string.h>
 
-#define ROOT_ICON_0_X (80-20-32)
-#define ROOT_ICON_1_X (80+20-32)
+#define ROOT_ICON_0_X (80-20-16)
+#define ROOT_ICON_1_X (80+20-16)
 #define ROOT_ICON_Y (128-32-2)
 
 static struct TriopsBreeder
@@ -24,25 +25,83 @@ static struct TriopsBreeder
 static struct RootAppContext
 {
     uint8_t entrySelected;
-    RGB bgclr;
-    RGB entrySel;
-    RGB heaterClr;
-    RGB clrBlack;
     char timeStr[12];
+    uint32_t ticksLast;
 } ctx;
 
+static const RGB bgclr={
+    .r=255,
+    .g=255,
+    .b=167
+};
 
-void rootAppDisplay()
+static const RGB entrySel={
+    .r=160,
+    .g=0,
+    .b=0
+};
+
+static const RGB heaterClr={
+    .r=0,
+    .g=60,
+    .b=0
+};
+
+static const RGB clrBlack={
+    .r=0,
+    .g=0,
+    .b=0
+};
+
+
+void rootAppLoop(void* data)
+{
+    char tempString[8];
+    uint32_t heaterBarWidth;
+    if(getTickValue() >ctx.ticksLast+49)
+    {
+        heaterBarWidth = ((triopsController.heaterValue*(160-16)) >> 10) & 0xFF;
+        fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
+        fillSquare(&clrBlack,8,40,1,4);
+        fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
+        fillSquare(&clrBlack,8+(160-16),40,1,4);
+        fillSquare(&clrBlack,8+(160-16)/4,40,1,2);
+        fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
+
+        // display the temperature
+        fixedPointUInt16ToChar(tempString,triopsController.temperature,4);
+        writeText("T: ",2,6,FONT_TYPE_8X8);
+        writeText(tempString,2+2,6,FONT_TYPE_8X8);
+
+        getTime(ctx.timeStr);
+        // display the time on top
+        writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
+        ctx.ticksLast=getTickValue();
+    }
+}
+
+void rootAppDisplay(void* data)
 {
     char tempString[8];
     uint32_t heaterBarWidth;
     // draw background
-    fillSquare(&ctx.bgclr,0,0,160,128);
+    fillSquare(&bgclr,0,0,160,128);
 
-    // draw bottom icons, select the left one by default
-    fillSquare(&ctx.entrySel, ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
-    displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
-    displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+    // draw bottom icons
+    if (ctx.entrySelected == 0)
+    {
+        //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
+        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+    }
+    else if (ctx.entrySelected == 1)
+    {
+        //fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
+        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+    }
 
     // display the time on top
     writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
@@ -53,17 +112,17 @@ void rootAppDisplay()
     // |       |        |        |        |
     // |                |                 |
     heaterBarWidth = ((triopsController.heaterValue*(160-16)) >> 10) & 0xFF;
-    fillSquare(&ctx.heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-    fillSquare(&ctx.clrBlack,8,40,1,4);
-    fillSquare(&ctx.clrBlack,8+(160-16)/2,40,1,4);
-    fillSquare(&ctx.clrBlack,8+(160-16),40,1,4);
-    fillSquare(&ctx.clrBlack,8+(160-16)/4,40,1,2);
-    fillSquare(&ctx.clrBlack,8+(160-16)*3/4,40,1,2);
+    fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
+    fillSquare(&clrBlack,8,40,1,4);
+    fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
+    fillSquare(&clrBlack,8+(160-16),40,1,4);
+    fillSquare(&clrBlack,8+(160-16)/4,40,1,2);
+    fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
 
     // display the temperature
     fixedPointUInt16ToChar(tempString,triopsController.temperature,4);
-    writeText("T: ",24,48,FONT_TYPE_8X8);
-    writeText(tempString,24+2*8,48,FONT_TYPE_8X8);
+    writeText("T: ",2,6,FONT_TYPE_8X8);
+    writeText(tempString,2+2,6,FONT_TYPE_8X8);
 
     // display the lamp state
     if(triopsController.lampState == 0)
@@ -82,18 +141,18 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
     if(encoderIncr > 0 && ctx.entrySelected == 0)
     {
         ctx.entrySelected = 1;
-        fillSquare(&ctx.bgclr,80-40-2,126-32-2,32+4,32+4);
-        fillSquare(&ctx.entrySel,80+40-2,126-32-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,80-40,126-32);
-        displayImage(&clock_32x32_streamimg,80+40,126-32);
+        fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
+        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
     }
     else if (encoderIncr < 0 && ctx.entrySelected == 1) 
     {
         ctx.entrySelected = 0;
-        fillSquare(&ctx.bgclr,80+40-2,126-32-2,32+4,32+4);
-        fillSquare(&ctx.entrySel,80-40-2,126-32-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,80-40,126-32);
-        displayImage(&clock_32x32_streamimg,80+40,126-32);
+        fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
+        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
     }
     if (switchChange == -1)
     {
@@ -111,25 +170,15 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 
 void createRootApp(SubApplicationType* app,uint8_t index)
 {
-    ctx.bgclr.r = 224;
-    ctx.bgclr.g = 255;
-    ctx.bgclr.b = 167;
-    ctx.entrySel.r = 160;
-    ctx.entrySel.g = 0;
-    ctx.entrySel.b = 0;
-    ctx.heaterClr.r = 0;
-    ctx.heaterClr.g = 60;
-    ctx.heaterClr.b = 0;
-    ctx.clrBlack.r=0;
-    ctx.clrBlack.g=0;
-    ctx.clrBlack.b=0;
     ctx.entrySelected = 0;
-
+    ctx.ticksLast=getTickValue();
     triopsController.heaterValue = 0;
     triopsController.lampState = 0;
     triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
     getTime(ctx.timeStr);
+    (app+index)->data=NULL;
     (app+index)->display = &rootAppDisplay;
     (app+index)->encoderSwitchCallback = &rootAppEncoderSwitchCallback;
+    (app+index)->loop=&rootAppLoop;
 }
 

@@ -306,6 +306,7 @@ int main(void)
 	 * 
 	 * */
 	initUiStack();
+	display();
 
 	printf("Microsys v1.0 running\r\n");
 	//oldTicks=getTickValue();

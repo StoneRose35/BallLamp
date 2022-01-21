@@ -3,10 +3,12 @@
 #include "rotaryEncoder.h"
 #include "apps/rootApp.h"
 #include "apps/voidApp.h"
+#include "systick.h"
 
 static volatile uint32_t encoderVal=0;
 static volatile uint8_t switchVal=0;
 static volatile uint32_t pagePtr=0;
+static volatile uint32_t cTick;
 
 
 
@@ -24,6 +26,7 @@ void initUiStack()
     createRootApp(uiApplications,0);
     createVoidApp(uiApplications, 1);
     createVoidApp(uiApplications, 2);
+    cTick=getTickValue();
 }
 
 void uiStackTask(uint32_t task)
@@ -42,10 +45,17 @@ void uiStackTask(uint32_t task)
     if (encoderIncr != 0 || switchChange != 0)
     {
         uiApplications[pagePtr].encoderSwitchCallback(encoderIncr,switchChange);
+        encoderVal=encoderValCurrent;
+        switchVal=switchValCurrent;
+    }
+    if(getTickValue() > cTick && uiApplications[pagePtr].loop != 0)
+    {
+        uiApplications[pagePtr].loop(uiApplications[pagePtr].data);
+        cTick=getTickValue();
     }
 }
 
 void display()
 {
-    uiApplications[pagePtr].display();
+    uiApplications[pagePtr].display(uiApplications[pagePtr].data);
 }

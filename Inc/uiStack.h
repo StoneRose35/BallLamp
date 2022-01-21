@@ -10,7 +10,9 @@ void initUiStack();
 typedef struct 
 {
     void(*encoderSwitchCallback)(int16_t encoderIncrement,int8_t switchChange); // switch change 1: pushed, -1:released
-    void(*display)();
+    void(*display)(void*);
+    void(*loop)(void*);
+    void* data;
 } SubApplicationType;
 
 #endif

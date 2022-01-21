@@ -8,7 +8,7 @@ import os.path
 c_template = """
 #include "imgDisplay.h"
 
-uint8_t {0}_clrdata[]= {{
+const uint8_t {0}_clrdata[]= {{
 {1}
 }};
 
