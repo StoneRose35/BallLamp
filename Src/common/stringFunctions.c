@@ -507,3 +507,95 @@ uint8_t expandRange(char * stringinput,uint8_t ** result)
 	return len;
 }
 
+void timeToString(char * bfr,uint8_t h,uint8_t m,uint8_t s)
+{
+
+    uint8_t strPos=0;
+    char nrbfr[8];
+    uint8_t c;
+
+    if (h < 10)
+    {
+        *(bfr + strPos++) = '0';
+    }
+    UInt8ToChar(h,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos++) = ':';
+    if (m < 10)
+    {
+        *(bfr + strPos++) = '0';
+    }
+    UInt8ToChar(m,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos++) = ':';
+    if (m < 10)
+    {
+        *(bfr + strPos++) = '0';
+    }
+    UInt8ToChar(m,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos) = 0;
+}
+
+void dateToString(char * bfr, uint16_t y,uint8_t month, uint8_t d)
+{
+	uint8_t strPos=0;
+    char nrbfr[8];
+    uint8_t c;
+    UInt8ToChar(d,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos++) = '.';
+    UInt8ToChar(month,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos++) = '.';
+    UInt16ToChar(y,nrbfr);
+    c=0;
+    while(*(nrbfr+c) != 0)
+    {
+        *(bfr + strPos++) = *(nrbfr + c++);
+    }
+    *(bfr + strPos) = 0;
+}
+
+void dateTimeToString(char * out,uint16_t year,uint8_t month,uint8_t day,uint8_t hour,uint8_t minute,uint8_t seconds)
+{
+	char bfr[12];
+    dateToString(bfr,year,month,day);
+    uint8_t c;
+    uint8_t strPos=0;
+    c=0;
+    while(*(bfr + c) != 0)
+    {
+        *(out + strPos++) = *(bfr + c++);
+    }
+    c=0;
+    timeToString(bfr,hour,minute,seconds);
+    *(out + strPos++) = ' ';
+    *(out + strPos++) = ' ';
+    while(*(bfr + c) != 0)
+    {
+        *(out + strPos++) = *(bfr + c++);
+    }
+     *(out + strPos) = 0;
+}
+

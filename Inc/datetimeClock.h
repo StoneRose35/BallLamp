@@ -21,9 +21,4 @@ uint16_t getYear();
 uint8_t getMonth();
 uint8_t getDay();
 
-void getDate(char * bfr);
-void getTime(char * bfr);
-void getDateTime(char * bfr);
-
-
 #endif

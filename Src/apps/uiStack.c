@@ -3,6 +3,7 @@
 #include "rotaryEncoder.h"
 #include "apps/rootApp.h"
 #include "apps/voidApp.h"
+#include "apps/setDateTimeApp.h"
 #include "systick.h"
 
 static volatile uint32_t encoderVal=0;
@@ -24,7 +25,7 @@ void setPagePtr(uint32_t ptr)
 void initUiStack()
 {
     createRootApp(uiApplications,0);
-    createVoidApp(uiApplications, 1);
+    createSetDateTimeApp(uiApplications, 1);
     createVoidApp(uiApplications, 2);
     cTick=getTickValue();
 }

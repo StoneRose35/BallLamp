@@ -155,8 +155,14 @@ def oscillator_freq_calc():
 
 if __name__ == "__main__":
     #fontImageToArray("Codepage737.png", 16, 9, 4, 4)
-    fontImageToArray("sm_ascii_16x16.png",16,16,0,0)
+    #fontImageToArray("sm_ascii_16x16.png",16,16,0,0)
+    imageToCStream("../Assets/arrow_up_16x8.png", "../Inc/images")
+    imageToCStream("../Assets/arrow_down_16x8.png", "../Inc/images")
     """
+    imageToCStream("../Assets/OK_32x32.png", "../Inc/images")
+    imageToCStream("../Assets/back_32x32.png", "../Inc/images")
+
+
     imageToCStream("../Assets/kaltblut3.png", "../Inc/images")
     imageToCStream("../Assets/kaltblut2.png", "../Inc/images")
     imageToCStream("../Assets/kaltblut1.png", "../Inc/images")

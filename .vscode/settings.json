@@ -18,7 +18,8 @@
         "bufferedinputhandler.h": "c",
         "imgdisplay.h": "c",
         "random": "c",
-        "voidapp.h": "c"
+        "voidapp.h": "c",
+        "uistack.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

@@ -40,4 +40,8 @@ void stripWhitespaces(char *);
 uint8_t expandRange(char *,uint8_t**);
 
 
+void timeToString(char * bfr,uint8_t h,uint8_t m,uint8_t s);
+void dateToString(char * bfr, uint16_t y,uint8_t month, uint8_t d);
+void dateTimeToString(char * bfr,uint16_t year,uint8_t month,uint8_t day,uint8_t hour,uint8_t minute,uint8_t seconds);
+
 #endif /* STRINGFUNCTIONS_H_ */

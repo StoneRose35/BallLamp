@@ -1,4 +1,5 @@
 #include "uiStack.h"
+#include "apps/uiColors.h"
 #include "imgDisplay.h"
 #include "charDisplay.h"
 #include "images/clock_32x32.h"
@@ -29,30 +30,6 @@ static struct RootAppContext
     uint32_t ticksLast;
 } ctx;
 
-static const RGB bgclr={
-    .r=255,
-    .g=255,
-    .b=167
-};
-
-static const RGB entrySel={
-    .r=160,
-    .g=0,
-    .b=0
-};
-
-static const RGB heaterClr={
-    .r=0,
-    .g=60,
-    .b=0
-};
-
-static const RGB clrBlack={
-    .r=0,
-    .g=0,
-    .b=0
-};
-
 
 void rootAppLoop(void* data)
 {
@@ -73,7 +50,7 @@ void rootAppLoop(void* data)
         writeText("T: ",2,6,FONT_TYPE_8X8);
         writeText(tempString,2+2,6,FONT_TYPE_8X8);
 
-        getTime(ctx.timeStr);
+        timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
         // display the time on top
         writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
         ctx.ticksLast=getTickValue();
@@ -138,7 +115,7 @@ void rootAppDisplay(void* data)
 
 void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
-    if(encoderIncr > 0 && ctx.entrySelected == 0)
+    if(encoderIncr > 0 && ctx.entrySelected == 2)
     {
         ctx.entrySelected = 1;
         fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
@@ -148,7 +125,7 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
     }
     else if (encoderIncr < 0 && ctx.entrySelected == 1) 
     {
-        ctx.entrySelected = 0;
+        ctx.entrySelected = 2;
         fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
         fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
         displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
@@ -156,26 +133,19 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
     }
     if (switchChange == -1)
     {
-        if(ctx.entrySelected==1)
-        {
-            setPagePtr(1);
-        }
-        else
-        {
-            setPagePtr(2);
-        }
+        setPagePtr(ctx.entrySelected);
         display();
     }
 } 
 
 void createRootApp(SubApplicationType* app,uint8_t index)
 {
-    ctx.entrySelected = 0;
+    ctx.entrySelected = 2;
     ctx.ticksLast=getTickValue();
     triopsController.heaterValue = 0;
     triopsController.lampState = 0;
     triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
-    getTime(ctx.timeStr);
+    timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
     (app+index)->data=NULL;
     (app+index)->display = &rootAppDisplay;
     (app+index)->encoderSwitchCallback = &rootAppEncoderSwitchCallback;

@@ -139,7 +139,7 @@ void sysInfoCommand(char * cmd,void*context)
 	printf(nrbfr);
 	printf("\r\n");
 	printf("Date and Time: ");
-	getDateTime(nrbfr);
+	dateTimeToString(nrbfr,getYear(),getMonth(),getDay(),getHour(),getMinute(),getSecond());
 	printf(nrbfr);
 	printf("\r\n");
 	printf("Current Stack Pointer Location (bytes): ");
