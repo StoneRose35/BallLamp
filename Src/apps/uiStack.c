@@ -49,7 +49,7 @@ void uiStackTask(uint32_t task)
         encoderVal=encoderValCurrent;
         switchVal=switchValCurrent;
     }
-    if(getTickValue() > cTick && uiApplications[pagePtr].loop != 0)
+    if(getTickValue() > cTick+2 && uiApplications[pagePtr].loop != 0)
     {
         uiApplications[pagePtr].loop(uiApplications[pagePtr].data);
         cTick=getTickValue();
