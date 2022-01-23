@@ -16,7 +16,7 @@ void isr_io_irq_bank0_irq13()
     if ((*ENCODER_1_INTR & (1 << ENCODER_1_EDGE_HIGH)) == (1 << ENCODER_1_EDGE_HIGH))
     {
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_HIGH);
-        if(oldtickenc < getTickValue())
+        if(oldtickenc + ROTARY_ENCODER_DEBOUNCE < getTickValue())
         {
             ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
             oldtickenc = getTickValue();
@@ -25,7 +25,7 @@ void isr_io_irq_bank0_irq13()
     else if ((*ENCODER_1_INTR & (1 << ENCODER_1_EDGE_LOW)) == (1 << ENCODER_1_EDGE_LOW))
     {
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_LOW);
-        if(oldtickenc < getTickValue())
+        if(oldtickenc + ROTARY_ENCODER_DEBOUNCE < getTickValue())
         {
             ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
             oldtickenc = getTickValue();
@@ -34,7 +34,7 @@ void isr_io_irq_bank0_irq13()
     else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_LOW)) == (1 << SWITCH_EDGE_LOW))
     {
         *SWITCH_INTR |= (1 << SWITCH_EDGE_LOW);
-        if (oldtickswitch < getTickValue())
+        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
         {
             switchVal=1;
             oldtickswitch=getTickValue();
@@ -43,7 +43,7 @@ void isr_io_irq_bank0_irq13()
     else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_HIGH)) == (1 << SWITCH_EDGE_HIGH))
     {
         *SWITCH_INTR |= (1 << SWITCH_EDGE_HIGH);
-        if (oldtickswitch < getTickValue())
+        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
         {
             switchVal=0;
             oldtickswitch=getTickValue();

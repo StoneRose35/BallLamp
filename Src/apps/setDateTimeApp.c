@@ -255,7 +255,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
 
 void setDateTimeAppDisplay(void* data)
 {
-    char dtbfr[16];
+    char dtbfr[24];
     dateToString(dtbfr,ctx.year,ctx.month,ctx.day);
     fillSquare(&bgclr,0,0,160,128);
     writeText(dtbfr,0,8,FONT_TYPE_16X16);
@@ -296,13 +296,13 @@ void selectEntity(uint8_t pos)
         drawSelectFrame(160-32,128-32);
         break;
     case SETDT_ENCODERPOS_YEAR:
-        drawSelectMarkers(0,8,16*4);
+        drawSelectMarkers(6*16,8,16*4);
         break;
     case SETDT_ENCODERPOS_MONTH:
-        drawSelectMarkers(16*6,8,16*2);
+        drawSelectMarkers(16*3,8,16*2);
         break;
     case SETDT_ENCODERPOS_DAY:
-        drawSelectMarkers(9*16,8,16*2);
+        drawSelectMarkers(0,8,16*2);
         break;
     case SETDT_ENCODERPOS_HOUR:
         drawSelectMarkers(0,32,16*2);
@@ -311,7 +311,7 @@ void selectEntity(uint8_t pos)
         drawSelectMarkers(3*16,32,16*2);
         break;
     case SETDT_ENCODERPOS_SEC:
-        drawSelectMarkers(7*16,32,16*2);
+        drawSelectMarkers(6*16,32,16*2);
         break;
     default:
         break;
@@ -329,13 +329,13 @@ void deselectEntity(uint8_t pos)
         clearSelectFrame(160-32,128-32);
         break;
     case SETDT_ENCODERPOS_YEAR:
-        clearSelectMarkers(0,8,16*4);
+        clearSelectMarkers(6*16,8,16*4);
         break;
     case SETDT_ENCODERPOS_MONTH:
-        clearSelectMarkers(16*6,8,16*2);
+        clearSelectMarkers(16*3,8,16*2);
         break;
     case SETDT_ENCODERPOS_DAY:
-        clearSelectMarkers(9*16,8,16*2);
+        clearSelectMarkers(0,8,16*2);
         break;
     case SETDT_ENCODERPOS_HOUR:
         clearSelectMarkers(0,32,16*2);
@@ -344,7 +344,7 @@ void deselectEntity(uint8_t pos)
         clearSelectMarkers(3*16,32,16*2);
         break;
     case SETDT_ENCODERPOS_SEC:
-        clearSelectMarkers(7*16,32,16*2);
+        clearSelectMarkers(6*16,32,16*2);
         break;
     default:
         break;
@@ -376,7 +376,7 @@ void drawSelectFrame(uint8_t posx,uint8_t posy)
     fillSquare(&entrySel,posx-2,posy-2,36,2); // top
     fillSquare(&entrySel,posx-2,posy-2,2,36); // left
     fillSquare(&entrySel,posx+32,posy-2,2,36); // right
-    fillSquare(&entrySel,posx-2,posy+32,36,2); // bottom
+    fillSquare(&entrySel,posx-2,posy+32-2,36,2); // bottom
 }
 
 void clearSelectFrame(uint8_t posx,uint8_t posy)
@@ -384,7 +384,7 @@ void clearSelectFrame(uint8_t posx,uint8_t posy)
     fillSquare(&bgclr,posx-2,posy-2,36,2); // top
     fillSquare(&bgclr,posx-2,posy-2,2,36); // left
     fillSquare(&bgclr,posx+32,posy-2,2,36); // right
-    fillSquare(&bgclr,posx-2,posy+32,36,2); // bottom
+    fillSquare(&bgclr,posx-2,posy+32-2,36,2); // bottom
 }
 
 void drawArrows(uint8_t px, uint8_t py,uint8_t spacing)

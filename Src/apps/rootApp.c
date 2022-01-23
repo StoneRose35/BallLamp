@@ -65,7 +65,7 @@ void rootAppDisplay(void* data)
     fillSquare(&bgclr,0,0,160,128);
 
     // draw bottom icons
-    if (ctx.entrySelected == 0)
+    if (ctx.entrySelected == 2)
     {
         //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
         fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);

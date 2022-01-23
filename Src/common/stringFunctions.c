@@ -536,11 +536,11 @@ void timeToString(char * bfr,uint8_t h,uint8_t m,uint8_t s)
         *(bfr + strPos++) = *(nrbfr + c++);
     }
     *(bfr + strPos++) = ':';
-    if (m < 10)
+    if (s < 10)
     {
         *(bfr + strPos++) = '0';
     }
-    UInt8ToChar(m,nrbfr);
+    UInt8ToChar(s,nrbfr);
     c=0;
     while(*(nrbfr+c) != 0)
     {
@@ -555,6 +555,10 @@ void dateToString(char * bfr, uint16_t y,uint8_t month, uint8_t d)
     char nrbfr[8];
     uint8_t c;
     UInt8ToChar(d,nrbfr);
+	if(d<10)
+	{
+		*(bfr+strPos++)='0';
+	}
     c=0;
     while(*(nrbfr+c) != 0)
     {
@@ -562,6 +566,10 @@ void dateToString(char * bfr, uint16_t y,uint8_t month, uint8_t d)
     }
     *(bfr + strPos++) = '.';
     UInt8ToChar(month,nrbfr);
+	if(month<10)
+	{
+		*(bfr+strPos++)='0';
+	}
     c=0;
     while(*(nrbfr+c) != 0)
     {
