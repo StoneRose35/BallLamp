@@ -32,13 +32,13 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
     {
         if(ctx.editLevel == 0) // choose date/time to set or back/ok
         {
-            if (encoderIncr > 0 && ctx.encoderPos < 7)
+            if (encoderIncr > 1 && ctx.encoderPos < 7)
             {   
                 deselectEntity(ctx.encoderPos);
                 ctx.encoderPos++;
                 selectEntity(ctx.encoderPos);
             }
-            else if (encoderIncr < 0 && ctx.encoderPos > 0)
+            else if (encoderIncr < -1 && ctx.encoderPos > 0)
             {
                 deselectEntity(ctx.encoderPos);
                 ctx.encoderPos--;
@@ -50,10 +50,10 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             switch (ctx.encoderPos)
             {
                 case SETDT_ENCODERPOS_YEAR:
-                    ctx.year += encoderIncr;
+                    ctx.year += encoderIncr/2;
                     break;
                 case SETDT_ENCODERPOS_MONTH:
-                    nval = ctx.month + encoderIncr;
+                    nval = ctx.month + encoderIncr/2;
                     if (nval < 1)
                     {
                         ctx.month=1;
@@ -68,7 +68,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     }
                     break;
                 case SETDT_ENCODERPOS_DAY:
-                    nval = ctx.day + encoderIncr;
+                    nval = ctx.day + encoderIncr/2;
                     if (ctx.month==1 || ctx.month==3 || ctx.month==5 || ctx.month==7 || ctx.month==8 || ctx.month==10 || ctx.month==12)
                     {
                         if (nval < 1)
@@ -117,7 +117,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     }
                     break;
                 case SETDT_ENCODERPOS_HOUR:
-                    nval = ctx.hour + encoderIncr;
+                    nval = ctx.hour + encoderIncr/2;
                     if (nval < 0)
                     {
                         ctx.hour=0;
@@ -132,7 +132,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     }
                     break;
                 case SETDT_ENCODERPOS_MIN:
-                    nval = ctx.minute + encoderIncr;
+                    nval = ctx.minute + encoderIncr/2;
                     if (nval < 0)
                     {
                         ctx.minute=0;
@@ -147,7 +147,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     }
                     break;
                 case SETDT_ENCODERPOS_SEC:
-                    nval = ctx.seconds + encoderIncr;
+                    nval = ctx.seconds + encoderIncr/2;
                     if (nval < 0)
                     {
                         ctx.seconds=0;
@@ -174,17 +174,17 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             {
                 case SETDT_ENCODERPOS_YEAR:
                     deselectEntity(ctx.encoderPos);
-                    drawArrows(2*16-8,8,16);
+                    drawArrows(8*16-8,8,16);
                     ctx.editLevel++;
                     break;
                 case SETDT_ENCODERPOS_MONTH:
                     deselectEntity(ctx.encoderPos);
-                    drawArrows(6*16-8,8,16);
+                    drawArrows(4*16-8,8,16);
                     ctx.editLevel++;
                     break;
                 case SETDT_ENCODERPOS_DAY:
                     deselectEntity(ctx.encoderPos);
-                    drawArrows(9*16-8,8,16);
+                    drawArrows(1*16-8,8,16);
                     ctx.editLevel++;
                     break;            
                 case SETDT_ENCODERPOS_HOUR:
@@ -199,7 +199,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     break;  
                 case SETDT_ENCODERPOS_SEC:
                     deselectEntity(ctx.encoderPos);
-                    drawArrows(1*16-8,32,16);
+                    drawArrows(7*16-8,32,16);
                     ctx.editLevel++;
                     break;  
                 case SETDT_ENCODERPOS_OK: // explicitely fall through (no break needed)
@@ -222,15 +222,15 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             switch (ctx.encoderPos)
             {
                 case SETDT_ENCODERPOS_YEAR:
-                    clearArrows(2*16-8,8,16);
+                    clearArrows(8*16-8,8,16);
                     selectEntity(ctx.encoderPos);
                     break;
                 case SETDT_ENCODERPOS_MONTH:
-                    clearArrows(6*16-8,8,16);
+                    clearArrows(4*16-8,8,16);
                     selectEntity(ctx.encoderPos);
                     break;
                 case SETDT_ENCODERPOS_DAY:
-                    clearArrows(9*16-8,8,16);
+                    clearArrows(1*16-8,8,16);
                     selectEntity(ctx.encoderPos);
                     break;            
                 case SETDT_ENCODERPOS_HOUR:
@@ -242,7 +242,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     selectEntity(ctx.encoderPos);
                     break;  
                 case SETDT_ENCODERPOS_SEC:
-                    clearArrows(1*16-8,32,16);
+                    clearArrows(7*16-8,32,16);
                     selectEntity(ctx.encoderPos);
                     break;  
                 default:

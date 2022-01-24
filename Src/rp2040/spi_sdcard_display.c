@@ -496,11 +496,7 @@ void initDisplay()
     *SSPDR = 0x29;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
-    // init backlight driver
-    *RESETS |= (1 << RESETS_RESET_PWM_LSB);
-    *RESETS &= ~(1 << RESETS_RESET_PWM_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_PWM_LSB)) == 0);
-
+    // use pwm channel 0 for backlight brightness control
     *PWM_CH0_TOP = 0xFFFF;
     *PWM_CH0_CC = 0x7FFF; 
     *PWM_CH0_CSR |= (1 << PWM_CH0_CSR_EN_LSB);

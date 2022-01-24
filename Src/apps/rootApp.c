@@ -11,17 +11,13 @@
 #include "apps/rootApp.h"
 #include "systick.h"
 #include <string.h>
+#include "services/triopsBreederService.h"
 
 #define ROOT_ICON_0_X (80-20-16)
 #define ROOT_ICON_1_X (80+20-16)
 #define ROOT_ICON_Y (128-32-2)
 
-static struct TriopsBreeder
-{
-    uint16_t heaterValue; // from 0 to 1023
-    uint16_t temperature; //encoded as 4bit fractional fixed point
-    uint8_t lampState; // 0 or 1
-} triopsController;
+
 
 static struct RootAppContext
 {
@@ -31,13 +27,15 @@ static struct RootAppContext
 } ctx;
 
 
+
 void rootAppLoop(void* data)
 {
     char tempString[8];
     uint32_t heaterBarWidth;
+    TriopsControllerType* triopsController = getTriopsController();
     if(getTickValue() >ctx.ticksLast+49)
     {
-        heaterBarWidth = ((triopsController.heaterValue*(160-16)) >> 10) & 0xFF;
+        heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
         fillSquare(&clrBlack,8,40,1,4);
         fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
@@ -46,7 +44,7 @@ void rootAppLoop(void* data)
         fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
 
         // display the temperature
-        fixedPointUInt16ToChar(tempString,triopsController.temperature,4);
+        fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
         writeText("T: ",2,6,FONT_TYPE_8X8);
         writeText(tempString,2+2,6,FONT_TYPE_8X8);
 
@@ -63,7 +61,7 @@ void rootAppDisplay(void* data)
     uint32_t heaterBarWidth;
     // draw background
     fillSquare(&bgclr,0,0,160,128);
-
+    TriopsControllerType* triopsController = getTriopsController();
     // draw bottom icons
     if (ctx.entrySelected == 2)
     {
@@ -88,7 +86,7 @@ void rootAppDisplay(void* data)
     // ------------------------------
     // |       |        |        |        |
     // |                |                 |
-    heaterBarWidth = ((triopsController.heaterValue*(160-16)) >> 10) & 0xFF;
+    heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
     fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
     fillSquare(&clrBlack,8,40,1,4);
     fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
@@ -97,12 +95,12 @@ void rootAppDisplay(void* data)
     fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
 
     // display the temperature
-    fixedPointUInt16ToChar(tempString,triopsController.temperature,4);
+    fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
     writeText("T: ",2,6,FONT_TYPE_8X8);
     writeText(tempString,2+2,6,FONT_TYPE_8X8);
 
     // display the lamp state
-    if(triopsController.lampState == 0)
+    if(triopsController->lampState == 0)
     {
         displayImage(&bulb_off_24x24_streamimg,40,64);
     }
@@ -115,7 +113,7 @@ void rootAppDisplay(void* data)
 
 void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
-    if(encoderIncr > 0 && ctx.entrySelected == 2)
+    if(encoderIncr > 1 && ctx.entrySelected == 2)
     {
         ctx.entrySelected = 1;
         fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
@@ -123,7 +121,7 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
         displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
         displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
     }
-    else if (encoderIncr < 0 && ctx.entrySelected == 1) 
+    else if (encoderIncr < -1 && ctx.entrySelected == 1) 
     {
         ctx.entrySelected = 2;
         fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
@@ -142,9 +140,9 @@ void createRootApp(SubApplicationType* app,uint8_t index)
 {
     ctx.entrySelected = 2;
     ctx.ticksLast=getTickValue();
-    triopsController.heaterValue = 0;
-    triopsController.lampState = 0;
-    triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
+    //triopsController.heaterValue = 0;
+    //triopsController.lampState = 0;
+    //triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
     timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
     (app+index)->data=NULL;
     (app+index)->display = &rootAppDisplay;

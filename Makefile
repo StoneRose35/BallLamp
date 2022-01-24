@@ -23,12 +23,15 @@ all: clean_objs bs2_code_size $(PROJECT).uf2
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
+SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
 
 all_rp2040: $(RP2040_OBJS) 
 
 all_common: $(COMMON_OBJS)
 
 all_apps: $(APPS_OBJS)
+
+all_services: $(SERVICES_OBJS)
 
 clean_objs:
 	@rm -f ./out/*
@@ -110,6 +113,10 @@ out/%.o: Src/rp2040/%.c
 out/%.o: Src/apps/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
+# services layer
+out/%.o: Src/services/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
 Src/rp2040/neopixelDriver.c: Inc/gen/pio0_pio.h
 
 Src/rp2040/simple_neopixel.c: Inc/gen/pio0_pio.h
@@ -124,7 +131,7 @@ Inc/gen/pio0_pio.h: Inc/gen tools/pioasm
 
 
 # main linking and generating flashable content
-$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o 
 #~/pico/pico-libs/rp2_common/pico_stdio/stdio.c.obj ~/pico/pico-libs/common/pico_sync/mutex.c.obj ~/pico/pico-libs/rp2_common/hardware_timer/timer.c.obj ~/pico/pico-libs/common/pico_time/time.c.obj
 

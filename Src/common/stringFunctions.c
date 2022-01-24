@@ -607,3 +607,17 @@ void dateTimeToString(char * out,uint16_t year,uint8_t month,uint8_t day,uint8_t
      *(out + strPos) = 0;
 }
 
+uint16_t appendToString(char * appendee,char *  appender)
+{
+	uint16_t c=0,c2=0;
+	while (*(appendee + c) != 0)
+	{
+		c++;
+	}
+	while(*(appender + c2) != 0)
+	{
+		*(appendee + c++) = *(appender + c2++); 
+	}
+	*(appendee + c) = 0;
+	return c;
+}

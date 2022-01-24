@@ -20,7 +20,12 @@
         "random": "c",
         "voidapp.h": "c",
         "uistack.h": "c",
-        "rotaryencoder.h": "c"
+        "rotaryencoder.h": "c",
+        "remoteswitch.h": "c",
+        "fatlib.h": "c",
+        "datetimeclock.h": "c",
+        "stringfunctions.h": "c",
+        "triopsbreederservice.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

@@ -160,6 +160,7 @@
 #include "uart.h"
 #include "dma.h"
 #include "pio.h"
+#include "pwm.h"
 #include "spi_sdcard_display.h"
 #include "fatLib.h"
 #include "consoleHandler.h"
@@ -176,6 +177,8 @@
 #include "rotaryEncoder.h"
 #include "cliApiTask.h"
 #include "uiStack.h"
+#include "heater.h"
+#include "services/triopsBreederService.h"
 
 
 
@@ -235,6 +238,7 @@ int main(void)
     setupClock();
 	initSystickTimer();
 	initDMA();
+	initPwm();
 	initPio();
 	initGpio();
 	initSpi();
@@ -297,8 +301,17 @@ int main(void)
 	setEngineState(0);
 	initRemoteSwitch();
 	initRotaryEncoder();
+	initHeater();
+	initDs18b20();
 
-	//initDs18b20();
+
+	/*
+     *
+     * Initialize Background Services
+     *
+	 */
+	initTriopBreederService();
+
 
 	/*
 	 *
@@ -318,6 +331,9 @@ int main(void)
 		cliApiTask(task);
 
 		uiStackTask(task);
+
+
+		triopBreederServiceLoop();
 
 		// tasks to do every 10 ticks/100ms
 		/*

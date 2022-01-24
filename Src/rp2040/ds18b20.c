@@ -263,6 +263,10 @@ uint8_t readTemp(int16_t* res)
 		resetDs18b20(); // send reset to terminate reading process
 		return 0;
 	}
+	else if (tempreadTicks==0)
+	{
+		return 2;
+	}
 	else
 	{
 		return 1;
