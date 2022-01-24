@@ -2,7 +2,7 @@
 #define _DS18B20_H_
 #include <stdint.h>
 
-#define DS18B20_PIN 24
+#define DS18B20_PIN 2
 
 #define DS18B20_INSTR_MEM_OFFSET 10
 #define DS18B20_CLKDIV 1800

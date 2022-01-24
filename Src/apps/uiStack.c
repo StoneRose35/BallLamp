@@ -43,7 +43,7 @@ void uiStackTask(uint32_t task)
     encoderIncr = encoderValCurrent - encoderVal;
     switchChange = switchValCurrent - switchVal;
     
-    if (encoderIncr != 0 || switchChange != 0)
+    if (encoderIncr > 1 || encoderIncr < -1 || switchChange != 0)
     {
         uiApplications[pagePtr].encoderSwitchCallback(encoderIncr,switchChange);
         encoderVal=encoderValCurrent;

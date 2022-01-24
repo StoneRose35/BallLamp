@@ -1402,14 +1402,16 @@ uint16_t readFile(FilePointerType * fp)
 uint8_t seekEnd(FilePointerType * fp)
 {
     uint8_t sector[512];
-    while ((fp->clusterPtr & 0x0FFFFFF0) != 0x0FFFFFF0)
+    uint32_t nextCluster = getNextCluster(sector,fp->clusterPtr);
+    while ((nextCluster & 0x0FFFFFF0) != 0x0FFFFFF0)
     {
-        fp->clusterPtr= getNextCluster(sector,fp->clusterPtr);
+        fp->clusterPtr= nextCluster;
         fp->clusterCntr++;
+        nextCluster = getNextCluster(sector,fp->clusterPtr);
     }
     fp->sectorPtr = (fp->dirEntry->size - ((sdCardInfo.volumeId.sectorsPerCluster*fp->clusterCntr) << 9)) >> 9;
     readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
-    fp->sectorBufferPtr = fp->dirEntry->size & 0x1F;
+    fp->sectorBufferPtr = fp->dirEntry->size & 0x1FF;
     return 0;
 }
 
@@ -1417,7 +1419,8 @@ uint8_t seekEnd(FilePointerType * fp)
  * @brief write the content of the file-internal sector buffer into file at the given sector
  * meant to be used to append content to a file
  * 
- * @param fp 
+ * @param fp the filepointer to write to
+ * @param nrbytes the number of bytes to write, must be <= 512
  * @return uint16_t 
  */
 uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes)
@@ -1430,29 +1433,32 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
     DirectoryEntryType entriesArray[16];
     DirectoryEntryType * entries = entriesArray;
     writeSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
-    fp->sectorPtr ++;
-    if(fp->sectorPtr == sdCardInfo.volumeId.sectorsPerCluster)
+    if (nrbytes == 512)
     {
-        uint32_t oldcluster = fp->clusterPtr;
-        fp->clusterPtr =  getNextFreeCluster(sector,fp->clusterPtr);
-        fp->clusterCntr++;
-        fp->sectorPtr = 0;
-
-        retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (fp->clusterPtr >> 7));
-        if (retcode > 0)
+        fp->sectorPtr ++;
+        if(fp->sectorPtr == sdCardInfo.volumeId.sectorsPerCluster)
         {
-            return retcode;
-        }
-        *((uint32_t*)sector + (fp->clusterPtr & 0x7F))=0x0FFFFFFF; 
-        writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (fp->clusterPtr >> 7));
+            uint32_t oldcluster = fp->clusterPtr;
+            fp->clusterPtr =  getNextFreeCluster(sector,fp->clusterPtr);
+            fp->clusterCntr++;
+            fp->sectorPtr = 0;
 
-        retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (oldcluster >> 7));
-        if (retcode > 0)
-        {
-            return retcode;
+            retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (fp->clusterPtr >> 7));
+            if (retcode > 0)
+            {
+                return retcode;
+            }
+            *((uint32_t*)sector + (fp->clusterPtr & 0x7F))=0x0FFFFFFF; 
+            writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (fp->clusterPtr >> 7));
+
+            retcode = readSector(sector,sdCardInfo.derivedFATData.fatLbaBegin + (oldcluster >> 7));
+            if (retcode > 0)
+            {
+                return retcode;
+            }
+            *((uint32_t*)sector + (oldcluster & 0x7F))=fp->clusterPtr; 
+            writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (oldcluster >> 7));
         }
-        *((uint32_t*)sector + (oldcluster & 0x7F))=fp->clusterPtr; 
-        writeSector(sector,sdCardInfo.derivedFATData.fatLbaBegin +  (oldcluster >> 7));
     }
     // update the file directory entry
     parentDir->clusterPtr = parentDir->dirEntry->firstCluster;
@@ -1488,7 +1494,14 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
                 
                 if (fnameEqual == 1)
                 {
-                    (*(entries + c)).size += nrbytes;
+                    if (nrbytes == 512) // wrote an entire sector
+                    {
+                        (*(entries + c)).size += nrbytes;
+                    }
+                    else // replaced the last sector
+                    {
+                        (*(entries + c)).size = ((*(entries + c)).size & 0xFFFE00) +  nrbytes;
+                    }
                     entryToSector(sector,entryPos,parentDir,entries + c);
                 }
             }
@@ -1518,19 +1531,20 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
  */
 uint8_t appendToFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint8_t * data, uint16_t datalen)
 {
-    uint16_t lastSectorFillSize = fp->dirEntry->size & 0x1FF;
     uint32_t cnt=0;
-    uint16_t sectorBufferPtr=0;
     for(cnt=0;cnt<datalen;cnt++)
     {
-        if((cnt + lastSectorFillSize) >= 512)
+        if((fp->sectorBufferPtr & 0x200) != 0)
         {
             writeFile(parentDir,fp,512);
-            sectorBufferPtr=0;
+            fp->sectorBufferPtr=0;
         }
-        *(fp->sectorBuffer + sectorBufferPtr++) = *(data + cnt);
+        *(fp->sectorBuffer + fp->sectorBufferPtr++) = *(data + cnt);
     }
-    //writeFile(parentDir,fp,sectorBufferPtr);
+    if (fp->sectorBufferPtr > 0)
+    {
+        writeFile(parentDir,fp,fp->sectorBufferPtr);
+    }
     return 0;
 }
 

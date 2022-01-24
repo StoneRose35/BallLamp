@@ -28,6 +28,7 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
 {
     int8_t nval;
     uint8_t maxDayFeb;
+    char nrbfr[8];
     if (encoderIncr != 0)
     {
         if(ctx.editLevel == 0) // choose date/time to set or back/ok
@@ -51,6 +52,8 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             {
                 case SETDT_ENCODERPOS_YEAR:
                     ctx.year += encoderIncr/2;
+                    UInt16ToChar(ctx.year,nrbfr);
+                    writeText(nrbfr,6*16,8,FONT_TYPE_16X16);
                     break;
                 case SETDT_ENCODERPOS_MONTH:
                     nval = ctx.month + encoderIncr/2;
@@ -65,6 +68,20 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     else
                     {
                         ctx.month=nval;
+                    }
+
+                    if(ctx.month < 10)
+                    {
+                        nrbfr[0]='0';
+                        nrbfr[1]=0;
+                        writeText(nrbfr,3*16,8,FONT_TYPE_16X16);
+                        UInt8ToChar(ctx.month,nrbfr);
+                        writeText(nrbfr,4*16,8,FONT_TYPE_16X16);
+                    }
+                    else
+                    {
+                        UInt8ToChar(ctx.month,nrbfr);
+                        writeText(nrbfr,3*16,8,FONT_TYPE_16X16);
                     }
                     break;
                 case SETDT_ENCODERPOS_DAY:
@@ -115,6 +132,19 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                             ctx.day=nval;
                         }
                     }
+                    if(ctx.day < 10)
+                    {
+                        nrbfr[0]='0';
+                        nrbfr[1]=0;
+                        writeText(nrbfr,0*16,8,FONT_TYPE_16X16);
+                        UInt8ToChar(ctx.day,nrbfr);
+                        writeText(nrbfr,1*16,8,FONT_TYPE_16X16);
+                    }
+                    else
+                    {
+                        UInt8ToChar(ctx.day,nrbfr);
+                        writeText(nrbfr,0*16,8,FONT_TYPE_16X16);
+                    }
                     break;
                 case SETDT_ENCODERPOS_HOUR:
                     nval = ctx.hour + encoderIncr/2;
@@ -129,6 +159,19 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     else
                     {
                         ctx.hour=nval;
+                    }
+                    if(ctx.hour < 10)
+                    {
+                        nrbfr[0]='0';
+                        nrbfr[1]=0;
+                        writeText(nrbfr,0*16,32,FONT_TYPE_16X16);
+                        UInt8ToChar(ctx.hour,nrbfr);
+                        writeText(nrbfr,1*16,32,FONT_TYPE_16X16);
+                    }
+                    else
+                    {
+                        UInt8ToChar(ctx.hour,nrbfr);
+                        writeText(nrbfr,0*16,32,FONT_TYPE_16X16);
                     }
                     break;
                 case SETDT_ENCODERPOS_MIN:
@@ -145,6 +188,19 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     {
                         ctx.minute=nval;
                     }
+                    if(ctx.minute < 10)
+                    {
+                        nrbfr[0]='0';
+                        nrbfr[1]=0;
+                        writeText(nrbfr,3*16,32,FONT_TYPE_16X16);
+                        UInt8ToChar(ctx.minute,nrbfr);
+                        writeText(nrbfr,4*16,32,FONT_TYPE_16X16);
+                    }
+                    else
+                    {
+                        UInt8ToChar(ctx.minute,nrbfr);
+                        writeText(nrbfr,3*16,32,FONT_TYPE_16X16);
+                    }
                     break;
                 case SETDT_ENCODERPOS_SEC:
                     nval = ctx.seconds + encoderIncr/2;
@@ -159,6 +215,19 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
                     else
                     {
                         ctx.seconds=nval;
+                    }
+                    if(ctx.seconds < 10)
+                    {
+                        nrbfr[0]='0';
+                        nrbfr[1]=0;
+                        writeText(nrbfr,6*16,32,FONT_TYPE_16X16);
+                        UInt8ToChar(ctx.seconds,nrbfr);
+                        writeText(nrbfr,7*16,32,FONT_TYPE_16X16);
+                    }
+                    else
+                    {
+                        UInt8ToChar(ctx.seconds,nrbfr);
+                        writeText(nrbfr,6*16,32,FONT_TYPE_16X16);
                     }
                     break;
                 default:

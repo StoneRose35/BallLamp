@@ -7,6 +7,8 @@
 #include "heater.h"
 #include "systick.h"
 
+#define TB_MOCK
+
 static volatile uint32_t heaterVal;
 static volatile uint32_t oldTicks;
 static TriopsControllerType triopsController;
@@ -34,12 +36,12 @@ uint8_t initTriopBreederService()
     triopsController.minuteOn = 12;
     triopsController.hourOff = 20;
     triopsController.minuteOff = 22;
-    triopsController.serviceInterval = 3000; // default interval of 30s
+    triopsController.serviceInterval = 3000; // default interval is 30s (3000 ticks)
      
     // open log file
     createDirectoryPointer(&pdir);
     createDirectoryPointer(&cdir);
-    retcode = openRootDirectory(cdir);
+    retcode = openRootDirectory(pdir);
     if(retcode > 0) { return retcode; }
     retcode = openDirectory(pdir,"LOGS",cdir);
     if(retcode > 0 ) {return retcode; }
@@ -71,17 +73,25 @@ void triopBreederServiceLoop()
     {
 
         // get temperature reading 
-        retcode = readTemp(&currentTemp);
-        if (retcode == 0 || retcode== 2) // start a new conversion if temerature could be read successfully or if no conversion has started yet
-        {
-            initTempConversion();
-        }
+        #ifndef TB_MOCK
+            retcode = readTemp(&currentTemp);
+            if (retcode == 0 || retcode== 2) // start a new conversion if temerature could be read successfully or if no conversion has started yet
+            {
+                initTempConversion();
+            }
+        #else
+            retcode = 0;
+            currentTemp = (22 << 4) | 8;
+        #endif
+
 
         
 
         // set  heater: h_max - (t_new-t_lower)/(t_target-t_lower)*h_max + cIntergral*intergratedTempDiff
         // max if t_new < t_lower, 0 if t_new > t_target
-        interm = (currentTemp - triopsController.tLower)/(triopsController.tTarget - triopsController.tLower)*(1024 << 4) + triopsController.integralTempDeviation*triopsController.cIntegral;
+        interm = (currentTemp - triopsController.tLower)*(1024 << 4);
+        interm = (1024 << 4) -  interm/(triopsController.tTarget - triopsController.tLower) + triopsController.integralTempDeviation*triopsController.cIntegral;
+        triopsController.integralTempDeviation += triopsController.tTarget-currentTemp ;
         if (interm < 0)
         {
             triopsController.heaterValue = 0;
@@ -95,6 +105,8 @@ void triopBreederServiceLoop()
             triopsController.heaterValue = ((uint32_t)interm) >> 4;
         }
         setHeater(triopsController.heaterValue);
+        triopsController.temperature = currentTemp;
+
 
         // if time  > t_start and lamp is off: turn lamp on
         if ((getHour() >= triopsController.hourOn && getMinute() >= triopsController.minuteOn) && 
@@ -107,7 +119,6 @@ void triopBreederServiceLoop()
             remoteSwitchOff();
         }
         dateTimeToString(logLine,getYear(),getMonth(),getDay(),getHour(),getMinute(),getSecond());
-        UInt16ToChar(triopsController.heaterValue,nrbfr);
         appendToString(logLine, ", ");
         UInt16ToChar(triopsController.heaterValue,nrbfr);
         appendToString(logLine,nrbfr);
@@ -116,7 +127,6 @@ void triopBreederServiceLoop()
         appendToString(logLine,nrbfr);
         strLen = appendToString(logLine,"\r\n");    
         appendToFile(pdir,&fp,(uint8_t*)logLine,strLen);
-
         oldTicks=getTickValue();
     }
 }

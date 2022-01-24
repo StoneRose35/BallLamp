@@ -31,15 +31,6 @@ void isr_io_irq_bank0_irq13()
             oldtickenc = getTickValue();
         }
     }
-    else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_LOW)) == (1 << SWITCH_EDGE_LOW))
-    {
-        *SWITCH_INTR |= (1 << SWITCH_EDGE_LOW);
-        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
-        {
-            switchVal=1;
-            oldtickswitch=getTickValue();
-        }
-    }
     else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_HIGH)) == (1 << SWITCH_EDGE_HIGH))
     {
         *SWITCH_INTR |= (1 << SWITCH_EDGE_HIGH);
@@ -49,6 +40,16 @@ void isr_io_irq_bank0_irq13()
             oldtickswitch=getTickValue();
         }
     }
+    else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_LOW)) == (1 << SWITCH_EDGE_LOW))
+    {
+        *SWITCH_INTR |= (1 << SWITCH_EDGE_LOW);
+        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
+        {
+            switchVal=1;
+            oldtickswitch=getTickValue();
+        }
+    }
+
 
 }
 

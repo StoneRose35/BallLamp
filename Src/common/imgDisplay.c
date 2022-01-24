@@ -5,7 +5,7 @@
 
 uint8_t displayImage(const ST7735ImageType* img,uint8_t px,uint8_t py)
 {
-    if ((px + img->columns <160) && (py + img->rows < 128))
+    if ((px + img->columns <=160) && (py + img->rows <= 128))
     {
         setUpdateRange(px,py,img->columns,img->rows);
         sendDisplayCommand(0x2C,img->colorbytes,img->rows*img->columns*2);
