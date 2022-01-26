@@ -3,6 +3,7 @@
 #include "rotaryEncoder.h"
 #include "apps/rootApp.h"
 #include "apps/voidApp.h"
+#include "apps/draftHorseApp.h"
 #include "apps/setDateTimeApp.h"
 #include "apps/configApp.h"
 #include "systick.h"
@@ -30,7 +31,7 @@ void initUiStack()
 {
     createRootApp(uiApplications,0);
     createSetDateTimeApp(uiApplications, 1);
-    createVoidApp(uiApplications, 2);
+    createDraftHorseApp(uiApplications, 2);
     createConfigApp(uiApplications,3);
     cTick=getTickValue();
 }
