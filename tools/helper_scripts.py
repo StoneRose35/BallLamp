@@ -1,9 +1,11 @@
+#!/usr/bin/python3
 import math
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import numpy as np
 import os.path
-
+import os
+import argparse
 
 c_template = """
 #include "imgDisplay.h"
@@ -20,7 +22,7 @@ static const struct ST7735ImageStruct {0}_streamimg = {{
 """
 
 c_template_font = """
-static const {} uint8_t[{}][{}]={{
+static const uint8_t {}[{}][{}]={{
 {}
 }};
 """
@@ -66,10 +68,13 @@ def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
     fp.close()
 
 
-def fontImageToArray(fname="sm_ascii_16x16.png", sizex=16, sizey=16, offsetx=0, offsety=0):
+def fontImageToArray(fname="sm_ascii_16x16.png", sizex=16, sizey=16, offsetx=0, offsety=0, outfolder=""):
     img = mpimg.imread(fname)
-    imgname = fname.split(".")[0]
-    fp = open(imgname + ".h", "wt")
+    imgname = fname.split(os.path.sep)[-1].split(".")[0]
+    if (len(outfolder) > 0):
+        fp = open(os.path.join(outfolder, imgname + ".h"), "wt")
+    else:
+        fp = open(imgname + ".h", "wt")
     asciientries = []
     nfonts = 0
     for col in range(int(img.shape[0]/sizex)):
@@ -154,10 +159,31 @@ def oscillator_freq_calc():
 
 
 if __name__ == "__main__":
-    #fontImageToArray("Codepage737.png", 16, 9, 4, 4)
-    #fontImageToArray("sm_ascii_16x16.png",16,16,0,0)
-    imageToCStream("../Assets/arrow_up_16x8.png", "../Inc/images")
-    imageToCStream("../Assets/arrow_down_16x8.png", "../Inc/images")
+    asset_path = "../Assets"
+    font_path = "../Assets/fonts"
+    image_inc_path = "../Inc/images"
+    font_inc_path = "../Inc/fonts"
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-calcSysFreqs",help="calculate oscillator frequencies",action="store_true")
+    parser.add_argument("-generateAssets",help="generate images and font asset headers",action="store_true")
+
+    args = parser.parse_args()
+    if args.calcSysFreqs is False and args.generateAssets is False:
+        parser.print_help()
+    else:
+        if args.calcSysFreqs is True:
+            oscillator_freq_calc()
+        if args.generateAssets is True:
+            dircontent = os.listdir(asset_path)
+            for el in dircontent:
+                full_path = os.path.join(asset_path,el)
+                if os.path.isfile(full_path) and full_path.lower().endswith("png"):
+                    imageToCStream(full_path, image_inc_path)
+
+
+            fontImageToArray("../Assets/fonts/Codepage737.png", 16, 9, 4, 4,font_inc_path)
+            fontImageToArray("../Assets/fonts/sm_ascii_16x16.png",16,16,0,0,font_inc_path)
+
     """
     imageToCStream("../Assets/OK_32x32.png", "../Inc/images")
     imageToCStream("../Assets/back_32x32.png", "../Inc/images")
