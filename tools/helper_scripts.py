@@ -8,9 +8,11 @@ import os
 import argparse
 
 c_template = """
+#ifndef _{4}_H_
+#define _{4}_H_
 #include "imgDisplay.h"
 
-const uint8_t {0}_clrdata[]= {{
+static const uint8_t {0}_clrdata[]= {{
 {1}
 }};
 
@@ -19,6 +21,7 @@ static const struct ST7735ImageStruct {0}_streamimg = {{
     .rows = {2},
     .columns = {3}
 }};
+#endif
 """
 
 c_template_font = """
@@ -63,7 +66,7 @@ def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
         colbytes += ",\r\n"
         bytearray += colbytes
 
-    fcontent = c_template.format(imgname, bytearray, int(img.shape[0]), int(img.shape[1]))
+    fcontent = c_template.format(imgname, bytearray, int(img.shape[0]), int(img.shape[1]),imgname.upper())
     fp.write(fcontent)
     fp.close()
 

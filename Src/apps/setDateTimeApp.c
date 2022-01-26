@@ -35,15 +35,15 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
         {
             if (encoderIncr > 1 && ctx.encoderPos < 7)
             {   
-                deselectEntity(ctx.encoderPos);
+                setDTDeselectEntity(ctx.encoderPos);
                 ctx.encoderPos++;
-                selectEntity(ctx.encoderPos);
+                setDTSelectEntity(ctx.encoderPos);
             }
             else if (encoderIncr < -1 && ctx.encoderPos > 0)
             {
-                deselectEntity(ctx.encoderPos);
+                setDTDeselectEntity(ctx.encoderPos);
                 ctx.encoderPos--;
-                selectEntity(ctx.encoderPos);
+                setDTSelectEntity(ctx.encoderPos);
             }
         }
         else if (ctx.editLevel==1) // change date/time values
@@ -242,32 +242,32 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             switch (ctx.encoderPos)
             {
                 case SETDT_ENCODERPOS_YEAR:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(8*16-8,8,16);
                     ctx.editLevel++;
                     break;
                 case SETDT_ENCODERPOS_MONTH:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(4*16-8,8,16);
                     ctx.editLevel++;
                     break;
                 case SETDT_ENCODERPOS_DAY:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(1*16-8,8,16);
                     ctx.editLevel++;
                     break;            
                 case SETDT_ENCODERPOS_HOUR:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(1*16-8,32,16);
                     ctx.editLevel++;
                     break;  
                 case SETDT_ENCODERPOS_MIN:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(4*16-8,32,16);
                     ctx.editLevel++;
                     break;  
                 case SETDT_ENCODERPOS_SEC:
-                    deselectEntity(ctx.encoderPos);
+                    setDTDeselectEntity(ctx.encoderPos);
                     drawArrows(7*16-8,32,16);
                     ctx.editLevel++;
                     break;  
@@ -292,27 +292,27 @@ void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange
             {
                 case SETDT_ENCODERPOS_YEAR:
                     clearArrows(8*16-8,8,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;
                 case SETDT_ENCODERPOS_MONTH:
                     clearArrows(4*16-8,8,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;
                 case SETDT_ENCODERPOS_DAY:
                     clearArrows(1*16-8,8,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;            
                 case SETDT_ENCODERPOS_HOUR:
                     clearArrows(1*16-8,32,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;  
                 case SETDT_ENCODERPOS_MIN:
                     clearArrows(4*16-8,32,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;  
                 case SETDT_ENCODERPOS_SEC:
                     clearArrows(7*16-8,32,16);
-                    selectEntity(ctx.encoderPos);
+                    setDTSelectEntity(ctx.encoderPos);
                     break;  
                 default:
                     break;
@@ -334,7 +334,7 @@ void setDateTimeAppDisplay(void* data)
     displayImage(&OK_32x32_streamimg,160-32-2,128-32-2);
     displayImage(&back_32x32_streamimg,2,128-32-2);
 
-    selectEntity(ctx.encoderPos);
+    setDTSelectEntity(ctx.encoderPos);
 }
 
 void createSetDateTimeApp(SubApplicationType* app,uint8_t index)
@@ -354,7 +354,7 @@ void createSetDateTimeApp(SubApplicationType* app,uint8_t index)
 }
 
 
-void selectEntity(uint8_t pos)
+void setDTSelectEntity(uint8_t pos)
 {
     switch (pos)
     {
@@ -365,29 +365,29 @@ void selectEntity(uint8_t pos)
         drawSelectFrame(160-32,128-32);
         break;
     case SETDT_ENCODERPOS_YEAR:
-        drawSelectMarkers(6*16,8,16*4);
+        drawSelectMarkers(6*16,8,16*4,16);
         break;
     case SETDT_ENCODERPOS_MONTH:
-        drawSelectMarkers(16*3,8,16*2);
+        drawSelectMarkers(16*3,8,16*2,16);
         break;
     case SETDT_ENCODERPOS_DAY:
-        drawSelectMarkers(0,8,16*2);
+        drawSelectMarkers(0,8,16*2,16);
         break;
     case SETDT_ENCODERPOS_HOUR:
-        drawSelectMarkers(0,32,16*2);
+        drawSelectMarkers(0,32,16*2,16);
         break;
     case SETDT_ENCODERPOS_MIN:
-        drawSelectMarkers(3*16,32,16*2);
+        drawSelectMarkers(3*16,32,16*2,16);
         break;
     case SETDT_ENCODERPOS_SEC:
-        drawSelectMarkers(6*16,32,16*2);
+        drawSelectMarkers(6*16,32,16*2,16);
         break;
     default:
         break;
     }
 }
 
-void deselectEntity(uint8_t pos)
+void setDTDeselectEntity(uint8_t pos)
 {
     switch (pos)
     {
@@ -398,72 +398,24 @@ void deselectEntity(uint8_t pos)
         clearSelectFrame(160-32,128-32);
         break;
     case SETDT_ENCODERPOS_YEAR:
-        clearSelectMarkers(6*16,8,16*4);
+        clearSelectMarkers(6*16,8,16*4,16);
         break;
     case SETDT_ENCODERPOS_MONTH:
-        clearSelectMarkers(16*3,8,16*2);
+        clearSelectMarkers(16*3,8,16*2,16);
         break;
     case SETDT_ENCODERPOS_DAY:
-        clearSelectMarkers(0,8,16*2);
+        clearSelectMarkers(0,8,16*2,16);
         break;
     case SETDT_ENCODERPOS_HOUR:
-        clearSelectMarkers(0,32,16*2);
+        clearSelectMarkers(0,32,16*2,16);
         break;
     case SETDT_ENCODERPOS_MIN:
-        clearSelectMarkers(3*16,32,16*2);
+        clearSelectMarkers(3*16,32,16*2,16);
         break;
     case SETDT_ENCODERPOS_SEC:
-        clearSelectMarkers(6*16,32,16*2);
+        clearSelectMarkers(6*16,32,16*2,16);
         break;
     default:
         break;
     }
-}
-
-/**
- * @brief draws at 2 pixel tall bar spaced 16 pixel vertically apart
- * 
- * @param posx position in pixel
- * @param posy position in pixels
- * @param width width in pixels
- */
-void drawSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width)
-{
-    fillSquare(&entrySel,posx,posy-2,width,2);
-    fillSquare(&entrySel,posx,posy+16,width,2);
-}
-
-
-void clearSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width)
-{
-    fillSquare(&bgclr,posx,posy-2,width,2);
-    fillSquare(&bgclr,posx,posy+16,width,2);
-}
-
-void drawSelectFrame(uint8_t posx,uint8_t posy)
-{
-    fillSquare(&entrySel,posx-2,posy-2,36,2); // top
-    fillSquare(&entrySel,posx-2,posy-2,2,36); // left
-    fillSquare(&entrySel,posx+32,posy-2,2,36); // right
-    fillSquare(&entrySel,posx-2,posy+32-2,36,2); // bottom
-}
-
-void clearSelectFrame(uint8_t posx,uint8_t posy)
-{
-    fillSquare(&bgclr,posx-2,posy-2,36,2); // top
-    fillSquare(&bgclr,posx-2,posy-2,2,36); // left
-    fillSquare(&bgclr,posx+32,posy-2,2,36); // right
-    fillSquare(&bgclr,posx-2,posy+32-2,36,2); // bottom
-}
-
-void drawArrows(uint8_t px, uint8_t py,uint8_t spacing)
-{
-    displayImage(&arrow_up_16x8_streamimg,px,py-8);
-    displayImage(&arrow_down_16x8_streamimg,px,py+spacing);
-}
-
-void clearArrows(uint8_t px, uint8_t py,uint8_t spacing)
-{
-    fillSquare(&bgclr,px,py-8,16,8);
-    fillSquare(&bgclr,px,py+spacing,16,8);
 }

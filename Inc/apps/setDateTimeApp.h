@@ -14,15 +14,9 @@
 void createSetDateTimeApp(SubApplicationType* app,uint8_t index);
 void setDateTimeAppDisplay(void* data);
 void setDateTimeAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange);
-void clearSelectFrame(uint8_t posx,uint8_t posy);
-void drawSelectFrame(uint8_t posx,uint8_t posy);
-void clearSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width);
-void drawSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width);
 
-void selectEntity(uint8_t pos);
-void deselectEntity(uint8_t pos);
+void setDTSelectEntity(uint8_t pos);
+void setDTDeselectEntity(uint8_t pos);
 
-void drawArrows(uint8_t px, uint8_t py,uint8_t spacing);
-void clearArrows(uint8_t px, uint8_t py,uint8_t spacing);
 
 #endif

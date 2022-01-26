@@ -7,8 +7,6 @@
 #include "heater.h"
 #include "systick.h"
 
-#define TB_MOCK
-
 static volatile uint32_t heaterVal;
 static volatile uint32_t oldTicks;
 static TriopsControllerType triopsController;

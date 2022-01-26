@@ -4,6 +4,7 @@
 #include "charDisplay.h"
 #include "images/clock_32x32.h"
 #include "images/drafthorse_32x32.h"
+#include "images/gearwheel_32x32.h"
 #include "images/bulb_on_24x24.h"
 #include "images/bulb_off_24x24.h"
 #include "datetimeClock.h"
@@ -13,8 +14,9 @@
 #include <string.h>
 #include "services/triopsBreederService.h"
 
-#define ROOT_ICON_0_X (80-20-16)
-#define ROOT_ICON_1_X (80+20-16)
+#define ROOT_ICON_1_X (20-16)
+#define ROOT_ICON_2_X (60-16)
+#define ROOT_ICON_3_X (100-16)
 #define ROOT_ICON_Y (128-32-2)
 
 
@@ -63,21 +65,22 @@ void rootAppDisplay(void* data)
     fillSquare(&bgclr,0,0,160,128);
     TriopsControllerType* triopsController = getTriopsController();
     // draw bottom icons
-    if (ctx.entrySelected == 2)
+    switch (ctx.entrySelected)
     {
-        //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
-        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+        case 3:
+            fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            break;
+        case 2:
+            fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            break;
+        case 1:
+            fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            break;
     }
-    else if (ctx.entrySelected == 1)
-    {
-        //fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
-        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
-    }
-
+    displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+    displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
+    displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
+    
     // display the time on top
     writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
 
@@ -113,22 +116,43 @@ void rootAppDisplay(void* data)
 
 void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
-    if(encoderIncr > 1 && ctx.entrySelected == 2)
+    uint8_t rotated=0;
+    if (encoderIncr > 1 && ctx.entrySelected<4)
     {
-        ctx.entrySelected = 1;
-        fillSquare(&bgclr,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
-        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+        ctx.entrySelected++;
+        rotated=1;
     }
-    else if (encoderIncr < -1 && ctx.entrySelected == 1) 
+    else if (encoderIncr < -1 && ctx.entrySelected > 1)
     {
-        ctx.entrySelected = 2;
-        fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        fillSquare(&entrySel,ROOT_ICON_0_X-2,ROOT_ICON_Y-2,32+4,32+4);
-        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_0_X,ROOT_ICON_Y);
-        displayImage(&clock_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+        ctx.entrySelected--;
+        rotated=1;
     }
+
+    if (rotated == 1)
+    {
+        if(ctx.entrySelected==1)
+        {
+            fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        }
+        else if(ctx.entrySelected==2)
+        {
+            fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        }
+        else if(ctx.entrySelected==3)
+        {
+            fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+        }
+        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+        displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
+        displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
+    }
+
     if (switchChange == -1)
     {
         setPagePtr(ctx.entrySelected);
