@@ -24,11 +24,11 @@ static struct configAppData
 } ctx;
 
 static const SelectionPositionType configSelectionPositions[5]={
-{.posx=10*8,.posy=8,.spacing=8,.width=5*8},
-{.posx=10*8,.posy=24,.spacing=8,.width=5*8},
-{.posx=10*8,.posy=40,.spacing=8,.width=4*8},
-{.posx=10*8,.posy=56,.spacing=8,.width=7*8},
-{.posx=10*8,.posy=64,.spacing=8,.width=4*8},
+{.posx=10*8,.posy=1*8,.spacing=8,.width=5*8},
+{.posx=10*8,.posy=3*8,.spacing=8,.width=5*8},
+{.posx=10*8,.posy=5*8,.spacing=8,.width=4*8},
+{.posx=10*8,.posy=7*8,.spacing=8,.width=7*8},
+{.posx=10*8,.posy=9*8,.spacing=8,.width=4*8},
 };
 
 
@@ -36,55 +36,59 @@ void configAppDisplay(void* data)
 {
     char nrbfr[8];
     char lineBfr[24];
-    char * lineBfrPtr = lineBfr;
 
     fillSquare(&bgclr,0,0,160,128);
 
-    lineBfrPtr = " Time on  ";
+    lineBfr[0]=0;
+    appendToString(lineBfr," Time on  ");
     UInt8ToChar(ctx.hOn,nrbfr);
     fillWithLeadingZeros(2,nrbfr);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,":");
+    appendToString((char*)lineBfr,nrbfr);
+    appendToString(lineBfr,":");
     UInt8ToChar(ctx.minOn,nrbfr);
     fillWithLeadingZeros(2,nrbfr);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,"     ");
-    writeString(lineBfrPtr,0,1);
+    appendToString(lineBfr,nrbfr);
+    appendToString(lineBfr,"     ");
+    writeString(lineBfr,0,1);
 
-    lineBfrPtr = " Time off ";
+    lineBfr[0]=0;
+    appendToString(lineBfr," Time off ");
     UInt8ToChar(ctx.hOff,nrbfr);
     fillWithLeadingZeros(2,nrbfr);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,":");
+    appendToString(lineBfr,nrbfr);
+    appendToString(lineBfr,":");
     UInt8ToChar(ctx.minOff,nrbfr);
     fillWithLeadingZeros(2,nrbfr);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,"     ");
-    writeString(lineBfrPtr,0,3);
+    appendToString(lineBfr,nrbfr);
+    appendToString(lineBfr,"     ");
+    writeString(lineBfr,0,3);
 
-    lineBfrPtr = " Mode     ";
+    lineBfr[0]=0;
+    appendToString(lineBfr," Mode     ");
     if (ctx.mode > 0)
     {
-        appendToString(lineBfrPtr,"Auto      ");
+        appendToString(lineBfr,"Auto      ");
     }
     else
     {
-        appendToString(lineBfrPtr,"Manual    ");
+        appendToString(lineBfr,"Manual    ");
     }
-    writeString(lineBfrPtr,0,5);
+    writeString(lineBfr,0,5);
 
-    lineBfrPtr = " Ttarget  ";
+    lineBfr[0]=0;
+    appendToString(lineBfr," Ttarget  ");
     fixedPointUInt16ToChar(nrbfr,ctx.ttarget,4);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,"   ");
-    writeString(lineBfrPtr,0,7);
+    appendToString(lineBfr,nrbfr);
+    appendToString(lineBfr,"   ");
+    writeString(lineBfr,0,7);
 
-    lineBfrPtr = " Heater   ";
+    lineBfr[0]=0;
+    appendToString(lineBfr," Heater   ");
     UInt16ToChar(ctx.heater,nrbfr);
     fillWithLeadingZeros(4,nrbfr);
-    appendToString(lineBfrPtr,nrbfr);
-    appendToString(lineBfrPtr,"      ");
-    writeString(lineBfrPtr,0,11);
+    appendToString(lineBfr,nrbfr);
+    appendToString(lineBfr,"      ");
+    writeString(lineBfr,0,9);
 
     displayImage(&OK_32x32_streamimg,160-32-2,128-32-2);
     displayImage(&back_32x32_streamimg,2,128-32-2);
@@ -112,7 +116,6 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
     char nrbfr[8];
     char lineBfr[24];
-    char * lineBfrPtr = lineBfr;
     TriopsControllerType * tdata = getTriopsController();
     if(encoderIncr != 0)
     {
@@ -136,32 +139,32 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
             switch (ctx.encoderPos)
             {
                 case CONFIG_ENCODERPOS_TIMEON:
-                    timedelta(&(ctx.hOff),&(ctx.minOff),encoderIncr);
+                    timedelta(&(ctx.hOn),&(ctx.minOn),encoderIncr);
 
-                    lineBfrPtr = "";
+                    lineBfr[0] = 0;
                     UInt8ToChar(ctx.hOn,nrbfr);
                     fillWithLeadingZeros(2,nrbfr);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,":");
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,":");
                     UInt8ToChar(ctx.minOn,nrbfr);
                     fillWithLeadingZeros(2,nrbfr);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,"     ");
-                    writeString(lineBfrPtr,10,1);
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,"     ");
+                    writeString(lineBfr,10,1);
                     break;
                 case CONFIG_ENCODERPOS_TIMEOFF:
                     timedelta(&(ctx.hOff),&(ctx.minOff),encoderIncr);
 
-                    lineBfrPtr = "";
+                    lineBfr[0] = 0;
                     UInt8ToChar(ctx.hOff,nrbfr);
                     fillWithLeadingZeros(2,nrbfr);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,":");
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,":");
                     UInt8ToChar(ctx.minOff,nrbfr);
                     fillWithLeadingZeros(2,nrbfr);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,"     ");
-                    writeString(lineBfrPtr,10,3);
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,"     ");
+                    writeString(lineBfr,10,3);
                     break;
                 case CONFIG_ENCODERPOS_MODE:
                     if (ctx.mode == 0 && encoderIncr > 1)
@@ -172,16 +175,16 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     {
                         ctx.mode = 0;
                     }
-                    lineBfrPtr = "";
+                    lineBfr[0] = 0;
                     if (ctx.mode > 0)
                     {
-                        appendToString(lineBfrPtr,"Auto      ");
+                        appendToString(lineBfr,"Auto      ");
                     }
                     else
                     {
-                        appendToString(lineBfrPtr,"Manual    ");
+                        appendToString(lineBfr,"Manual    ");
                     }
-                    writeString(lineBfrPtr,10,5);
+                    writeString(lineBfr,10,5);
                     break;
                 case CONFIG_ENCODERPOS_TTARGET:
                     ctx.ttarget += encoderIncr;
@@ -189,11 +192,11 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     {
                         ctx.ttarget = tdata->tLower + 1;
                     }
-                    lineBfrPtr="";
+                    lineBfr[0]=0;
                     fixedPointUInt16ToChar(nrbfr,ctx.ttarget,4);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,"   ");
-                    writeString(lineBfrPtr,10,7);
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,"   ");
+                    writeString(lineBfr,10,7);
                     break;
                 case CONFIG_ENCODERPOS_HEATER:
                     ctx.heater += encoderIncr;
@@ -205,12 +208,12 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     {
                         ctx.heater = 1023;
                     }
-                    lineBfrPtr = "";
+                    lineBfr[0] = 0;
                     UInt16ToChar(ctx.heater,nrbfr);
                     fillWithLeadingZeros(4,nrbfr);
-                    appendToString(lineBfrPtr,nrbfr);
-                    appendToString(lineBfrPtr,"      ");
-                    writeString(lineBfrPtr,0,11);
+                    appendToString(lineBfr,nrbfr);
+                    appendToString(lineBfr,"      ");
+                    writeString(lineBfr,10,9);
                     break;
                 default:
                     break;
@@ -263,27 +266,36 @@ void timedelta(uint8_t* hours,uint8_t* min,int16_t delta)
 {
     int16_t dHours;
     int16_t dMinutes;
+    int16_t sMin = *min;
+    int16_t sHours = *hours;
     dHours = delta/60;
     dMinutes = delta - dHours*60;
 
-    *hours += dHours;
-    if (*hours > 23)
+    sMin+=dMinutes;
+    if (sMin > 59)
     {
-        *hours = 23;
+        dHours++;
+        sMin -= 60;
     }
-    else if (*hours < 0)
+    else if (sMin < 0)
     {
-        *hours = 0;
+        dHours--;
+        sMin = 60 + sMin;
     }
-    *min+=dMinutes;
-    if (*min > 59)
+    *min=(uint8_t)sMin;
+
+    sHours += dHours;
+    if (sHours > 23)
     {
-        *hours = 59;
+        sHours = 23;
+        *min=59;
     }
-    else if (*min < 0)
+    else if (sHours < 0)
     {
-        *min = 0;
+        sHours = 0;
+        *min=0;
     }
+    *hours=(uint8_t)sHours;
 }
 
 void configDeselectEntity(uint8_t pos)
@@ -296,11 +308,11 @@ void configDeselectEntity(uint8_t pos)
     }
     else if (pos == CONFIG_ENCODERPOS_BACK)
     {
-        clearSelectFrame(0,128-32-4);
+        clearSelectFrame(2,128-32);
     }
     else if (pos == CONFIG_ENCODERPOS_OK)
     {
-        clearSelectFrame(160-32-4,128-32-4);
+        clearSelectFrame(160-32,128-32);
     }
 }
 
@@ -312,10 +324,10 @@ void configSelectEntity(uint8_t pos)
     }
     else if (pos == CONFIG_ENCODERPOS_BACK)
     {
-        drawSelectFrame(0,128-32-4);
+        drawSelectFrame(2,128-32);
     }
     else if (pos == CONFIG_ENCODERPOS_OK)
     {
-        drawSelectFrame(160-32-4,128-32-4);
+        drawSelectFrame(160-32,128-32);
     }
 }
