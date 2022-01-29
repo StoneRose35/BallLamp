@@ -14,6 +14,13 @@
 
 
 static volatile uint32_t tempreadTicks = 0;
+static volatile uint8_t tempReadState = 0;
+
+
+uint8_t getTempReadState()
+{
+	return tempReadState;
+}
 
 uint8_t initDs18b20()
 {
@@ -32,7 +39,6 @@ uint8_t initDs18b20()
 
 	//  push after 8 bits have been read, enable autopush
 	*PIO_SM2_SHIFTCTRL |= (8 << PIO_SM2_SHIFTCTRL_PUSH_THRESH_LSB) |(1 << PIO_SM2_SHIFTCTRL_AUTOPUSH_LSB);
-	//*PIO_SM2_SHIFTCTRL &= ~(1 << PIO_SM2_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
 	// offset the jump instruction by position of the first command since the jump addresses
@@ -47,8 +53,10 @@ uint8_t initDs18b20()
 	// define one set pin
 	*PIO_SM2_PINCTRL = 
       (1 << PIO_SM2_PINCTRL_SET_COUNT_LSB) 
+	| (1 << PIO_SM2_PINCTRL_SIDESET_COUNT_LSB)
 	| (DS18B20_PIN << PIO_SM2_PINCTRL_SET_BASE_LSB) 
     | (DS18B20_PIN << PIO_SM2_PINCTRL_IN_BASE_LSB)
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SIDESET_BASE_LSB)
     ;
 
 	// switch control of DS18B20 to Pio
@@ -61,7 +69,7 @@ uint8_t initDs18b20()
 	*PIO_SM2_INSTR = first_instr_pos;
 
     // start PIO 0, state machine 2
-	*PIO_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+2));
+	//*PIO_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+2));
 
 	return 0;
 }
@@ -77,6 +85,9 @@ uint8_t resetDs18b20()
 	//disable pio0, sm2
 	*PIO_CTRL &= ~(1 << (PIO_CTRL_SM_ENABLE_LSB+2));
 
+	//restart sm2
+	*PIO_CTRL |= (1 << (PIO_CTRL_SM_RESTART_LSB+2));
+
 	//load reset program to sm2
 	first_instr_pos = instr_mem_cnt;
 	for(uint8_t c=0;c < ds18b20reset_program.length;c++){
@@ -85,13 +96,19 @@ uint8_t resetDs18b20()
 	}
 
 	// disable autopull and autopush
-	*PIO_SM2_EXECCTRL = (0 << PIO_SM2_EXECCTRL_SIDE_EN_LSB) 
-	| ( (ds18b20read_wrap_target + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( (ds18b20read_wrap + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_TOP_LSB);
+	*PIO_SM2_EXECCTRL = (0 << PIO_SM2_EXECCTRL_SIDE_EN_LSB); 
 	*PIO_SM2_SHIFTCTRL = PIO_SM2_SHIFTCTRL_RESET;
 
 	// set clock divider
 	*PIO_SM2_CLKDIV = DS18B20_RESET_CLKDIV << PIO_SM2_CLKDIV_INT_LSB;
+
+	*PIO_SM2_PINCTRL = 
+      (1 << PIO_SM2_PINCTRL_SET_COUNT_LSB) 
+	| (1 << PIO_SM2_PINCTRL_SIDESET_COUNT_LSB)
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SET_BASE_LSB) 
+    | (DS18B20_PIN << PIO_SM2_PINCTRL_IN_BASE_LSB)
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SIDESET_BASE_LSB)
+    ;
 
 	// jump to first instruction
 	*PIO_SM2_INSTR = first_instr_pos;
@@ -129,6 +146,9 @@ uint8_t writeDs18b20(uint8_t cmd)
 	//disable pio0, sm2
 	*PIO_CTRL &= ~(1 << (PIO_CTRL_SM_ENABLE_LSB+2));
 
+	//restart sm2
+	*PIO_CTRL |= (1 << (PIO_CTRL_SM_RESTART_LSB+2));
+
 	// drain tx fifo
 	while ((*PIO_FSTAT & (4 << PIO_FSTAT_TXEMPTY_LSB)) == 0)
 	{
@@ -137,9 +157,9 @@ uint8_t writeDs18b20(uint8_t cmd)
 
 	//load write program to sm2
 	first_instr_pos = instr_mem_cnt;
-	for(uint8_t c=0;c < ds18b20reset_program.length;c++){
-		*(PIO_INSTR_MEM + instr_mem_cnt++) = (*(ds18b20reset_program.instructions + c) & 0xe000)==0 ?
-		 *(ds18b20reset_program.instructions + c) + first_instr_pos : *(ds18b20reset_program.instructions + c);
+	for(uint8_t c=0;c < ds18b20write_program.length;c++){
+		*(PIO_INSTR_MEM + instr_mem_cnt++) = (*(ds18b20write_program.instructions + c) & 0xe000)==0 ?
+		 *(ds18b20write_program.instructions + c) + first_instr_pos : *(ds18b20write_program.instructions + c);
 	}
 
 	// enable autopull, set wrap boundaries
@@ -148,15 +168,26 @@ uint8_t writeDs18b20(uint8_t cmd)
 	| ( (ds18b20write_wrap + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_TOP_LSB);
 	*PIO_SM2_SHIFTCTRL = PIO_SM2_SHIFTCTRL_RESET;
 	*PIO_SM2_SHIFTCTRL |= (1 << PIO_SM2_SHIFTCTRL_AUTOPULL_LSB) | (8 << PIO_SM2_SHIFTCTRL_PULL_THRESH_LSB);
+	//*PIO_SM2_SHIFTCTRL &= ~(1 << PIO_SM2_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// set clock divider
 	*PIO_SM2_CLKDIV = DS18B20_CLKDIV << PIO_SM2_CLKDIV_INT_LSB;
 
-	// jump to first instruction
-	*PIO_SM2_INSTR = first_instr_pos;
+	*PIO_SM2_PINCTRL = 
+	(1 << PIO_SM2_PINCTRL_SET_COUNT_LSB) 
+	| (1 << PIO_SM2_PINCTRL_SIDESET_COUNT_LSB)
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SET_BASE_LSB) 
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SIDESET_BASE_LSB)
+    ;
+
+    // set as output (set pindirs, 1 side 1)
+	*PIO_SM2_INSTR = 0xf081;
+
+	// jump to first instruction, side 1
+	*PIO_SM2_INSTR = first_instr_pos | 0x1000;
 
 	// put command to write into the tx fifo
-	*PIO_SM2_TXF = cmd;
+	*PIO_SM2_TXF = cmd; // << 24;
 
 	// clear the tx stall flag
 	*PIO_FDEBUG = 4 << PIO_FDEBUG_TXSTALL_LSB;
@@ -177,8 +208,14 @@ uint8_t readDs18b20()
     uint16_t instr_mem_cnt = DS18B20_INSTR_MEM_OFFSET;
 	uint16_t first_instr_pos;
 
+	// deassert irq 5
+	//*PIO_IRQ |= (1 << 5);
+
 	//disable pio0, sm2
 	*PIO_CTRL &= ~(1 << (PIO_CTRL_SM_ENABLE_LSB+2));
+
+	//restart sm2
+	*PIO_CTRL |= (1 << (PIO_CTRL_SM_RESTART_LSB+2));
 
 	// drain rx fifo
 	while ((*PIO_FSTAT & (4 << PIO_FSTAT_RXEMPTY_LSB)) == 0)
@@ -195,13 +232,20 @@ uint8_t readDs18b20()
 
 	// enable autopush after 8 bits shifted, set wrap boundaries
 	*PIO_SM2_EXECCTRL = (0 << PIO_SM2_EXECCTRL_SIDE_EN_LSB) 
-	| ( (ds18b20write_wrap_target + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( (ds18b20write_wrap + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_TOP_LSB);
+	| ( (ds18b20read_wrap_target + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( (ds18b20read_wrap + first_instr_pos) << PIO_SM2_EXECCTRL_WRAP_TOP_LSB);
 	*PIO_SM2_SHIFTCTRL = PIO_SM2_SHIFTCTRL_RESET;
-	*PIO_SM2_SHIFTCTRL |= (8 << PIO_SM2_SHIFTCTRL_PUSH_THRESH_LSB) | (1 << PIO_SM2_SHIFTCTRL_AUTOPUSH_LSB);
+	//*PIO_SM2_SHIFTCTRL &= ~(1 << PIO_SM2_SHIFTCTRL_IN_SHIFTDIR_LSB);
+	//*PIO_SM2_SHIFTCTRL |= (8 << PIO_SM2_SHIFTCTRL_PUSH_THRESH_LSB) | (1 << PIO_SM2_SHIFTCTRL_AUTOPUSH_LSB);
+
+	*PIO_SM2_PINCTRL = 
+      (1 << PIO_SM2_PINCTRL_SET_COUNT_LSB) 
+	| (DS18B20_PIN << PIO_SM2_PINCTRL_SET_BASE_LSB) 
+    | (DS18B20_PIN << PIO_SM2_PINCTRL_IN_BASE_LSB)
+    ;
 
 	// set clock divider
-	*PIO_SM2_CLKDIV = DS18B20_CLKDIV << PIO_SM2_CLKDIV_INT_LSB;
+	*PIO_SM2_CLKDIV = DS18B20_CLKDIV_READ << PIO_SM2_CLKDIV_INT_LSB;
 
 	// jump to first instruction
 	*PIO_SM2_INSTR = first_instr_pos;
@@ -212,7 +256,7 @@ uint8_t readDs18b20()
 	// wait until the rx fifo is not empty anymore
 	while ((*PIO_FSTAT & (4 << PIO_FSTAT_RXEMPTY_LSB)) == (4 << PIO_FSTAT_RXEMPTY_LSB));
 
-	rdata = *PIO_SM2_RXF & 0xFF;
+	rdata = (*PIO_SM2_RXF >> 24)  & 0xFF;
 	return rdata;
 }
 
@@ -233,11 +277,8 @@ uint16_t initTempConversion()
 	// convert Temperature
 	writeDs18b20(0x44);
 
-	// enable hard pullup
-	*DS18B20_PIN_CNTR=5;
-	*GPIO_OE |= (1 << DS18B20_PIN);
-	*(GPIO_OUT + 1) = (1 << DS18B20_PIN);
 	tempreadTicks=getTickValue();
+	tempReadState = 1;
 	return 0;
 }
 
@@ -247,10 +288,11 @@ uint8_t readTemp(int16_t* res)
 	if (tempreadTicks > 0 && getTickValue() >= tempreadTicks + 75)
 	{
 		uint8_t tbyte1, tbyte2;
-		// disable gpio output, handover control of the pin to the 
-		// pio
-		*GPIO_OE &= ~(1 << DS18B20_PIN);
-		*DS18B20_PIN_CNTR=6;
+		// reset
+		resetDs18b20();
+		//skip rom
+		writeDs18b20(0xCC);
+		// read scratchpad
 		writeDs18b20(0xBE);
 		tbyte1 = readDs18b20();
 		tbyte2 = readDs18b20();
@@ -261,6 +303,7 @@ uint8_t readTemp(int16_t* res)
 		}
 		tempreadTicks=0;
 		resetDs18b20(); // send reset to terminate reading process
+		tempReadState = 0;
 		return 0;
 	}
 	else if (tempreadTicks==0)
