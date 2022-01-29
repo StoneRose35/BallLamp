@@ -37,7 +37,7 @@ void draftHorseAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
     if (encoderIncr != 0)
     {
-        encoderPos += encoderIncr;
+        encoderPos += encoderIncr/2;
         if (encoderPos < 0)
         {
             encoderPos = 0;

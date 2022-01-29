@@ -35,15 +35,11 @@ void rootAppLoop(void* data)
     char tempString[8];
     uint32_t heaterBarWidth;
     TriopsControllerType* triopsController = getTriopsController();
-    if(getTickValue() >ctx.ticksLast+49)
+    if(getTickValue() >ctx.ticksLast+99)
     {
+        fillSquare(&bgclr,8,32,160-8,8);
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-        fillSquare(&clrBlack,8,40,1,4);
-        fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
-        fillSquare(&clrBlack,8+(160-16),40,1,4);
-        fillSquare(&clrBlack,8+(160-16)/4,40,1,2);
-        fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
@@ -117,7 +113,7 @@ void rootAppDisplay(void* data)
 void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
 {
     uint8_t rotated=0;
-    if (encoderIncr > 1 && ctx.entrySelected<4)
+    if (encoderIncr > 1 && ctx.entrySelected<3)
     {
         ctx.entrySelected++;
         rotated=1;

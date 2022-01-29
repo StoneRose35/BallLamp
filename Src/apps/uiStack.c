@@ -30,8 +30,8 @@ void setPagePtr(uint32_t ptr)
 void initUiStack()
 {
     createRootApp(uiApplications,0);
-    createSetDateTimeApp(uiApplications, 1);
-    createDraftHorseApp(uiApplications, 2);
+    createDraftHorseApp(uiApplications, 1);
+    createSetDateTimeApp(uiApplications, 2);
     createConfigApp(uiApplications,3);
     cTick=getTickValue();
 }
