@@ -2,10 +2,15 @@
 #define _UI_STACK_H_
 #include <stdint.h>
 
-void uiStackTask(uint32_t task);
+#define UI_BRIGHTNESS_INITIAL 0x40
+void uiStackTask(uint8_t hibernateChange);
 void setPagePtr(uint32_t ptr);
 void display();
 void initUiStack();
+
+
+void setBrightness(uint8_t b);
+uint8_t getBrightness();
 
 /**
  * @brief draws at 2 pixel tall bar spaced 16 pixel vertically apart
@@ -43,5 +48,7 @@ typedef struct
     uint8_t width;
 
 } SelectionPositionType;
+
+volatile uint8_t brightness;
 
 #endif

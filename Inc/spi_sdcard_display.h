@@ -111,6 +111,8 @@ inline void csDisableSDCard()
 void initDisplay();
 uint8_t blankScreen();
 void setBacklight(uint8_t);
+void displayOff();
+void displayOn();
 
 #define SD_CARD_VERSION_2 1
 #define SD_CARD_VERSION_1 5

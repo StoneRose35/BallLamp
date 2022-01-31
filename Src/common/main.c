@@ -179,6 +179,7 @@
 #include "uiStack.h"
 #include "heater.h"
 #include "services/triopsBreederService.h"
+#include "services/hibernateService.h"
 
 
 
@@ -212,20 +213,10 @@ DirectoryPointerType * ndir;
  */
 int main(void)
 {
-	/*
-	
-
-
-	uint8_t switchState = 2;
-	uint32_t encoderState = 0; 
-	
-	char dispBfr[24];
-	uint32_t oldTicks,oldTicks2;
-	uint32_t testCnt=0;
-*/
 	uint16_t sdInitCnt=0;
 	uint8_t retcode=0;
 	char nrbfr[16];
+	uint8_t hibernateChange=0;
 
 	/*
 	 *
@@ -322,58 +313,18 @@ int main(void)
 	display();
 
 	printf("Microsys v1.0 running\r\n");
-	//oldTicks=getTickValue();
-	//oldTicks2=getTickValue();
     /* Loop forever */
 	for(;;)
 	{
 
 		cliApiTask(task);
-
-		uiStackTask(task);
-
+		if (getHibernateServiceData()->hibernateState == 0)
+		{
+			uiStackTask(hibernateChange); // skip encoder handling of woken up
+		}
 
 		triopBreederServiceLoop();
-
-		// tasks to do every 10 ticks/100ms
-		/*
-		if (getTickValue()> oldTicks + 10)
-		{
-			if (getEncoderValue() != encoderState)
-			{
-				char * dispContent="Encoder: ";
-				writeString(dispContent,0,0);
-				UInt32ToHex(getEncoderValue(),nrbfr);
-				writeString(nrbfr,9,0);
-				encoderState=getEncoderValue();
-			}
-			if (getSwitchValue() != switchState)
-			{
-				if(switchState == 0) // old was off, so now on
-				{
-					char * dispContent="Switch On";
-					writeString(dispContent,0,1);
-				}
-				else
-				{
-					char * dispContent="Switch Off";
-					writeString(dispContent,0,1);
-				}
-				switchState = getSwitchValue();
-			}
-			getDateTime(dispBfr);
-			writeString(dispBfr,0,2);
-			oldTicks=getTickValue();
-		}
-		if (getTickValue() > (oldTicks2))
-		{
-			UInt32ToHex(testCnt,nrbfr);
-			writeString(nrbfr,0,3);
-			testCnt++;
-			oldTicks2=getTickValue();
-		}
-		*/
-		//sendCharAsyncBt();		
+		hibernateChange = hibernateServiceLoop();
 	}
 }
 #endif

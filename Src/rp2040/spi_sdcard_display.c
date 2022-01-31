@@ -279,11 +279,14 @@ void sendDisplayCommand(uint8_t cmd,const uint8_t * data,uint32_t dataLen)
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     *SSPDR = cmd;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
-    for(cnt=0;cnt<dataLen;cnt++)
+    if (dataLen > 0)
     {
-        *SSPDR = *(data+cnt);
-        while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
+        *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+        for(cnt=0;cnt<dataLen;cnt++)
+        {
+            *SSPDR = *(data+cnt);
+            while ((*SSPSR & (1 << SPI_SSPSR_TNF_LSB))==0); 
+        }
     }
 }
 
@@ -413,27 +416,6 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     *SSPDR = 0xFF;
     *SSPDR = 0xFF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    /*
-    // send mandatory command 13
-    cmd[0]=13+ 0x40;
-    cmd[1] = 0x0;
-    cmd[2] = 0x0;
-    cmd[3] = 0x0;
-    cmd[2] = 0x0;
-    cmd[5] = 0xFF;
-    retcode = sendSdCardCommand(cmd,resp,2);
-    if (retcode != 0)
-    {
-        return ERROR_TIMEOUT;
-    }
-    if (resp[1] !=0 || resp[0] != 0)
-    {
-        return ERROR_WRITE_FAILURE;
-    }
-    *SSPDR = 0xFF;
-    *SSPDR = 0xFF;
-    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
-    */
     return 0;
 }
 
@@ -564,4 +546,20 @@ uint8_t blankScreen()
         cCnt++;
     }
     return 0;
+}
+
+void displayOff()
+{
+    csDisableSDCard();
+    csEnableDisplay();
+    setSckDisplay();
+    sendDisplayCommand(0x28,(uint8_t*)0,0);
+}
+
+void displayOn()
+{
+    csDisableSDCard();
+    csEnableDisplay();
+    setSckDisplay();
+    sendDisplayCommand(0x29,(uint8_t*)0,0);
 }

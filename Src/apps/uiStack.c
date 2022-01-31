@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "uiStack.h"
 #include "rotaryEncoder.h"
+#include "spi_sdcard_display.h"
 #include "apps/rootApp.h"
 #include "apps/voidApp.h"
 #include "apps/draftHorseApp.h"
@@ -10,6 +11,7 @@
 #include "apps/uiColors.h"
 #include "images/arrow_up_16x8.h"
 #include "images/arrow_down_16x8.h"
+#include "services/hibernateService.h"
 
 static volatile uint32_t encoderVal=0;
 static volatile uint8_t switchVal=0;
@@ -34,9 +36,10 @@ void initUiStack()
     createSetDateTimeApp(uiApplications, 2);
     createConfigApp(uiApplications,3);
     cTick=getTickValue();
+    brightness = UI_BRIGHTNESS_INITIAL;
 }
 
-void uiStackTask(uint32_t task)
+void uiStackTask(uint8_t hibernateChange)
 {
     uint32_t encoderValCurrent;
     uint8_t switchValCurrent;
@@ -45,13 +48,15 @@ void uiStackTask(uint32_t task)
     encoderValCurrent=getEncoderValue();
     switchValCurrent=getSwitchValue();
 
-
     encoderIncr = encoderValCurrent - encoderVal;
     switchChange = switchValCurrent - switchVal;
     
     if (encoderIncr > 1 || encoderIncr < -1 || switchChange != 0)
     {
-        uiApplications[pagePtr].encoderSwitchCallback(encoderIncr,switchChange);
+        if (hibernateChange != HIBERNATE_WAKEUP)
+        {
+            uiApplications[pagePtr].encoderSwitchCallback(encoderIncr,switchChange);
+        }
         encoderVal=encoderValCurrent;
         switchVal=switchValCurrent;
     }
@@ -115,4 +120,15 @@ void clearArrows(uint8_t px, uint8_t py,uint8_t spacing)
 {
     fillSquare(&bgclr,px,py-8,16,8);
     fillSquare(&bgclr,px,py+spacing,16,8);
+}
+
+uint8_t getBrightness()
+{
+    return brightness;
+}
+
+void setBrightness(uint8_t b)
+{
+    brightness=b;
+    setBacklight(brightness);
 }
