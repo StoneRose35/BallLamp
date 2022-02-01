@@ -55,15 +55,15 @@ push
 irq wait 5
 
 
-; run with disinct prescaler resulting in a period of 60us
+; run with disinct prescaler resulting in a period of 30us
 ; disable autopush and autopull
 .program ds18b20reset
 
 ds18b20_reset:
-set x,4 ; set number of samples to scratch x
+set x,8 ; set number of samples to scratch x
 set pins, 1
 set pindirs, 1  ; set as output
-set pins, 0 [7]  ; pull low, wait 480 us
+set pins, 0 [15]  ; pull low, wait 480 us
 set pindirs, 0 ; set as input
 dr_loop:
 in pins, 1 ; sample input pin

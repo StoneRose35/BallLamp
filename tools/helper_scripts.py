@@ -169,9 +169,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-calcSysFreqs",help="calculate oscillator frequencies",action="store_true")
     parser.add_argument("-generateAssets",help="generate images and font asset headers",action="store_true")
+    parser.add_argument("-convertImg",help="convert specific image to c header")
 
     args = parser.parse_args()
-    if args.calcSysFreqs is False and args.generateAssets is False:
+    if args.calcSysFreqs is False and args.generateAssets is False and args.convertImg is None:
         parser.print_help()
     else:
         if args.calcSysFreqs is True:
@@ -182,10 +183,15 @@ if __name__ == "__main__":
                 full_path = os.path.join(asset_path,el)
                 if os.path.isfile(full_path) and full_path.lower().endswith("png"):
                     imageToCStream(full_path, image_inc_path)
-
-
             fontImageToArray("../Assets/fonts/Codepage737.png", 16, 9, 4, 4,font_inc_path)
             fontImageToArray("../Assets/fonts/sm_ascii_16x16.png",16,16,0,0,font_inc_path)
+        elif args.convertImg is not None:
+            # dircontent = os.listdir(asset_path)
+            full_path = args.convertImg # os.path.join(asset_path,args.convertImg)
+            if os.path.isfile(full_path) and full_path.lower().endswith("png"):
+                imageToCStream(full_path, "Inc/images")
+
+
 
     """
     imageToCStream("../Assets/OK_32x32.png", "../Inc/images")

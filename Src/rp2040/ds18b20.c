@@ -104,10 +104,8 @@ uint8_t resetDs18b20()
 
 	*PIO_SM2_PINCTRL = 
       (1 << PIO_SM2_PINCTRL_SET_COUNT_LSB) 
-	| (1 << PIO_SM2_PINCTRL_SIDESET_COUNT_LSB)
 	| (DS18B20_PIN << PIO_SM2_PINCTRL_SET_BASE_LSB) 
     | (DS18B20_PIN << PIO_SM2_PINCTRL_IN_BASE_LSB)
-	| (DS18B20_PIN << PIO_SM2_PINCTRL_SIDESET_BASE_LSB)
     ;
 
 	// jump to first instruction
@@ -127,8 +125,7 @@ uint8_t resetDs18b20()
 	rdata = *PIO_SM2_RXF;
 	
 	// return 0 if at least 1 zero has been sampled
-	rdata = (rdata >> 28) & 0x0F;
-	if( rdata < 0x0F)
+	if( (rdata >> 24) < 0xFF)
 	{
 		return 0;
 	}
@@ -265,10 +262,11 @@ uint8_t readDs18b20()
  * 
  * @return uint16_t 
  */
-uint16_t initTempConversion()
+uint8_t initTempConversion()
 {
+	uint8_t retcode=0;
 	// reset
-	resetDs18b20();
+	retcode = resetDs18b20();
 
 	// skip rom
 	writeDs18b20(0xCC);
@@ -279,7 +277,7 @@ uint16_t initTempConversion()
 
 	tempreadTicks=getTickValue();
 	tempReadState = 1;
-	return 0;
+	return retcode;
 }
 
 
@@ -287,9 +285,10 @@ uint8_t readTemp(int16_t* res)
 {
 	if (tempreadTicks > 0 && getTickValue() >= tempreadTicks + 75)
 	{
-		uint8_t tbyte1, tbyte2;
+		uint8_t tbyte1, tbyte2, retcode;
 		// reset
-		resetDs18b20();
+		retcode = resetDs18b20();
+		if (retcode > 0) {return retcode; }
 		//skip rom
 		writeDs18b20(0xCC);
 		// read scratchpad
@@ -302,7 +301,8 @@ uint8_t readTemp(int16_t* res)
 			*res = -*res;
 		}
 		tempreadTicks=0;
-		resetDs18b20(); // send reset to terminate reading process
+		retcode = resetDs18b20(); // send reset to terminate reading process
+		if (retcode > 0) {return retcode; }
 		tempReadState = 0;
 		return 0;
 	}
@@ -312,7 +312,7 @@ uint8_t readTemp(int16_t* res)
 	}
 	else
 	{
-		return 1;
+		return 4;
 	}
 }
 

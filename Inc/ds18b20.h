@@ -7,7 +7,7 @@
 #define DS18B20_INSTR_MEM_OFFSET 10
 #define DS18B20_CLKDIV 480 // 4 us clockdiv
 #define DS18B20_CLKDIV_READ 120 // 1 us clock
-#define DS18B20_RESET_CLKDIV 7200
+#define DS18B20_RESET_CLKDIV 3600 // 30 us clockdiv
 
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
@@ -37,7 +37,7 @@ uint8_t writeDs18b20(uint8_t cmd);
 uint8_t readDs18b20();
 uint8_t resetDs18b20();
 
-uint16_t initTempConversion();
+uint8_t initTempConversion();
 uint8_t readTemp(int16_t*);
 uint8_t getTempReadState();
  #endif

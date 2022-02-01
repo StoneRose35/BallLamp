@@ -102,7 +102,7 @@ uint8_t createDirectory(DirectoryPointerType * fp,char * directoryName);
 uint8_t createFile(DirectoryPointerType * fp,char * fileName);
 uint8_t deleteDirectory(DirectoryPointerType * parentDir,DirectoryPointerType * fp);
 uint16_t readFile(FilePointerType * fp);
-uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes);
+uint8_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes);
 uint8_t appendToFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint8_t * data, uint16_t datalen);
 uint8_t seekEnd(FilePointerType * fp);
 uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp);

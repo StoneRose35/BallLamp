@@ -35,24 +35,26 @@ uint8_t initTriopBreederService()
     triopsController.hourOff = 20;
     triopsController.minuteOff = 22;
     triopsController.serviceInterval = 1000; // default interval is 30s (3000 ticks)
+    triopsController.errorFlags = 0; // no error before initialization
      
     // open log file
     createDirectoryPointer(&pdir);
     createDirectoryPointer(&cdir);
     retcode = openRootDirectory(pdir);
-    if(retcode > 0) { return retcode; }
+    if(retcode > 0) { triopsController.errorFlags |= TC_ERROR_FILESYSTEM; return retcode; }
     retcode = openDirectory(pdir,"LOGS",cdir);
-    if(retcode > 0 ) {return retcode; }
+    if(retcode > 0 ) {triopsController.errorFlags |= TC_ERROR_FILESYSTEM; return retcode; }
     copyDirectoryPointer(&cdir,&pdir);
     retcode = openFile(pdir,"triops.log",&fp);
     if (retcode == FATLIB_FILE_NOT_FOUND)
     {
         retcode = createFile(pdir,"triops.log");
-        if (retcode > 0) { return retcode; }
+        if (retcode > 0) { triopsController.errorFlags |= TC_ERROR_FILESYSTEM; return retcode; }
         retcode = openFile(pdir,"triops.log",&fp);
-        if (retcode > 0) { return retcode; }
+        if (retcode > 0) { triopsController.errorFlags |= TC_ERROR_FILESYSTEM; return retcode; }
     }
-    seekEnd(&fp);
+    retcode = seekEnd(&fp);
+    if (retcode > 0) { triopsController.errorFlags |= TC_ERROR_FILESYSTEM; return retcode; }
     oldTicks = getTickValue();
     return 0;
 }
@@ -60,11 +62,13 @@ uint8_t initTriopBreederService()
 void triopBreederServiceLoop()
 {
     int16_t currentTemp;
-    uint8_t retcode;
+    uint8_t retcode, rc2;
     int32_t interm;
     char logLine[64];
     char nrbfr[16];
     uint16_t strLen;
+
+    triopsController.errorFlags = 0;
 
     //interval defined on the data structure
     if ((triopsController.serviceInterval > 0 && getTickValue() > oldTicks + triopsController.serviceInterval) || getTempReadState() == 1)
@@ -76,12 +80,24 @@ void triopBreederServiceLoop()
             retcode = readTemp(&currentTemp);
             if (retcode== 2) // start a new conversion if none has started yet
             {
-                initTempConversion();
+                rc2 = initTempConversion();
+                if (rc2 > 0)
+                {
+                    triopsController.errorFlags |= TC_ERROR_THERMOMETER;
+                }
+            }
+            else if (retcode == 1)
+            {
+                triopsController.errorFlags |= TC_ERROR_THERMOMETER;
             }
         }
         else
         {
-            initTempConversion();
+            rc2 = initTempConversion();
+            if (rc2 !=0)
+            {
+                triopsController.errorFlags |= TC_ERROR_THERMOMETER;
+            }
             retcode = 3;    
         }
 
@@ -96,9 +112,9 @@ void triopBreederServiceLoop()
             {
                 triopsController.heaterValue = 0;
             }
-            else if (interm > (1024 << 4))
+            else if (interm > (1023 << 4))
             {
-                triopsController.heaterValue = 1024;
+                triopsController.heaterValue = 1023;
             }
             else
             {
@@ -126,7 +142,11 @@ void triopBreederServiceLoop()
             fixedPointUInt16ToChar(nrbfr,triopsController.temperature,4);
             appendToString(logLine,nrbfr);
             strLen = appendToString(logLine,"\r\n");    
-            appendToFile(pdir,&fp,(uint8_t*)logLine,strLen);
+            retcode = appendToFile(pdir,&fp,(uint8_t*)logLine,strLen);
+            if (retcode > 0)
+            {
+                triopsController.errorFlags |= TC_ERROR_FILESYSTEM;
+            }
             oldTicks=getTickValue();
         }
     }

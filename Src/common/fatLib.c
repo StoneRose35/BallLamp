@@ -1402,6 +1402,7 @@ uint16_t readFile(FilePointerType * fp)
 uint8_t seekEnd(FilePointerType * fp)
 {
     uint8_t sector[512];
+    uint8_t retcode = 0;
     uint32_t nextCluster = getNextCluster(sector,fp->clusterPtr);
     while ((nextCluster & 0x0FFFFFF0) != 0x0FFFFFF0)
     {
@@ -1410,9 +1411,9 @@ uint8_t seekEnd(FilePointerType * fp)
         nextCluster = getNextCluster(sector,fp->clusterPtr);
     }
     fp->sectorPtr = (fp->dirEntry->size - ((sdCardInfo.volumeId.sectorsPerCluster*fp->clusterCntr) << 9)) >> 9;
-    readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
+    retcode = readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
     fp->sectorBufferPtr = fp->dirEntry->size & 0x1FF;
-    return 0;
+    return retcode;
 }
 
 /**
@@ -1423,10 +1424,10 @@ uint8_t seekEnd(FilePointerType * fp)
  * @param nrbytes the number of bytes to write, must be <= 512
  * @return uint16_t 
  */
-uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes)
+uint8_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t nrbytes)
 {
     uint8_t sector[512];
-    uint16_t retcode = 0;
+    uint8_t retcode = 0;
     uint8_t entriesRead=0x10;
     uint8_t fnameEqual = 0;
     uint16_t entryPos=0;
@@ -1532,20 +1533,21 @@ uint16_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_
 uint8_t appendToFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint8_t * data, uint16_t datalen)
 {
     uint32_t cnt=0;
+    uint16_t retcode=0;
     for(cnt=0;cnt<datalen;cnt++)
     {
         if((fp->sectorBufferPtr & 0x200) != 0)
         {
-            writeFile(parentDir,fp,512);
+            retcode = writeFile(parentDir,fp,512);
             fp->sectorBufferPtr=0;
         }
         *(fp->sectorBuffer + fp->sectorBufferPtr++) = *(data + cnt);
     }
     if (fp->sectorBufferPtr > 0)
     {
-        writeFile(parentDir,fp,fp->sectorBufferPtr);
+        retcode = writeFile(parentDir,fp,fp->sectorBufferPtr);
     }
-    return 0;
+    return retcode;
 }
 
 /**

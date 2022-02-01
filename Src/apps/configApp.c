@@ -93,6 +93,7 @@ void configAppDisplay(void* data)
     displayImage(&OK_32x32_streamimg,160-32-2,128-32-2);
     displayImage(&back_32x32_streamimg,2,128-32-2);
 
+    configSelectEntity(ctx.encoderPos);
 }
 
 void createConfigApp(SubApplicationType* app,uint8_t index)
@@ -139,7 +140,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
             switch (ctx.encoderPos)
             {
                 case CONFIG_ENCODERPOS_TIMEON:
-                    timedelta(&(ctx.hOn),&(ctx.minOn),encoderIncr);
+                    timedelta(&(ctx.hOn),&(ctx.minOn),encoderIncr/2);
 
                     lineBfr[0] = 0;
                     UInt8ToChar(ctx.hOn,nrbfr);
@@ -153,7 +154,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     writeString(lineBfr,10,1);
                     break;
                 case CONFIG_ENCODERPOS_TIMEOFF:
-                    timedelta(&(ctx.hOff),&(ctx.minOff),encoderIncr);
+                    timedelta(&(ctx.hOff),&(ctx.minOff),encoderIncr/2);
 
                     lineBfr[0] = 0;
                     UInt8ToChar(ctx.hOff,nrbfr);
@@ -187,7 +188,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     writeString(lineBfr,10,5);
                     break;
                 case CONFIG_ENCODERPOS_TTARGET:
-                    ctx.ttarget += encoderIncr;
+                    ctx.ttarget += encoderIncr/2;
                     if (ctx.ttarget <= tdata->tLower)
                     {
                         ctx.ttarget = tdata->tLower + 1;
@@ -199,7 +200,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                     writeString(lineBfr,10,7);
                     break;
                 case CONFIG_ENCODERPOS_HEATER:
-                    ctx.heater += encoderIncr;
+                    ctx.heater += encoderIncr/2;
                     if (ctx.heater < 0)
                     {
                         ctx.heater = 0;

@@ -7,6 +7,8 @@
 #include "images/gearwheel_32x32.h"
 #include "images/bulb_on_24x24.h"
 #include "images/bulb_off_24x24.h"
+#include "images/warning_sd_card_16x16.h"
+#include "images/warning_tempsensor_16x16.h"
 #include "datetimeClock.h"
 #include "stringFunctions.h"
 #include "apps/rootApp.h"
@@ -37,9 +39,10 @@ void rootAppLoop(void* data)
     TriopsControllerType* triopsController = getTriopsController();
     if(getTickValue() >ctx.ticksLast+99)
     {
-        fillSquare(&bgclr,8,32,160-8,8);
+        //fillSquare(&bgclr,8,32,160-8,8);
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1,32,160-8-(uint8_t)heaterBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
@@ -50,6 +53,35 @@ void rootAppLoop(void* data)
         // display the time on top
         writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
         ctx.ticksLast=getTickValue();
+
+        // display the lamp state
+        if(triopsController->lampState == 0)
+        {
+            displayImage(&bulb_off_24x24_streamimg,8,64);
+        }
+        else
+        {
+            displayImage(&bulb_on_24x24_streamimg,8,64);
+        }
+
+        // display the warnings
+        if ((triopsController->errorFlags & TC_ERROR_FILESYSTEM) != 0)
+        {
+            displayImage(&warning_sd_card_16x16_streamimg,160-8-16,64);
+        }
+        else
+        {
+            fillSquare(&bgclr,160-8-16,64,16,16);
+        }
+
+        if((triopsController->errorFlags & TC_ERROR_THERMOMETER) != 0)
+        {
+            displayImage(&warning_tempsensor_16x16_streamimg,160-8-16-4-16,64);
+        }
+        else
+        {
+            fillSquare(&bgclr,160-8-16-4-16,64,16,16);
+        }
     }
 }
 
@@ -101,11 +133,30 @@ void rootAppDisplay(void* data)
     // display the lamp state
     if(triopsController->lampState == 0)
     {
-        displayImage(&bulb_off_24x24_streamimg,40,64);
+        displayImage(&bulb_off_24x24_streamimg,8,64);
     }
     else
     {
-        displayImage(&bulb_on_24x24_streamimg,40,64);
+        displayImage(&bulb_on_24x24_streamimg,8,64);
+    }
+
+    // display the warnings
+    if ((triopsController->errorFlags & TC_ERROR_FILESYSTEM) != 0)
+    {
+        displayImage(&warning_sd_card_16x16_streamimg,160-8-16,64);
+    }
+    else
+    {
+        fillSquare(&bgclr,160-8-16,64,16,16);
+    }
+
+    if((triopsController->errorFlags & TC_ERROR_THERMOMETER) != 0)
+    {
+        displayImage(&warning_tempsensor_16x16_streamimg,160-8-16-4-16,64);
+    }
+    else
+    {
+        fillSquare(&bgclr,160-8-16-4-16,64,16,16);
     }
 
 }
@@ -160,9 +211,6 @@ void createRootApp(SubApplicationType* app,uint8_t index)
 {
     ctx.entrySelected = 2;
     ctx.ticksLast=getTickValue();
-    //triopsController.heaterValue = 0;
-    //triopsController.lampState = 0;
-    //triopsController.temperature = (20 << 4) | (1 << 3); // 20.5 as fixed point
     timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
     (app+index)->data=NULL;
     (app+index)->display = &rootAppDisplay;

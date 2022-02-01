@@ -16,7 +16,12 @@ typedef struct TriopsBreeder
     uint8_t hourOff; // hour when light should go off
     uint8_t minuteOff; // minute when light should go off    
     uint32_t serviceInterval; // update interval, 0 is off
+    uint8_t errorFlags; //flags showing or warnings
 } TriopsControllerType;
+
+#define TC_ERROR_THERMOMETER 1
+#define TC_ERROR_FILESYSTEM 2
+
 
 TriopsControllerType * getTriopsController();
 uint8_t initTriopBreederService();
