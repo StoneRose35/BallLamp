@@ -24,6 +24,8 @@ RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
 SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
+ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
+
 
 all_rp2040: $(RP2040_OBJS) 
 
@@ -32,6 +34,8 @@ all_common: $(COMMON_OBJS)
 all_apps: $(APPS_OBJS)
 
 all_services: $(SERVICES_OBJS)
+
+all_images: $(ASSET_IMAGES)
 
 clean_objs:
 	@rm -f ./out/*
@@ -117,6 +121,11 @@ out/%.o: Src/apps/%.c
 out/%.o: Src/services/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
+# image assets
+Inc/images/%.h: Assets/%.png
+	./tools/helper_scripts.py -convertImg $^
+
+
 Src/rp2040/neopixelDriver.c: Inc/gen/pio0_pio.h
 
 Src/rp2040/simple_neopixel.c: Inc/gen/pio0_pio.h
@@ -131,7 +140,7 @@ Inc/gen/pio0_pio.h: Inc/gen tools/pioasm
 
 
 # main linking and generating flashable content
-$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services $(ASSET_IMAGES)
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o 
 #~/pico/pico-libs/rp2_common/pico_stdio/stdio.c.obj ~/pico/pico-libs/common/pico_sync/mutex.c.obj ~/pico/pico-libs/rp2_common/hardware_timer/timer.c.obj ~/pico/pico-libs/common/pico_time/time.c.obj
 
