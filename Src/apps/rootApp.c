@@ -42,7 +42,7 @@ void rootAppLoop(void* data)
         //fillSquare(&bgclr,8,32,160-8,8);
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1,32,160-16-(uint8_t)heaterBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1+8,32,160-8-(uint8_t)heaterBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
@@ -179,25 +179,34 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
     {
         if(ctx.entrySelected==1)
         {
-            fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            drawSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            //fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==2)
         {
-            fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
+            drawSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==3)
         {
-            fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
+            drawSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
+            //fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
-        displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
-        displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
-        displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
+        //displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
+        //displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
+        //displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
     }
 
     if (switchChange == -1)

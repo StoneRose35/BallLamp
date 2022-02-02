@@ -19,17 +19,20 @@ void createDraftHorseApp(SubApplicationType* app,uint8_t index)
 }
 void draftHorseDisplay(void* data)
 {
-    fillSquare(&bgclr,0,0,160,128);
+    //fillSquare(&bgclr,0,0,160,128);
     switch (encoderPos)
     {
         case 0:
             displayImage(&kaltblut1_streamimg,0,0);
+            fillSquare(&bgclr,0,kaltblut1_streamimg.rows+1,160,128-kaltblut1_streamimg.rows-1);
             break;
         case 1:
             displayImage(&kaltblut2_streamimg,0,0);
+            fillSquare(&bgclr,0,kaltblut2_streamimg.rows+1,160,128-kaltblut2_streamimg.rows-1);
             break;
         case 2:
             displayImage(&kaltblut3_streamimg,0,0);
+            fillSquare(&bgclr,0,kaltblut3_streamimg.rows+1,160,128-kaltblut3_streamimg.rows-1);
             break;
     }
 }

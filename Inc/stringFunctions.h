@@ -27,7 +27,7 @@ void toPercentChar(float,char*);
 void fixedPointUInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals);
 
 
-uint8_t startsWith(char*,char*);
+uint8_t startsWith(char*,const char*);
 void toUpper(char *,char);
 void getBracketContent(const char*,char*);
 void stripWhitespaces(char *);

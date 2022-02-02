@@ -27,7 +27,7 @@
  * The "0" command is used to mark the end of the array, it is not an actual command
  * 
  */
-UserCommandType userCommands[] = {
+const UserCommandType userCommands[] = {
 	{"BACKGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"FOREGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
 	{"RED",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
@@ -59,12 +59,14 @@ UserCommandType userCommands[] = {
 	//{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
 	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
 	{"SETDT",&setDateTimeCommand,CONTEXT_TYPE_NONE},
-	{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
-	{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
+	//{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
+	//{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
 	{"CD",&cdCommand,CONTEXT_TYPE_NONE},
 	{"LS",&lsCommand,CONTEXT_TYPE_NONE},
 	{"MKDIR",&mkdirCommand,CONTEXT_TYPE_NONE},
 	{"RMDIR",&rmdirCommand,CONTEXT_TYPE_NONE},	
+	{"RM",&rmCommand,CONTEXT_TYPE_NONE},
+	{"READ",&readCommand,CONTEXT_TYPE_NONE},
 	{"INITDISPLAY",&initDisplayCommand,CONTEXT_TYPE_NONE},
 	{"BACKLIGHT",&setBacklightCommand,CONTEXT_TYPE_NONE},
 	{"SETCURSOR",&setCursorCommand,CONTEXT_TYPE_NONE},

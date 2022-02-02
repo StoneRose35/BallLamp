@@ -209,6 +209,65 @@ void rmdirCommand(char * cmd,void * context)
     }
 }
 
+void rmCommand(char * cmd,void* context)
+{
+    char filename[16];
+    char nrbfr[4];
+    uint8_t retcode=0;
+    FilePointerType fp;
+    getBracketContent(cmd,filename);
+
+    retcode = openFile(cwd,filename,&fp);
+    if (retcode != 0)
+    {
+        printf("\r\nfailure removing file while getting file pointer: ");
+        UInt8ToChar(retcode,nrbfr);
+        printf(nrbfr);
+        printf("\r\n");
+        return;
+    }
+    retcode = deleteFile(cwd,&fp);
+    if (retcode != 0)
+    {
+        printf("\r\nfailure removing file: ");
+        UInt8ToChar(retcode,nrbfr);
+        printf(nrbfr);
+        printf("\r\n");
+        return;
+    }
+}
+
+void readCommand(char * cmd,void * context)
+{
+    char filename[16];
+    char nrbfr[4];
+    uint8_t retcode=0;
+    FilePointerType fp;
+    uint16_t bytesRead;
+    char outbfr[513];
+    getBracketContent(cmd,filename);
+    retcode = openFile(cwd,filename,&fp);
+    if (retcode != 0)
+    {
+        printf("\r\nfailure opening file: ");
+        UInt8ToChar(retcode,nrbfr);
+        printf(nrbfr);
+        printf("\r\n");
+        return;
+    }
+    bytesRead = readFile(&fp);
+    while (bytesRead > 0)
+    {
+        for(uint16_t c2=0;c2<bytesRead;c2++)
+        {
+            outbfr[c2]=(char)fp.sectorBuffer[c2];
+        }
+        outbfr[bytesRead]=0;
+        printf(outbfr);
+        bytesRead = readFile(&fp);
+    }
+}
+
 uint8_t validateDirName(char *dirName)
 {
     uint8_t c=0;

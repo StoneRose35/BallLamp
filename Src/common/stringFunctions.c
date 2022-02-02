@@ -272,7 +272,7 @@ void fillWithLeadingZeros(uint8_t minlength,char * nr)
  * @param target the string for which should be checked if it start with ptrn
  * @return 1 if target start with ptrn, 0 otherwise
  */
-uint8_t startsWith(char* ptrn,char* target)
+uint8_t startsWith(char* ptrn,const char* target)
 {
 	uint8_t cnt=0,isEqual=1;
 	while (ptrn[cnt]>0 && target[cnt]>0 && isEqual > 0)

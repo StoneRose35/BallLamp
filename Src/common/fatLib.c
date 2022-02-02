@@ -1360,7 +1360,7 @@ uint8_t deleteFile(DirectoryPointerType * parentDir,FilePointerType * fp)
  * @brief reads a file sector-wise, returns 0 if the file pointer is at the end
  * 
  * @param fp the file to read
- * @return uint16_t the number of bytes read, is smaller that 512 if the last sector has been read and 0 if the file has already been read
+ * @return the number of bytes read, is smaller that 512 if the last sector has been read and 0 if the file has already been read
  */
 uint16_t readFile(FilePointerType * fp)
 {
@@ -1414,6 +1414,15 @@ uint8_t seekEnd(FilePointerType * fp)
     retcode = readSector(fp->sectorBuffer,getClusterLba(fp->clusterPtr) + fp->sectorPtr);
     fp->sectorBufferPtr = fp->dirEntry->size & 0x1FF;
     return retcode;
+}
+
+uint8_t seekStart(FilePointerType * fp)
+{
+    fp->clusterPtr = fp->dirEntry->firstCluster;
+    fp->sectorPtr = 0;
+    fp->clusterCntr = 0;
+    fp->sectorBufferPtr = 0;
+    return 0;
 }
 
 /**
