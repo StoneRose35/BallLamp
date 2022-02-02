@@ -135,7 +135,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                 configSelectEntity(ctx.encoderPos);
             }
         }
-        else
+        else // edit entity
         {
             switch (ctx.encoderPos)
             {
@@ -238,8 +238,10 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                 tdata->serviceInterval = ctx.mode;
                 tdata->hourOn = ctx.hOn;
                 tdata->minuteOn = ctx.minOn;
+                tdata->totalMinutesOn = ctx.hOn*60 + ctx.minOn;
                 tdata->hourOff = ctx.hOff;
                 tdata->minuteOff = ctx.minOff;
+                tdata->totalMinutesOff = ctx.hOff*60 + ctx.minOff;
                 tdata->tTarget = ctx.ttarget;
                 tdata->heaterValue = (uint16_t)ctx.heater;
                 setPagePtr(0);

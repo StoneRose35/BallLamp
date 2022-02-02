@@ -42,7 +42,7 @@ void rootAppLoop(void* data)
         //fillSquare(&bgclr,8,32,160-8,8);
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1,32,160-8-(uint8_t)heaterBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1,32,160-16-(uint8_t)heaterBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);

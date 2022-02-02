@@ -34,7 +34,9 @@ uint8_t initTriopBreederService()
     triopsController.minuteOn = 12;
     triopsController.hourOff = 20;
     triopsController.minuteOff = 22;
-    triopsController.serviceInterval = 1000; // default interval is 30s (3000 ticks)
+    triopsController.totalMinutesOn = triopsController.minuteOn + 60*triopsController.hourOn;
+    triopsController.totalMinutesOff = triopsController.minuteOff + 60*triopsController.hourOff;
+    triopsController.serviceInterval = 3000; // default interval is 30s (3000 ticks)
     triopsController.errorFlags = 0; // no error before initialization
      
     // open log file
@@ -67,6 +69,7 @@ void triopBreederServiceLoop()
     char logLine[64];
     char nrbfr[16];
     uint16_t strLen;
+    uint16_t totalMinutes;
 
     triopsController.errorFlags = 0;
 
@@ -125,13 +128,16 @@ void triopBreederServiceLoop()
 
 
             // if time  > t_start and lamp is off: turn lamp on
-            if ((getHour() >= triopsController.hourOn && getMinute() >= triopsController.minuteOn) && 
-                (getHour() < triopsController.hourOff && getMinute() < triopsController.minuteOff))
+            totalMinutes = getHour()*60 + getMinute();
+            if ((totalMinutes >= triopsController.totalMinutesOn) && 
+                (totalMinutes < triopsController.totalMinutesOff))
             {
+                triopsController.lampState = 1;
                 remoteSwitchOn();
             }
             else
             {
+                triopsController.lampState = 0;
                 remoteSwitchOff();
             }
             dateTimeToString(logLine,getYear(),getMonth(),getDay(),getHour(),getMinute(),getSecond());
