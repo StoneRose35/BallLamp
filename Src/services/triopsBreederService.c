@@ -6,6 +6,7 @@
 #include "fatLib.h"
 #include "heater.h"
 #include "systick.h"
+#include "piRegulator.h"
 
 static volatile uint32_t heaterVal;
 static volatile uint32_t oldTicks;
@@ -23,7 +24,8 @@ TriopsControllerType * getTriopsController()
 uint8_t initTriopBreederService()
 {
     uint8_t retcode;
-    triopsController.cIntegral=10;
+    triopsController.cIntegral=10; // 0.625
+    triopsController.integralDampingFactor=16; // 1
     triopsController.heaterValue=0;
     triopsController.tLower = 20 << 4;
     triopsController.tTarget = 25 << 4 | 4; // 25.25
@@ -65,7 +67,7 @@ void triopBreederServiceLoop()
 {
     int16_t currentTemp;
     uint8_t retcode, rc2;
-    int32_t interm;
+    //int32_t interm;
     char logLine[64];
     char nrbfr[16];
     uint16_t strLen;
@@ -106,23 +108,7 @@ void triopBreederServiceLoop()
 
         if (retcode == 0)
         {
-            // set  heater: h_max - (t_new-t_lower)/(t_target-t_lower)*h_max + cIntergral*intergratedTempDiff
-            // max if t_new < t_lower, 0 if t_new > t_target
-            interm = (currentTemp - triopsController.tLower)*(1024 << 4);
-            interm = (1024 << 4) -  interm/(triopsController.tTarget - triopsController.tLower) + triopsController.integralTempDeviation*triopsController.cIntegral;
-            triopsController.integralTempDeviation += triopsController.tTarget-currentTemp ;
-            if (interm < 0)
-            {
-                triopsController.heaterValue = 0;
-            }
-            else if (interm > (1023 << 4))
-            {
-                triopsController.heaterValue = 1023;
-            }
-            else
-            {
-                triopsController.heaterValue = ((uint32_t)interm) >> 4;
-            }
+            getRegulatedHeaterValue(&triopsController,currentTemp);
             setHeater(triopsController.heaterValue);
             triopsController.temperature = currentTemp;
 

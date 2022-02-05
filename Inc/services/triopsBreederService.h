@@ -11,6 +11,8 @@ typedef struct TriopsBreeder
     uint16_t tTarget; // target temperature, should be around 25°C
     uint16_t cIntegral; // integral factor of the P-I controller
     int32_t integralTempDeviation; // summed up temperature deviation
+    int32_t integralDampingFactor; // damping factor for the integration a 4-bit fixed point integer,
+                                   // goes from 0.0 to 1.0, meaning 0 to 16  
     uint8_t hourOn; // hour when light should go on
     uint8_t minuteOn; // minute when light should go on
     uint8_t hourOff; // hour when light should go off

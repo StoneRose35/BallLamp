@@ -93,21 +93,22 @@ void rootAppDisplay(void* data)
     fillSquare(&bgclr,0,0,160,128);
     TriopsControllerType* triopsController = getTriopsController();
     // draw bottom icons
-    switch (ctx.entrySelected)
-    {
-        case 3:
-            fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            break;
-        case 2:
-            fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            break;
-        case 1:
-            fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            break;
-    }
     displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
     displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
     displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
+    switch (ctx.entrySelected)
+    {
+        case 3:
+            drawSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
+            break;
+        case 2:
+            drawSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
+            break;
+        case 1:
+            drawSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
+            break;
+    }
+
     
     // display the time on top
     writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
@@ -179,27 +180,27 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
     {
         if(ctx.entrySelected==1)
         {
-            drawSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
-            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
-            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            drawSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
+            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
+            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
             //fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==2)
         {
-            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
-            drawSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
-            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
+            drawSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
+            clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
             //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==3)
         {
-            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y);
-            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y);
-            drawSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y);
+            clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
+            clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
+            drawSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
             //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
             //fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
