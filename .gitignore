@@ -12,3 +12,5 @@
 /Inc/gen/*.h
 /Doc/gen/*
 /Doc/.idea
+/Tests/piRegulatorTest
+/Tests/piregulator.txt
