@@ -1,7 +1,7 @@
 #!/bin/bash
 
 FTFILENAME=fattestsmall.img
-FTFSIZE=64
+FTFSIZE=256
 USERNAME=`echo $1`
 
 if [[ $1 == "--help" ]]; then
@@ -52,7 +52,7 @@ EEOF
 		LOOPDEV=`losetup --show --offset 1048576 -f $FTFILENAME`
 		echo "attached to $LOOPDEV" 
 		echo "creating fat file system"
-		mkfs.vfat -F 32 $LOOPDEV
+		mkfs.vfat -F 32 -s 4 $LOOPDEV
 		echo "mounting the created file system"
 		mount $LOOPDEV  /home/$USERNAME/fattest 
 		echo "creating some directories"

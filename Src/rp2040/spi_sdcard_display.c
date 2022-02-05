@@ -59,6 +59,7 @@ void initSpi()
 void sendSdCardDummyBytes(uint16_t cnt,uint8_t targetbyte)
 {
     uint8_t dummy = 0;
+    waitUntilBusReady();
     csDisableDisplay();
     csEnableSDCard();
     if (targetbyte > 0)
@@ -92,6 +93,7 @@ uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
     uint8_t c = 0;
     uint8_t retval,returncode=0;
     uint16_t retcnt=0;
+    waitUntilBusReady();
     sendSdCardDummyBytes(2,0);
     for(c=0;c<6;c++) // send all commands at once
     {
@@ -116,7 +118,7 @@ uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
     while(retcnt < len && c < 0x40)
     {
         *SSPDR = 0xFF;
-        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+        waitUntilBusReady();
         retval = *SSPDR;
         if ((retcnt==0 && (retval & 0x80))==0 || retcnt > 0)
         {
@@ -128,7 +130,7 @@ uint8_t sendSdCardCommand(uint8_t* cmd,uint8_t* resp,uint16_t len)
             returncode = ERROR_TIMEOUT;
         }
     }
-    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    waitUntilBusReady();
     sendSdCardDummyBytes(2,0);
     return returncode;
 }
@@ -138,7 +140,7 @@ uint8_t initSdCard()
     uint8_t cmd[6];
     uint8_t resp[5];
     uint8_t retcode;
-
+    waitUntilBusReady();
     csDisableDisplay();
     csEnableSDCard();
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_SDCARD_INIT << SPI_SSPCR0_SCR_LSB);
@@ -271,6 +273,7 @@ uint8_t initSdCard()
 
 void sendDisplayCommand(uint8_t cmd,const uint8_t * data,uint32_t dataLen)
 {
+    waitUntilBusReady();
     csDisableSDCard();
     csEnableDisplay();
     setSckDisplay();
@@ -296,6 +299,7 @@ uint8_t readSector(uint8_t* sect, uint32_t address)
     uint8_t retcode;
     uint16_t cSect;
     uint32_t c;
+    waitUntilBusReady();
     csDisableDisplay();
     csEnableSDCard();    
     setSckSdCard();
@@ -355,6 +359,7 @@ uint8_t writeSector(uint8_t* sect, uint32_t address)
     uint8_t resp[2];
     uint16_t c=0;
     uint8_t rCode;
+    waitUntilBusReady();
     csDisableDisplay();
     csEnableSDCard();    
     setSckSdCard();
@@ -427,7 +432,7 @@ void setBacklight(uint8_t brightness)
 
 void initDisplay()
 {
-
+    waitUntilBusReady();
     csDisableSDCard();
     csEnableDisplay();
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
@@ -495,6 +500,7 @@ uint8_t blankScreen()
     uint8_t r = 30 << 3;
     uint8_t g = 00 << 2;
     uint8_t b = 10 << 3;
+    waitUntilBusReady();
     csDisableSDCard();
     csEnableDisplay();
     setSckDisplay();
@@ -550,6 +556,7 @@ uint8_t blankScreen()
 
 void displayOff()
 {
+    waitUntilBusReady();
     csDisableSDCard();
     csEnableDisplay();
     setSckDisplay();
@@ -558,6 +565,7 @@ void displayOff()
 
 void displayOn()
 {
+    waitUntilBusReady();
     csDisableSDCard();
     csEnableDisplay();
     setSckDisplay();

@@ -13,6 +13,7 @@ static FILE * fid;
 uint8_t * fakeFilesys;
 #include "string.h"
 typedef uint64_t ptr;
+#define ERROR_READ_TIMEOUT 7
 #endif
 
 static SdCardInfoType sdCardInfo;
@@ -40,6 +41,8 @@ uint8_t writeSector(uint8_t* res,uint64_t offset)
 
 
 #ifndef HARDWARE
+
+//#define FATTEST_DO_LOOP
 void main(int argc,char ** argv)
 {
     uint8_t sector[512];
@@ -54,7 +57,7 @@ void main(int argc,char ** argv)
     FilePointerType fp;
     DirectoryPointerType * dparent;
     DirectoryPointerType * dnew;
-    const char * devicePath = "./../../Doc/fattestsmall.img";
+    const char * devicePath = "./../../tools/fattestsmall.img";
     fp.dirEntry=0;
     
     // setup the fake filesys
@@ -67,8 +70,10 @@ void main(int argc,char ** argv)
     fclose(fid);
 
     initFatSDCard();
+    #ifdef FATTEST_DO_LOOP
     for(int loopcnt=0;loopcnt<100000;loopcnt++)
     {
+    #endif
         printf("Welcome to the FAT Access Library\r\n");
 
         printf("trying out Napa's rocking boot code\r\n");
@@ -180,7 +185,7 @@ void main(int argc,char ** argv)
         if (retcode == 0)
         {
             openFile(dparent,"log4.net",&fp);
-            char * exampletext="This is not Log4J\r\nAs instead ... its a c-based recreation of the end of the world";
+            char * exampletext="This is not Log4J\r\nAs instead ... its a c-based recreation of the end of the world\r\n";
             uint16_t c1=0;
             while (*(exampletext + c1) != 0)
             {
@@ -188,10 +193,14 @@ void main(int argc,char ** argv)
                 c1++;
             }
             *(fp.sectorBuffer + c1) = 0;
-            writeFile(dparent,&fp,c1);
+            for (uint16_t q=0;q<300;q++)
+            {
+                appendToFile(dparent,&fp,exampletext,c1);
+                //writeFile(dparent,&fp,c1);
+            }
         }
         // at this point: /NDIR/MYDIR/log4.net created and filled with content
-
+#ifdef FATTEST_DO_LOOP
         // removing the created content to be able to loop
         deleteFile(dparent,&fp);
         openDirectory(dparent,"..",dnew); 
@@ -206,7 +215,7 @@ void main(int argc,char ** argv)
         entriesRead=0x10;
 
     }
-
+#endif
     // copy back to drive
     fid = fopen(devicePath,"wb");
     fwrite(fakeFilesys,1,size,fid);

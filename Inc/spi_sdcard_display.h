@@ -108,6 +108,11 @@ inline void csDisableSDCard()
     *(GPIO_OUT + 1) = (1 << CS_SDCARD);
 }
 
+inline void waitUntilBusReady()
+{
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+}
+
 void initDisplay();
 uint8_t blankScreen();
 void setBacklight(uint8_t);
