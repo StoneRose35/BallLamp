@@ -87,7 +87,6 @@ void drawSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width,uint8_t spacing)
     fillSquare(&entrySel,posx,posy+spacing,width,2);
 }
 
-
 void clearSelectMarkers(uint8_t posx,uint8_t posy,uint8_t width,uint8_t spacing)
 {
     fillSquare(&bgclr,posx,posy-2,width,2);

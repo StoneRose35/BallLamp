@@ -46,7 +46,9 @@ typedef struct
     uint8_t posy;
     uint8_t spacing;
     uint8_t width;
-
+    uint8_t page;
+    void(*editCallback)(int16_t encoderChange);
+    void(*switchCallback)();
 } SelectionPositionType;
 
 volatile uint8_t brightness;
