@@ -245,6 +245,7 @@ void readCommand(char * cmd,void * context)
     FilePointerType fp;
     uint16_t bytesRead;
     char outbfr[513];
+    fp.dirEntry=0;
     getBracketContent(cmd,filename);
     retcode = openFile(cwd,filename,&fp);
     if (retcode != 0)

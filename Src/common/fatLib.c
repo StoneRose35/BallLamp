@@ -53,6 +53,7 @@ void main(int argc,char ** argv)
     DirectoryEntryType * entries = entriesArray; 
     uint8_t entriesRead=0x10;
     char fnameDisplay[12];
+    char nrbfr[16];
     uint8_t fcnt = 0x10;
     FilePointerType fp;
     DirectoryPointerType * dparent;
@@ -185,8 +186,9 @@ void main(int argc,char ** argv)
         if (retcode == 0)
         {
             openFile(dparent,"log4.net",&fp);
-            char * exampletext="This is not Log4J\r\nAs instead ... its a c-based recreation of the end of the world\r\n";
+            char * exampletext="This is not Log4J, as instead ... its a c-based recreation of the end of the world";
             uint16_t c1=0;
+            uint16_t cWritten = 0;
             while (*(exampletext + c1) != 0)
             {
                 *(fp.sectorBuffer + c1) =  *(exampletext + c1);
@@ -196,6 +198,8 @@ void main(int argc,char ** argv)
             for (uint16_t q=0;q<300;q++)
             {
                 appendToFile(dparent,&fp,exampletext,c1);
+                cWritten = sprintf(nrbfr," %d\r\n",q);
+                appendToFile(dparent,&fp,nrbfr,cWritten);
                 //writeFile(dparent,&fp,c1);
             }
         }
@@ -1385,17 +1389,16 @@ uint16_t readFile(FilePointerType * fp)
         }
         if (bytes_read + 512 > fp->dirEntry->size)
         {
-            for (uint16_t c = fp->dirEntry->size - (fp->sectorPtr << 9);c< 512;c++)
+            for (uint16_t c = fp->dirEntry->size - ((fp->sectorPtr + fp->clusterCntr * sdCardInfo.volumeId.sectorsPerCluster) << 9);c< 512;c++)
             {
                 fp->sectorBuffer[c] = 0;
             }
-            retcode = fp->dirEntry->size - (fp->sectorPtr << 9);
+            retcode = fp->dirEntry->size - ((fp->sectorPtr + fp->clusterCntr * sdCardInfo.volumeId.sectorsPerCluster) << 9);
         }
         else
         {
             retcode = 512;
         }
-        
         fp->sectorPtr ++;
         if(fp->sectorPtr == sdCardInfo.volumeId.sectorsPerCluster)
         {
