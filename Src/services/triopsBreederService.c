@@ -38,7 +38,7 @@ uint8_t initTriopBreederService()
     triopsController.minuteOff = 22;
     triopsController.totalMinutesOn = triopsController.minuteOn + 60*triopsController.hourOn;
     triopsController.totalMinutesOff = triopsController.minuteOff + 60*triopsController.hourOff;
-    triopsController.serviceInterval = 3000; // default interval is 30s (3000 ticks)
+    triopsController.serviceInterval = 0; // manual on startup default interval is 30s (3000 ticks)
     triopsController.errorFlags = 0; // no error before initialization
      
     // open log file

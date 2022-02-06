@@ -39,19 +39,23 @@ void rootAppLoop(void* data)
     TriopsControllerType* triopsController = getTriopsController();
     if(getTickValue() >ctx.ticksLast+99)
     {
-        //fillSquare(&bgclr,8,32,160-8,8);
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
         fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
         fillSquare(&bgclr,(uint8_t)heaterBarWidth+1+8,32,160-8-(uint8_t)heaterBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
-        writeText("T: ",2,6,FONT_TYPE_8X8);
-        writeText(tempString,2+2,6,FONT_TYPE_8X8);
+        writeText("T:",0,6,FONT_TYPE_8X8);
+        writeText(tempString,0+2,6,FONT_TYPE_8X8);
+
+        // display the integrated temperature deviation
+        fixedPointUInt16ToChar(tempString,triopsController->integralTempDeviation,4);
+        writeText("I:",10,6,FONT_TYPE_8X8);
+        writeText(tempString,10+2,6,FONT_TYPE_8X8);    
 
         timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
         // display the time on top
-        writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
+        writeText(ctx.timeStr,16,0,FONT_TYPE_16X16);
         ctx.ticksLast=getTickValue();
 
         // display the lamp state
@@ -111,7 +115,7 @@ void rootAppDisplay(void* data)
 
     
     // display the time on top
-    writeText(ctx.timeStr,16,12,FONT_TYPE_16X16);
+    writeText(ctx.timeStr,16,0,FONT_TYPE_16X16);
 
     // display the heater level
     // heaterLevel*(width-16)/1024
@@ -128,8 +132,13 @@ void rootAppDisplay(void* data)
 
     // display the temperature
     fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
-    writeText("T: ",2,6,FONT_TYPE_8X8);
-    writeText(tempString,2+2,6,FONT_TYPE_8X8);
+    writeText("T:",0,6,FONT_TYPE_8X8);
+    writeText(tempString,0+2,6,FONT_TYPE_8X8);
+
+    // display the integrated temperature deviation
+    fixedPointUInt16ToChar(tempString,triopsController->integralTempDeviation,4);
+    writeText("I:",10,6,FONT_TYPE_8X8);
+    writeText(tempString,10+2,6,FONT_TYPE_8X8);    
 
     // display the lamp state
     if(triopsController->lampState == 0)
@@ -140,6 +149,8 @@ void rootAppDisplay(void* data)
     {
         displayImage(&bulb_on_24x24_streamimg,8,64);
     }
+
+    // 
 
     // display the warnings
     if ((triopsController->errorFlags & TC_ERROR_FILESYSTEM) != 0)
