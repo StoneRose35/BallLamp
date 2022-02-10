@@ -189,18 +189,19 @@ void main(int argc,char ** argv)
             char * exampletext="This is not Log4J, as instead ... its a c-based recreation of the end of the world";
             uint16_t c1=0;
             uint16_t cWritten = 0;
-            while (*(exampletext + c1) != 0)
-            {
-                *(fp.sectorBuffer + c1) =  *(exampletext + c1);
-                c1++;
-            }
-            *(fp.sectorBuffer + c1) = 0;
+            //while (*(exampletext + c1) != 0)
+            //{
+            //    *(fp.sectorBuffer + c1) =  *(exampletext + c1);
+            //    c1++;
+            //}
+            //*(fp.sectorBuffer + c1) = 0;
+            c1=82;
             for (uint16_t q=0;q<300;q++)
             {
                 appendToFile(dparent,&fp,exampletext,c1);
                 cWritten = sprintf(nrbfr," %d\r\n",q);
+                nrbfr[cWritten]=0;
                 appendToFile(dparent,&fp,nrbfr,cWritten);
-                //writeFile(dparent,&fp,c1);
             }
         }
         // at this point: /NDIR/MYDIR/log4.net created and filled with content
@@ -1458,6 +1459,7 @@ uint8_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t
     if (nrbytes == 512)
     {
         fp->sectorPtr ++;
+        fp->sectorBufferPtr=0;
         if(fp->sectorPtr == sdCardInfo.volumeId.sectorsPerCluster)
         {
             uint32_t oldcluster = fp->clusterPtr;
@@ -1516,14 +1518,7 @@ uint8_t writeFile(DirectoryPointerType * parentDir,FilePointerType * fp,uint16_t
                 
                 if (fnameEqual == 1)
                 {
-                    if (nrbytes == 512) // wrote an entire sector
-                    {
-                        (*(entries + c)).size += nrbytes;
-                    }
-                    else // replaced the last sector
-                    {
-                        (*(entries + c)).size = ((*(entries + c)).size & 0xFFFE00) +  nrbytes;
-                    }
+                    (*(entries + c)).size = ((*(entries + c)).size & 0xFFFE00) +  nrbytes;
                     entryToSector(sector,entryPos,parentDir,entries + c);
                 }
             }
