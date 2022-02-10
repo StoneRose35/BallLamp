@@ -551,6 +551,7 @@ void displayPage1()
     {
         appendToString(lineBfr," ");
     }
+    writeString(lineBfr,0,7);
 
     fillSquare(&bgclr,0,9*8,160,8);
 }
@@ -571,7 +572,6 @@ void lampChange(int16_t encoderIncr)
 
     }
     lineBfr[0]=0;
-    appendToString(lineBfr," Lamp     ");
     if (ctx.lamp == 1)
     {
         appendToString(lineBfr,"On        ");
@@ -580,7 +580,7 @@ void lampChange(int16_t encoderIncr)
     {
         appendToString(lineBfr,"Off       ");
     }
-    writeString(lineBfr,0,1);
+    writeString(lineBfr,10,1);
 }
 
 void cIntChange(int16_t encoderIncr)
@@ -600,14 +600,13 @@ void cIntChange(int16_t encoderIncr)
     }
 
     lineBfr[0]=0;
-    appendToString(lineBfr," cInt     ");
     UInt16ToChar(ctx.cintegral,nrbfr);
     cAppended = appendToString(lineBfr,nrbfr);
-    for(uint8_t c=0;c<cAppended;c++)
+    for(uint8_t c=0;c<10-cAppended;c++)
     {
         appendToString(lineBfr," ");
     }
-    writeString(lineBfr,0,3);
+    writeString(lineBfr,10,3);
 }
 
 void tLowerChange(int16_t encoderIncr)
@@ -640,13 +639,13 @@ void serviceIntervalChange(int16_t encoderIncr)
     }
 
     lineBfr[0]=0;
-    appendToString(lineBfr," Period   ");
     UInt16ToChar(ctx.serviceInterval/100,nrbfr);
     cAppended = appendToString(lineBfr,nrbfr);
-    for(uint8_t c=0;c<cAppended;c++)
+    for(uint8_t c=0;c<10-cAppended;c++)
     {
         appendToString(lineBfr," ");
     }
+    writeString(lineBfr,10,7);
 }
 
 void pageDecreaseChange()

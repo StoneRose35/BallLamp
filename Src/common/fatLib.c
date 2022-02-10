@@ -189,12 +189,6 @@ void main(int argc,char ** argv)
             char * exampletext="This is not Log4J, as instead ... its a c-based recreation of the end of the world";
             uint16_t c1=0;
             uint16_t cWritten = 0;
-            //while (*(exampletext + c1) != 0)
-            //{
-            //    *(fp.sectorBuffer + c1) =  *(exampletext + c1);
-            //    c1++;
-            //}
-            //*(fp.sectorBuffer + c1) = 0;
             c1=82;
             for (uint16_t q=0;q<300;q++)
             {

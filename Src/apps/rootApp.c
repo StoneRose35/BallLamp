@@ -9,6 +9,7 @@
 #include "images/bulb_off_24x24.h"
 #include "images/warning_sd_card_16x16.h"
 #include "images/warning_tempsensor_16x16.h"
+#include "images/recording_light_24x24.h"
 #include "datetimeClock.h"
 #include "stringFunctions.h"
 #include "apps/rootApp.h"
@@ -66,6 +67,16 @@ void rootAppLoop(void* data)
         else
         {
             displayImage(&bulb_on_24x24_streamimg,8,64);
+        }
+
+        // display the recording button (if on)
+        if (triopsController->serviceInterval > 0)
+        {
+            displayImage(&recording_light_24x24_streamimg,8+24+8,64);
+        }
+        else
+        {
+            fillSquare(&bgclr,8+24+8,64,24,24);
         }
 
         // display the warnings
@@ -150,7 +161,11 @@ void rootAppDisplay(void* data)
         displayImage(&bulb_on_24x24_streamimg,8,64);
     }
 
-    // 
+    // display the recording button (if on)
+    if (triopsController->serviceInterval > 0)
+    {
+        displayImage(&recording_light_24x24_streamimg,8+24+8,64);
+    }
 
     // display the warnings
     if ((triopsController->errorFlags & TC_ERROR_FILESYSTEM) != 0)
@@ -194,31 +209,19 @@ void rootAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
             drawSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
             clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
             clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
-            //fillSquare(&entrySel,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==2)
         {
             clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
             drawSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
             clearSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
-            //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&entrySel,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&bgclr,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
         else if(ctx.entrySelected==3)
         {
             clearSelectFrame(ROOT_ICON_1_X,ROOT_ICON_Y+2);
             clearSelectFrame(ROOT_ICON_2_X,ROOT_ICON_Y+2);
             drawSelectFrame(ROOT_ICON_3_X,ROOT_ICON_Y+2);
-            //fillSquare(&bgclr,ROOT_ICON_1_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&bgclr,ROOT_ICON_2_X-2,ROOT_ICON_Y-2,32+4,32+4);
-            //fillSquare(&entrySel,ROOT_ICON_3_X-2,ROOT_ICON_Y-2,32+4,32+4);
         }
-        //displayImage(&drafthorse_32x32_streamimg,ROOT_ICON_1_X,ROOT_ICON_Y);
-        //displayImage(&clock_32x32_streamimg,ROOT_ICON_2_X,ROOT_ICON_Y);
-        //displayImage(&gearwheel_32x32_streamimg,ROOT_ICON_3_X,ROOT_ICON_Y);
     }
 
     if (switchChange == -1)

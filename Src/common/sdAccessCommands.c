@@ -216,7 +216,7 @@ void rmCommand(char * cmd,void* context)
     uint8_t retcode=0;
     FilePointerType fp;
     getBracketContent(cmd,filename);
-
+    fp.dirEntry = 0;
     retcode = openFile(cwd,filename,&fp);
     if (retcode != 0)
     {
