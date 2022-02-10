@@ -153,6 +153,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                 if(ctx.mode == CONFIG_MODE_MANUAL)
                 {
                     tdata->serviceInterval = 0;
+                    tdata->integralTempDeviation = 0;
                 }
                 else
                 {

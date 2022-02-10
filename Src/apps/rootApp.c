@@ -35,24 +35,25 @@ static struct RootAppContext
 
 void rootAppLoop(void* data)
 {
-    char tempString[8];
+    char tempString[16];
     uint32_t heaterBarWidth;
     TriopsControllerType* triopsController = getTriopsController();
     if(getTickValue() >ctx.ticksLast+99)
     {
         heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
-        fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1+8,32,160-8-(uint8_t)heaterBarWidth,8);
+        fillSquare(&heaterClr,8,20,(uint8_t)heaterBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1+8,20,160-8-(uint8_t)heaterBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
-        writeText("T:",0,6,FONT_TYPE_8X8);
-        writeText(tempString,0+2,6,FONT_TYPE_8X8);
+        writeText("T:",0,5,FONT_TYPE_8X8);
+        writeText(tempString,2,5,FONT_TYPE_8X8);
 
         // display the integrated temperature deviation
         fixedPointUInt16ToChar(tempString,triopsController->integralTempDeviation,4);
-        writeText("I:",10,6,FONT_TYPE_8X8);
-        writeText(tempString,10+2,6,FONT_TYPE_8X8);    
+        writeText("I:",0,6,FONT_TYPE_8X8);
+        fillSquare(&bgclr,7*8,6*8,12*8,8);
+        writeText(tempString,2,6,FONT_TYPE_8X8);    
 
         timeToString(ctx.timeStr,getHour(),getMinute(),getSecond());
         // display the time on top
@@ -134,22 +135,22 @@ void rootAppDisplay(void* data)
     // |       |        |        |        |
     // |                |                 |
     heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
-    fillSquare(&heaterClr,8,32,(uint8_t)heaterBarWidth,8);
-    fillSquare(&clrBlack,8,40,1,4);
-    fillSquare(&clrBlack,8+(160-16)/2,40,1,4);
-    fillSquare(&clrBlack,8+(160-16),40,1,4);
-    fillSquare(&clrBlack,8+(160-16)/4,40,1,2);
-    fillSquare(&clrBlack,8+(160-16)*3/4,40,1,2);
+    fillSquare(&heaterClr,8,20,(uint8_t)heaterBarWidth,8);
+    fillSquare(&clrBlack,8,28,1,4);
+    fillSquare(&clrBlack,8+(160-16)/2,28,1,4);
+    fillSquare(&clrBlack,8+(160-16),28,1,4);
+    fillSquare(&clrBlack,8+(160-16)/4,28,1,2);
+    fillSquare(&clrBlack,8+(160-16)*3/4,28,1,2);
 
     // display the temperature
     fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
-    writeText("T:",0,6,FONT_TYPE_8X8);
-    writeText(tempString,0+2,6,FONT_TYPE_8X8);
+    writeText("T:",0,5,FONT_TYPE_8X8);
+    writeText(tempString,2,5,FONT_TYPE_8X8);
 
     // display the integrated temperature deviation
     fixedPointUInt16ToChar(tempString,triopsController->integralTempDeviation,4);
-    writeText("I:",10,6,FONT_TYPE_8X8);
-    writeText(tempString,10+2,6,FONT_TYPE_8X8);    
+    writeText("I:",0,6,FONT_TYPE_8X8);
+    writeText(tempString,2,6,FONT_TYPE_8X8);    
 
     // display the lamp state
     if(triopsController->lampState == 0)
