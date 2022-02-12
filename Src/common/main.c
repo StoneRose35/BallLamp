@@ -207,43 +207,15 @@ DirectoryPointerType * ndir;
 
 
 /**
- * @brief the main entry point, should never exit
+ * @brief tries to mount the FAT32-formatted first partition on the sd-card
+ *        since printf is used the CLI/API must be initialized first
  * 
- * @return int by definition but should never return a value
  */
-int main(void)
+void mountFat32SDCard()
 {
 	uint16_t sdInitCnt=0;
 	uint8_t retcode=0;
 	char nrbfr[16];
-	uint8_t hibernateChange=0;
-
-	/*
-	 *
-	 * Initialize Hardware components
-	 * 
-	 * */
-	#ifdef STM32
-	enableFpu();
-	#endif
-    setupClock();
-	initSystickTimer();
-	initDMA();
-	initPwm();
-	initPio();
-	initGpio();
-	initSpi();
-	initDatetimeClock();
-	initUart(BAUD_RATE);
-
-
-
-	/*
-	 *
-	 * Initialise Component-specific drivers
-	 * 
-	 * */
-	initCliApi();
 	printf("initializing SD Card.. ");
 	retcode = 1;
 	while (sdInitCnt < 25 && retcode != 0)
@@ -286,7 +258,44 @@ int main(void)
 			printf("\r\n");
 		}
 	}
+}
 
+/**
+ * @brief the main entry point, should never exit
+ * 
+ * @return int by definition but should never return a value
+ */
+int main(void)
+{
+	uint8_t hibernateChange=0;
+
+	/*
+	 *
+	 * Initialize Hardware components
+	 * 
+	 * */
+	#ifdef STM32
+	enableFpu();
+	#endif
+    setupClock();
+	initSystickTimer();
+	initDMA();
+	initPwm();
+	initPio();
+	initGpio();
+	initSpi();
+	initDatetimeClock();
+	initUart(BAUD_RATE);
+
+
+
+	/*
+	 *
+	 * Initialise Component-specific drivers
+	 * 
+	 * */
+	initCliApi();
+	mountFat32SDCard();
 	initDisplay();
 	initNeopixels();
 	setEngineState(0);

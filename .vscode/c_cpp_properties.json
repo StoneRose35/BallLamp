@@ -8,7 +8,7 @@
                 "Inc"
             ],
             "defines": [
-                "BKP_RP2040_FEATHER"
+                "RP2040_FEATHER", "ITSYBITSY"
             ],
             "compilerPath": "/usr/bin/arm-none-eabi-gcc",
             "cStandard": "c11",

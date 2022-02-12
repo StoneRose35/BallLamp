@@ -38,7 +38,7 @@
 .align 2
 
 
-/* trying to initialize  the xip flash using default single channel spi mode*/
+/* trying to initialize  the xip flash using default single channel spi mode, can be used for the rp2040 feather*/
 
 push {lr}
 
