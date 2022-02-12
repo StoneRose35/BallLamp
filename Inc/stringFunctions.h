@@ -14,6 +14,7 @@
 
 void UInt8ToChar(uint8_t, char*);
 void UInt16ToChar(uint16_t, char*);
+void Int16ToChar(int16_t, char*);
 void UInt32ToChar(uint32_t, char*);
 uint8_t toUInt8(char*);
 int16_t toInt16(char*);
@@ -25,6 +26,7 @@ void UInt32ToHex(uint32_t,char*);
 void fillWithLeadingZeros(uint8_t minlength,char * nr);
 void toPercentChar(float,char*);
 void fixedPointUInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals);
+void fixedPointInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals);
 
 
 uint8_t startsWith(char*,const char*);

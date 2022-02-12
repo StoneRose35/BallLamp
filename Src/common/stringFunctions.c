@@ -42,6 +42,61 @@ void toPercentChar(float percentVal,char * out)
 	out[str_len+1] = 0;
 }
 
+void fixedPointInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals)
+{
+	uint32_t fracBase=1;
+	uint8_t c=0,fracLength=0,strPtr;
+	uint16_t fracNr,intNr;
+	char fracStr[16];
+	strPtr=0;
+
+	if ((nr & 0x8000) != 0) // fill up with ones if the sign bit is set
+	{
+		nr = (nr ^ 0xFFFF) + 1;
+		*(str+strPtr++) = '-';
+	}
+
+	for(c=0;c<fracDecimals;c++)
+	{
+		fracBase *= 5;
+	}
+	fracNr = (nr &  ((1 << fracDecimals) - 1))*fracBase;
+	UInt16ToChar(fracNr,fracStr);
+	c=0;
+	while(*(fracStr+c) != 0)
+	{
+		fracLength++;
+		c++;
+	}
+	intNr = nr >> fracDecimals;
+
+
+	Int16ToChar(intNr,str+strPtr);
+	c=0;
+
+	while(c<fracDecimals+1)
+	{
+		if (*(str+strPtr) == 0 && c==0)
+		{
+			*(str+strPtr) = '.';
+			c++;
+		}
+		else if ( c > 0 && c < (fracDecimals - fracLength) + 1)
+		{
+			*(str+strPtr) = '0';
+			c++;
+		}
+		else if (c>0)
+		{
+			*(str+strPtr) = *(fracStr + c - 1);
+			c++;
+		}
+		strPtr++;
+	}
+	*(str+strPtr) = 0;
+}
+
+
 void fixedPointUInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals)
 {
 	uint32_t fracBase=1;
@@ -146,6 +201,47 @@ void UInt16ToChar(uint16_t nr, char * out)
 			while (nr >= pos)
 			{
 				nr -= pos;
+				cntr++;
+			}
+			if (cntr > 0 || firstDigit > 0)
+			{
+				out[charpos++] = cntr + 0x30;
+				firstDigit = 1;
+			}
+			pos /= 10;
+		}
+	}
+	out[charpos]=0;
+}
+
+void Int16ToChar(int16_t nr, char * out)
+{
+	uint16_t pos=10000;
+	uint16_t cntr=0,charpos=0;
+	uint16_t firstDigit = 0;
+	uint16_t interm_nr;
+	if (nr==0)
+	{
+		out[charpos++]=0x30;
+	}
+	else
+	{
+		if (((uint16_t)nr & 0x8000) != 0)
+		{
+			interm_nr = (nr ^ 0xFFFF) + 1;
+			nr++; 
+			out[charpos++] = '-';
+		}
+		else
+		{
+			interm_nr = nr;
+		}
+		while (pos > 0)
+		{
+			cntr=0;
+			while (interm_nr >= pos)
+			{
+				interm_nr -= pos;
 				cntr++;
 			}
 			if (cntr > 0 || firstDigit > 0)

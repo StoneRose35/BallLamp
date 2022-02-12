@@ -9,7 +9,16 @@ uint16_t getRegulatedHeaterValue(TriopsControllerType * controller,uint16_t meas
     // max if t_new < t_lower, 0 if t_new > t_target
     interm = (measuredTemp - controller->tLower)*(1024 << 4);
     interm = (1024 << 4) -  interm/(controller->tTarget - controller->tLower) + controller->integralTempDeviation*controller->cIntegral;
-    controller->integralTempDeviation = ((controller->integralTempDeviation*controller->integralDampingFactor) >> 4) + controller->tTarget-measuredTemp ;
+    if (((measuredTemp < controller->tLower) && interm > (1023 << 4))  || (measuredTemp > controller->tTarget && interm < 0)) 
+    // reset integral temperature deviation if outside of regulation range 
+    {
+        controller->integralTempDeviation=0;
+    }
+    else
+    {
+        controller->integralTempDeviation = controller->integralTempDeviation + (controller->tTarget-measuredTemp) ;
+    }
+
     if (interm < 0)
     {
         controller->heaterValue = 0;

@@ -24,10 +24,10 @@
             "label": "C/C++: gcc-9 Aktive Datei kompilieren",
             "command": "/usr/bin/gcc-9",
             "args": [
-                "-I./../../Inc",
+                "-I./../Inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "stringFunctions.c",
+                "${file}", "../Src/common/stringFunctions.c", "../Src/common/piRegulator.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
