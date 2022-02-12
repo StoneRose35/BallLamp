@@ -10,6 +10,7 @@
 #include "uiStack.h"
 #include "apps/configApp.h"
 #include "heater.h"
+#include "remoteSwitch.h"
 
 
 static struct configAppData
@@ -440,7 +441,7 @@ void heaterChange(int16_t encoderIncr)
         ctx.heater = 1023;
     }
     lineBfr[0] = 0;
-    if (ctx.mode == 0)
+    if (ctx.mode == CONFIG_MODE_MANUAL)
     {
         setHeater(ctx.heater);
     }
@@ -566,11 +567,18 @@ void lampChange(int16_t encoderIncr)
     }
     else if (encoderIncr < -1)
     {
-        ctx.lamp = -1;
+        ctx.lamp = 0;
     }
-    if(ctx.mode == 0)
+    if(ctx.mode == CONFIG_MODE_MANUAL)
     {
-
+        if (ctx.lamp == 1)
+        {
+            remoteSwitchOn();
+        }
+        else
+        {
+            remoteSwitchOff();
+        }
     }
     lineBfr[0]=0;
     if (ctx.lamp == 1)
