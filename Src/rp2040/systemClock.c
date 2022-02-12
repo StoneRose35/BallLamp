@@ -5,15 +5,16 @@
  *      Author: philipp
  */
 #ifdef RP2040_FEATHER
-
+#include <stdint.h>
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/xosc.h"
 #include "hardware/regs/clocks.h"
 #include "hardware/regs/pll.h"
 #include "hardware/regs/resets.h"
 
-#include "neopixelDriver.h"
-#include <stdint.h>
+#include "systemClock.h"
+#include "system.h"
+
 
 
 void setupClock()
@@ -31,6 +32,7 @@ void setupClock()
 
 	
 	// de-reset sys pll
+	*RESETS |= (1 << RESETS_RESET_PLL_SYS_LSB);
 	*RESETS &= ~(1 << RESETS_RESET_PLL_SYS_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PLL_SYS_LSB)) == 0);
 
@@ -57,7 +59,29 @@ void setupClock()
 
 	// enable peripheral clock
 	*CLK_PERI_CTRL |= (1 << CLOCKS_CLK_PERI_CTRL_ENABLE_LSB);
-	
+}
+
+void initUsbPll()
+{
+	// de-reset usb pll
+	*RESETS |= (1 << RESETS_RESET_PLL_USB_LSB);
+	*RESETS &= ~(1 << RESETS_RESET_PLL_USB_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_PLL_USB_LSB)) == 0);
+	PLL_USB->cs |= (1 << 0) ;
+	//vco runs at 12MHz*FEEDBK
+	PLL_USB->fbdiv = FEEDBK;
+
+	// wwitch on pll itself and vco
+	PLL_USB->pwr &= ~((1 << PLL_PWR_PD_LSB) | (1 << PLL_PWR_VCOPD_LSB));
+
+	//wait until lock is achieved
+	while((PLL_USB->cs & (1 << PLL_CS_LOCK_LSB))==0);
+
+	// usb clock runs at f_vco/postdiv1/postdiv2
+	PLL_USB->prim = (POSTDIV1_USB << PLL_PRIM_POSTDIV1_LSB) | (POSTDIV2_USB << PLL_PRIM_POSTDIV2_LSB);
+
+	// enable post divider
+	PLL_USB->pwr &= ~(1 << PLL_PWR_POSTDIVPD_LSB);
 }
 
 #endif

@@ -37,7 +37,7 @@ void lampChange(int16_t encoderIncr);
 void cIntChange(int16_t encoderIncr);
 void tLowerChange(int16_t encoderIncr);
 void serviceIntervalChange(int16_t encoderIncr);
-
+void brightnessThreshholdChange(int16_t encoderIncr);
 
 // display functions
 void displayPage0();

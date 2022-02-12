@@ -7,6 +7,7 @@
 #include "heater.h"
 #include "systick.h"
 #include "piRegulator.h"
+#include "adc.h"
 
 static volatile uint32_t heaterVal;
 static volatile uint32_t oldTicks;
@@ -25,7 +26,6 @@ uint8_t initTriopBreederService()
 {
     uint8_t retcode;
     triopsController.cIntegral=10; // 0.625
-    triopsController.integralDampingFactor=16; // 1
     triopsController.heaterValue=0;
     triopsController.tLower = 20 << 4;
     triopsController.tTarget = 25 << 4 | 4; // 25.25
@@ -36,6 +36,7 @@ uint8_t initTriopBreederService()
     triopsController.minuteOn = 12;
     triopsController.hourOff = 20;
     triopsController.minuteOff = 22;
+    triopsController.brightnessThreshhold = 0xFFF;
     triopsController.totalMinutesOn = triopsController.minuteOn + 60*triopsController.hourOn;
     triopsController.totalMinutesOff = triopsController.minuteOff + 60*triopsController.hourOff;
     triopsController.serviceInterval = 0; // manual on startup default interval is 30s (3000 ticks)
@@ -72,6 +73,7 @@ void triopBreederServiceLoop()
     char nrbfr[16];
     uint16_t strLen;
     uint16_t totalMinutes;
+    uint16_t brightness;
 
     triopsController.errorFlags = 0;
 
@@ -118,8 +120,17 @@ void triopBreederServiceLoop()
             if ((totalMinutes >= triopsController.totalMinutesOn) && 
                 (totalMinutes < triopsController.totalMinutesOff))
             {
-                triopsController.lampState = 1;
-                remoteSwitchOn();
+                brightness = readChannel(0);
+                if(brightness < triopsController.brightnessThreshhold)
+                {
+                    triopsController.lampState = 1;
+                    remoteSwitchOn();
+                }
+                else
+                {
+                    triopsController.lampState = 0;
+                    remoteSwitchOff();
+                }
             }
             else
             {

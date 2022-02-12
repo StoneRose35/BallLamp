@@ -50,7 +50,6 @@ void main(int argc,char** argv)
     FILE * fid;
     char nrbfr[16];
     char nrbfr2[16];
-    tc.integralDampingFactor = 16;
     tc.integralTempDeviation = 0;
     tc.tTarget = (25<<4) + 4;
     tc.tLower = (20<<4);

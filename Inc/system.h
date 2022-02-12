@@ -41,10 +41,14 @@
 #define F_XOSC (12000000)
 // divider factors, calculated using clingo with clockcalculation.lp
 #define POSTDIV1 6
+#define POSTDIV1_USB 6
 #define POSTDIV2 2
+#define POSTDIV2_USB 5
 #define NP_CLKDIV 15
 #define FEEDBK 120
+#define FEEDBK_USB 120
 #define F_SYS (F_XOSC*FEEDBK/POSTDIV1/POSTDIV2)
+#define F_USB (F_XOSC*FEEDBK_USB/POSTDIV1_USB/POSTDIV2_USB)
 #define PIO_SM1_CNT (F_SYS/FRAMERATE-2) 
 
 #define FLASH_PAGE_SIZE 4096 //!< size in bytes of a flash page, a flash page is the smallest eraseable flash unit

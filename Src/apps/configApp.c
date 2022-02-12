@@ -25,13 +25,14 @@ static struct configAppData
     uint16_t heater;
     uint16_t cintegral;
     uint16_t serviceInterval;
+    uint16_t brightnessThreshhold;
     uint8_t lamp;
     uint8_t encoderPos;
     uint8_t editLevel;
     uint8_t page;
 } ctx;
 
-#define N_SELECTION_POSITIONS 13
+#define N_SELECTION_POSITIONS 14
 #define LAST_PAGE 1
 
 // main configuration for the configuration items, note that the entres for "page back" and "page next"
@@ -48,6 +49,7 @@ static const SelectionPositionType configSelectionPositions[N_SELECTION_POSITION
 {.posx=10*8,.posy=3*8,.spacing=8,.width=5*8,.page=1,.editCallback=&cIntChange,.switchCallback=0},
 {.posx=10*8,.posy=5*8,.spacing=8,.width=4*8,.page=1,.editCallback=&tLowerChange,.switchCallback=0},
 {.posx=10*8,.posy=7*8,.spacing=8,.width=7*8,.page=1,.editCallback=&serviceIntervalChange,.switchCallback=0},
+{.posx=10*8,.posy=9*8,.spacing=8,.width=3*8,.page=1,.editCallback=&brightnessThreshholdChange,.switchCallback=0},
 {.posx=80-3-12,.posy=128-24-4,.spacing=24,.width=12,.page=0xFE,.editCallback=0,.switchCallback=&pageDecreaseChange}, // back
 {.posx=80+3,.posy=128-24-4,.spacing=24,.width=12,.page=0xFF,.editCallback=0,.switchCallback=&pageIncreaseChange}, // next
 };
@@ -86,6 +88,7 @@ void createConfigApp(SubApplicationType* app,uint8_t index)
     ctx.serviceInterval = tdata->serviceInterval;
     ctx.lamp = tdata->lampState;
     ctx.cintegral = tdata->cIntegral;
+    ctx.brightnessThreshhold = tdata->brightnessThreshhold;
     (app+index)->data=(void*)0;
     (app+index)->encoderSwitchCallback=&configAppEncoderSwitchCallback;
     (app+index)->display=&configAppDisplay;
@@ -151,6 +154,7 @@ void configAppEncoderSwitchCallback(int16_t encoderIncr,int8_t switchChange)
                 tdata->tLower=ctx.tlower;
                 tdata->lampState=ctx.lamp;
                 tdata->cIntegral=ctx.cintegral;
+                tdata->brightnessThreshhold = ctx.brightnessThreshhold;
                 if(ctx.mode == CONFIG_MODE_MANUAL)
                 {
                     tdata->serviceInterval = 0;
@@ -555,7 +559,15 @@ void displayPage1()
     }
     writeString(lineBfr,0,7);
 
-    fillSquare(&bgclr,0,9*8,160,8);
+    lineBfr[0]=0;
+    appendToString(lineBfr," BrightTh ");
+    UInt16ToChar(ctx.brightnessThreshhold,nrbfr);
+    cAppended=appendToString(lineBfr,nrbfr);
+    for(uint8_t c=cAppended;c<20;c++)
+    {
+        appendToString(lineBfr," ");
+    }
+    writeString(lineBfr,0,9);
 }
 
 void lampChange(int16_t encoderIncr)
@@ -655,6 +667,38 @@ void serviceIntervalChange(int16_t encoderIncr)
         appendToString(lineBfr," ");
     }
     writeString(lineBfr,10,7);
+}
+
+void brightnessThreshholdChange(int16_t encoderIncr)
+{
+    char lineBfr[24];
+    char nrbfr[8];
+    int32_t interm;
+    uint16_t cAppended;
+    if(encoderIncr > 1 && ctx.brightnessThreshhold< 0xFFF)
+    {
+        interm = ctx.brightnessThreshhold + encoderIncr/2;
+        if (interm > 0xFFF)
+        {
+            ctx.brightnessThreshhold = 0xFFF;
+        }
+    }
+    else if (encoderIncr < -1 && ctx.brightnessThreshhold>0)
+    {
+        interm = ctx.brightnessThreshhold + encoderIncr/2;
+        if (interm < 0x0)
+        {
+            ctx.brightnessThreshhold = 0x0;
+        }
+    }
+    lineBfr[0]=0;
+    UInt16ToChar(ctx.brightnessThreshhold,nrbfr);
+    cAppended = appendToString(lineBfr,nrbfr);
+    for(uint8_t c=0;c<10-cAppended;c++)
+    {
+        appendToString(lineBfr," ");
+    }
+    writeString(lineBfr,10,9);
 }
 
 void pageDecreaseChange()

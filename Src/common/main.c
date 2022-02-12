@@ -161,6 +161,7 @@
 #include "dma.h"
 #include "pio.h"
 #include "pwm.h"
+#include "adc.h"
 #include "spi_sdcard_display.h"
 #include "fatLib.h"
 #include "consoleHandler.h"
@@ -278,6 +279,7 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
+	initUsbPll();
 	initSystickTimer();
 	initDMA();
 	initPwm();
@@ -286,6 +288,7 @@ int main(void)
 	initSpi();
 	initDatetimeClock();
 	initUart(BAUD_RATE);
+	initAdc();
 
 
 
