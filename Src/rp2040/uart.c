@@ -96,6 +96,8 @@ uint8_t sendCharAsyncBt()
 	}
 }
 
+// TODO: properly handle the blocked case
+// it seems data is sent multiple time when the output buffer would run over
 void printf(const char* data)
 {
 	uint32_t cnt = 0;

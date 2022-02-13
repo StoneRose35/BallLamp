@@ -24,8 +24,8 @@ typedef struct
 
 inline uint16_t encodeColor(const RGB * clr)
 {
-    return (((clr->r & 0xF8) | ((clr->g >> 5) & 0x7)) << 8) | 
-    (((clr->g & 0x7) << 5) | ((clr->b & 0xF8) >> 3));
+    return (((clr->r & 0xF8) | ((clr->g >> 5) & 0x7)) << 0) | 
+    ((((clr->g & 0x7) << 5) | ((clr->b & 0xF8) >> 3)) << 8);
 }
 
 uint8_t displayImage(const ST7735ImageType* img,uint8_t px,uint8_t py);

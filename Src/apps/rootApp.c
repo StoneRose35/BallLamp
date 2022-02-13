@@ -37,12 +37,18 @@ void rootAppLoop(void* data)
 {
     char tempString[16];
     uint32_t heaterBarWidth;
+    uint32_t brightnessBarWidth;
     TriopsControllerType* triopsController = getTriopsController();
     if(getTickValue() >ctx.ticksLast+99)
     {
-        heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
-        fillSquare(&heaterClr,8,20,(uint8_t)heaterBarWidth,8);
-        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1+8,20,160-8-(uint8_t)heaterBarWidth,8);
+        // display the heater bar
+        heaterBarWidth = ((triopsController->heaterValue*(80-8)) >> 10) & 0xFF;
+        fillSquare(&heaterClr,0,20,(uint8_t)heaterBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)heaterBarWidth+1,20,80-(uint8_t)heaterBarWidth,8);
+
+        brightnessBarWidth = ((triopsController->currentBrightness *(80-8)) >> 12) & 0xFF;
+        fillSquare(&brightnessClr,80,20,(uint8_t)brightnessBarWidth,8);
+        fillSquare(&bgclr,(uint8_t)brightnessBarWidth+80+1,20,80-(uint8_t)brightnessBarWidth,8);
 
         // display the temperature
         fixedPointUInt16ToChar(tempString,triopsController->temperature,4);
@@ -105,6 +111,8 @@ void rootAppDisplay(void* data)
 {
     char tempString[8];
     uint32_t heaterBarWidth;
+    uint32_t brightnessBarWidth;
+    uint32_t brightnessThreshholdPosition;
     // draw background
     fillSquare(&bgclr,0,0,160,128);
     TriopsControllerType* triopsController = getTriopsController();
@@ -130,17 +138,25 @@ void rootAppDisplay(void* data)
     writeText(ctx.timeStr,16,0,FONT_TYPE_16X16);
 
     // display the heater level
-    // heaterLevel*(width-16)/1024
+    // heaterLevel*(80-8)/1024
     // ------------------------------
     // |       |        |        |        |
     // |                |                 |
-    heaterBarWidth = ((triopsController->heaterValue*(160-16)) >> 10) & 0xFF;
-    fillSquare(&heaterClr,8,20,(uint8_t)heaterBarWidth,8);
-    fillSquare(&clrBlack,8,28,1,4);
-    fillSquare(&clrBlack,8+(160-16)/2,28,1,4);
-    fillSquare(&clrBlack,8+(160-16),28,1,4);
-    fillSquare(&clrBlack,8+(160-16)/4,28,1,2);
-    fillSquare(&clrBlack,8+(160-16)*3/4,28,1,2);
+    heaterBarWidth = ((triopsController->heaterValue*(80-8)) >> 10) & 0xFF;
+    fillSquare(&heaterClr,0,20,(uint8_t)heaterBarWidth,8);
+    fillSquare(&clrBlack,0,28,1,4);
+    fillSquare(&clrBlack,0+(80-8)/2,28,1,4);
+    fillSquare(&clrBlack,0+(80-8),28,1,4);
+    fillSquare(&clrBlack,0+(80-8)/4,28,1,2);
+    fillSquare(&clrBlack,0+(80-8)*3/4,28,1,2);
+
+    //Display the measured brightness
+    brightnessBarWidth = ((triopsController->currentBrightness *(80-8)) >> 12) & 0xFF;
+    brightnessThreshholdPosition = ((triopsController->brightnessThreshhold *(80-8)) >> 12) & 0xFF;
+    fillSquare(&brightnessClr,80,20,(uint8_t)brightnessBarWidth,8);
+    fillSquare(&clrBlack,80,28,1,4);
+    fillSquare(&clrBlack,80+(80-8),28,1,4);
+    fillSquare(&clrBlue,80+(uint8_t)brightnessThreshholdPosition,28,2,4);
 
     // display the temperature
     fixedPointUInt16ToChar(tempString,triopsController->temperature,4);

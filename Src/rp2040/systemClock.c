@@ -32,7 +32,6 @@ void setupClock()
 
 	
 	// de-reset sys pll
-	*RESETS |= (1 << RESETS_RESET_PLL_SYS_LSB);
 	*RESETS &= ~(1 << RESETS_RESET_PLL_SYS_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_PLL_SYS_LSB)) == 0);
 

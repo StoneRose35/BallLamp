@@ -36,7 +36,7 @@ uint8_t initTriopBreederService()
     triopsController.minuteOn = 12;
     triopsController.hourOff = 20;
     triopsController.minuteOff = 22;
-    triopsController.brightnessThreshhold = 0xFFF;
+    triopsController.brightnessThreshhold = 2500;
     triopsController.totalMinutesOn = triopsController.minuteOn + 60*triopsController.hourOn;
     triopsController.totalMinutesOff = triopsController.minuteOff + 60*triopsController.hourOff;
     triopsController.serviceInterval = 0; // manual on startup default interval is 30s (3000 ticks)
@@ -68,12 +68,10 @@ void triopBreederServiceLoop()
 {
     int16_t currentTemp;
     uint8_t retcode, rc2;
-    //int32_t interm;
     char logLine[64];
     char nrbfr[16];
     uint16_t strLen;
     uint16_t totalMinutes;
-    uint16_t brightness;
 
     triopsController.errorFlags = 0;
 
@@ -107,7 +105,7 @@ void triopBreederServiceLoop()
             }
             retcode = 3;    
         }
-
+        triopsController.currentBrightness = readChannel(0);
         if (retcode == 0)
         {
             getRegulatedHeaterValue(&triopsController,currentTemp);
@@ -120,8 +118,7 @@ void triopBreederServiceLoop()
             if ((totalMinutes >= triopsController.totalMinutesOn) && 
                 (totalMinutes < triopsController.totalMinutesOff))
             {
-                brightness = readChannel(0);
-                if(brightness < triopsController.brightnessThreshhold)
+                if(triopsController.currentBrightness < triopsController.brightnessThreshhold)
                 {
                     triopsController.lampState = 1;
                     remoteSwitchOn();

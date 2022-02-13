@@ -677,18 +677,25 @@ void brightnessThreshholdChange(int16_t encoderIncr)
     uint16_t cAppended;
     if(encoderIncr > 1 && ctx.brightnessThreshhold< 0xFFF)
     {
-        interm = ctx.brightnessThreshhold + encoderIncr/2;
+        interm = ctx.brightnessThreshhold + encoderIncr*8;
         if (interm > 0xFFF)
         {
             ctx.brightnessThreshhold = 0xFFF;
         }
+        else
+        {
+            ctx.brightnessThreshhold = interm;
+        }
     }
     else if (encoderIncr < -1 && ctx.brightnessThreshhold>0)
     {
-        interm = ctx.brightnessThreshhold + encoderIncr/2;
+        interm = ctx.brightnessThreshhold + encoderIncr*8;
         if (interm < 0x0)
         {
             ctx.brightnessThreshhold = 0x0;
+        } else
+        {
+            ctx.brightnessThreshhold = interm;
         }
     }
     lineBfr[0]=0;

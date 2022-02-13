@@ -15,9 +15,21 @@ static const RGB entrySel={
 };
 
 static const RGB heaterClr={
-    .r=0,
+    .r=60,
+    .g=0,
+    .b=0
+};
+
+static const RGB brightnessClr={
+    .r=60,
     .g=60,
     .b=0
+};
+
+static const RGB clrBlue={
+    .r=0,
+    .g=0,
+    .b=120
 };
 
 static const RGB clrBlack={

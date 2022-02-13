@@ -17,6 +17,7 @@ typedef struct TriopsBreeder
     uint8_t errorFlags; //flags showing error or warnings
     uint8_t lampState; // 0 or 1 
     uint16_t brightnessThreshhold; // brightness threshold below which the lamp should be turned on
+    uint16_t currentBrightness; // measured brightness
     uint16_t totalMinutesOn; // on time in minutes
     uint16_t totalMinutesOff; // off time in minutes
     uint32_t serviceInterval; // update interval, 0 is off
