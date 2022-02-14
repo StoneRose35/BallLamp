@@ -24,7 +24,8 @@
 extern uint32_t task;
 extern uint8_t context; // used by printf to decide where a certain information should be output
 
-CommBufferType usbCommBuffer;
+CommBufferType usbCommBuffer __attribute__((aligned (256)));
+
 CommBufferType btCommBuffer;
 
 // receive interrupt for the usb uart
@@ -51,24 +52,29 @@ void isr_uart1_irq21()
 
 
 /**
- * @brief 
- * 
+ * @brief initiates a dma transfer if the ringbuffer is not empty, empty: readCnt/head = writeCnt/tail
+ * reads forward from tail to head
  * @return uint8_t 0 if transmission is ongoing, 1 if terminated
  */
 uint8_t sendCharAsyncUsb()
 {
-	if (usbCommBuffer.outputBufferWriteCnt < usbCommBuffer.outputBufferReadCnt && (*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))//((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
+	if (usbCommBuffer.outputBufferWriteCnt != usbCommBuffer.outputBufferReadCnt && (*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))//((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
 	{
 		*DMA_CH1_READ_ADDR = (uint32_t)(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
-		*DMA_CH1_TRANS_COUNT = usbCommBuffer.outputBufferReadCnt - usbCommBuffer.outputBufferWriteCnt;
+		if (usbCommBuffer.outputBufferReadCnt > usbCommBuffer.outputBufferWriteCnt)
+		{
+			*DMA_CH1_TRANS_COUNT = usbCommBuffer.outputBufferReadCnt - usbCommBuffer.outputBufferWriteCnt;
+		}
+		else
+		{
+			*DMA_CH1_TRANS_COUNT = ((1 << OUTPUT_BUFFER_SIZE) - (usbCommBuffer.outputBufferWriteCnt - usbCommBuffer.outputBufferReadCnt));
+		}
 		*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_EN_LSB);
 		usbCommBuffer.outputBufferWriteCnt = usbCommBuffer.outputBufferReadCnt;
 		return 0;
 	}
 	else if ((*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))
 	{
-		usbCommBuffer.outputBufferWriteCnt=0;
-		usbCommBuffer.outputBufferReadCnt=0;
 		return 1;
 	}
 	else
@@ -109,9 +115,9 @@ void printf(const char* data)
 		{
 			*(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferReadCnt) = *(data + cnt);
 			usbCommBuffer.outputBufferReadCnt++;
-			usbCommBuffer.outputBufferReadCnt &= (OUTPUT_BUFFER_SIZE-1);
+			usbCommBuffer.outputBufferReadCnt &= ((1 << OUTPUT_BUFFER_SIZE)-1);
 
-			if (usbCommBuffer.outputBufferReadCnt==(OUTPUT_BUFFER_SIZE-1))
+			if (usbCommBuffer.outputBufferReadCnt==usbCommBuffer.outputBufferWriteCnt-1) // ring buffer full
 			{
 				// disable dma interrupt for channel 1 during the blocked phase
 				*DMA_INTE0 &= ~(1 << 1);
@@ -124,15 +130,18 @@ void printf(const char* data)
 				// reenable it afterwards
 				*DMA_INTE0 |= (1 << 1);
 			}
-
+			else
+            {
+				sendCharAsyncUsb();
+			}
 		}
 		if ((context & (1 << CONTEXT_BT)) == (1 << CONTEXT_BT))
 		{
 			*(btCommBuffer.outputBuffer+btCommBuffer.outputBufferReadCnt) = *(data + cnt);
 			btCommBuffer.outputBufferReadCnt++;
-			btCommBuffer.outputBufferReadCnt &= (OUTPUT_BUFFER_SIZE-1);
+			btCommBuffer.outputBufferReadCnt &= ((1 << OUTPUT_BUFFER_SIZE)-1);
 
-			if (btCommBuffer.outputBufferReadCnt==(OUTPUT_BUFFER_SIZE-1))
+			if (btCommBuffer.outputBufferReadCnt==((1 << OUTPUT_BUFFER_SIZE)-1))
 			{
 				uint8_t sc_res = sendCharAsyncBt();
 				while (sc_res == 0)
@@ -144,7 +153,7 @@ void printf(const char* data)
 		cnt++;
 		cur_data = *(data + cnt);
 	}
-	sendCharAsyncUsb();
+	//sendCharAsyncUsb();
 }
 
 /* USB Uart, used for serial communication over usb
@@ -188,7 +197,13 @@ void initUart(uint16_t baudrate)
 	*DMA_CH1_WRITE_ADDR = (uint32_t)UART_UARTDR;
 
 	// increase the read address, set data size to 8 bit, data request to uart0 tx
-	*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_INCR_READ_LSB) | (20 << DMA_CH1_CTRL_TRIG_TREQ_SEL_LSB) | (0 << DMA_CH1_CTRL_TRIG_DATA_SIZE_LSB);
+	// set ring size to output buffer size, enable ring buffer for read addresses
+	*DMA_CH1_CTRL_TRIG |= (1 << DMA_CH1_CTRL_TRIG_INCR_READ_LSB) 
+						| (20 << DMA_CH1_CTRL_TRIG_TREQ_SEL_LSB) 
+						| (0 << DMA_CH1_CTRL_TRIG_DATA_SIZE_LSB)
+						| (OUTPUT_BUFFER_SIZE << DMA_CH1_CTRL_TRIG_RING_SIZE_LSB)
+						| (0 << DMA_CH1_CTRL_TRIG_RING_SEL_LSB)
+						;
 
 	// enable interrupt of channel 1 to inte0
 	*DMA_INTE0 |= (1 << 1);

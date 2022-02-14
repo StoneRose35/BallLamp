@@ -26,7 +26,7 @@
 #define API_OUTPUT_BUFFER_SIZE 8 //!< size of the output api buffer
 
 #define INPUT_BUFFER_SIZE 8 //!< the size of the input buffer of the api, adjust to the maximum command length, is filled by the uart eception interrupt handlers and emptied by onCharReception
-#define OUTPUT_BUFFER_SIZE 256 //!< size of the output buffer, filled by printf and emptied by sendCharAsyncUsb or sendCharAsyncBt 
+#define OUTPUT_BUFFER_SIZE 8 //!< size of the output buffer defined as a power of two, filled by printf and emptied by sendCharAsyncUsb or sendCharAsyncBt 
 
 /**
  * @brief structre containing the hardware buffer for the API
@@ -74,11 +74,11 @@ typedef ConsoleType* Console;
  */
 typedef struct
 {
+	char outputBuffer[(1 << OUTPUT_BUFFER_SIZE)]; //!< output buffer, filled by the system, emptied by calling sendCharAsync
 	char inputBuffer[INPUT_BUFFER_SIZE]; //!< input buffer, filled by the interrupt handler, emptied by calling processInputBuffer
-	char outputBuffer[OUTPUT_BUFFER_SIZE]; //!< output buffer, filled by the system, emptied by calling sendCharAsync
 	uint32_t outputBufferReadCnt; //!< counts how many bytes have been read by the output buffer, is increased by the system
 	uint32_t outputBufferWriteCnt; //!< counts how many bytes have been written out the the interface, is increased by sendCharAsync
-	uint8_t inputBufferCnt; //!< counts the nnumber of bytes in the input buffer
+	uint8_t inputBufferCnt; //!< counts the number of bytes in the input buffer
 } CommBufferType;
 
 /**
