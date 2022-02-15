@@ -108,6 +108,7 @@ void printf(const char* data)
 {
 	uint32_t cnt = 0;
 	uint8_t cur_data;
+	uint8_t hasBlocked = 0;
 	cur_data = *(data + cnt);
 	while (cur_data != 0)
 	{
@@ -119,6 +120,7 @@ void printf(const char* data)
 
 			if (usbCommBuffer.outputBufferReadCnt==usbCommBuffer.outputBufferWriteCnt-1) // ring buffer full
 			{
+				hasBlocked = 1;
 				// disable dma interrupt for channel 1 during the blocked phase
 				*DMA_INTE0 &= ~(1 << 1);
 				// block and wait for the dma transfer to end
@@ -129,10 +131,6 @@ void printf(const char* data)
 				}
 				// reenable it afterwards
 				*DMA_INTE0 |= (1 << 1);
-			}
-			else
-            {
-				sendCharAsyncUsb();
 			}
 		}
 		if ((context & (1 << CONTEXT_BT)) == (1 << CONTEXT_BT))
@@ -153,7 +151,10 @@ void printf(const char* data)
 		cnt++;
 		cur_data = *(data + cnt);
 	}
-	//sendCharAsyncUsb();
+	if (hasBlocked == 0)
+	{
+		sendCharAsyncUsb();
+	}
 }
 
 /* USB Uart, used for serial communication over usb
