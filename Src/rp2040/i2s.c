@@ -45,8 +45,8 @@ void initI2S()
     *I2S_DATA_PIN_CNTR = 6;
     *I2S_WS_PIN_CNTR = 6;
 
-	// set clock divider : 120*15
-	*PIO1_SM0_CLKDIV = I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB;
+	// set clock divider : 120Mhz/78 (.125)
+	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB);// | (I2S_CLKDIV_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
 
 	// jump to first instruction
 	*PIO1_SM0_INSTR = first_instr_pos;

@@ -6,7 +6,9 @@
 #define I2S_BCK_PIN 2
 #define I2S_DATA_PIN 3
 
+// 120MHz / 78.125 = 48kHz*2*16
 #define I2S_CLKDIV_INT 78
+#define I2S_CLKDIV_FRAC 32
 
 
 #define PIO1_INSTR_MEM ((volatile uint32_t*)(PIO1_BASE+PIO_INSTR_MEM0_OFFSET))
