@@ -109,7 +109,6 @@ void printf(const char* data)
 {
 	uint32_t cnt = 0;
 	uint8_t cur_data;
-	uint8_t hasBlocked = 0;
 	cur_data = *(data + cnt);
 	while (cur_data != 0)
 	{
@@ -124,7 +123,7 @@ void printf(const char* data)
 
 			if (usbCommBuffer.outputBufferReadCnt==usbCommBuffer.outputBufferWriteCnt-1) // ring buffer full
 			{
-			    uint8_t sc_res = sendCharAsyncUsb();
+			    sendCharAsyncUsb();
 				while((*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) == (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB));
 			}
 		}

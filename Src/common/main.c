@@ -268,7 +268,6 @@ void mountFat32SDCard()
  */
 int main(void)
 {
-	uint8_t hibernateChange=0;
 
 	/*
 	 *
@@ -298,14 +297,14 @@ int main(void)
 	 * 
 	 * */
 	initCliApi();
-	mountFat32SDCard();
-	initDisplay();
-	initNeopixels();
-	setEngineState(0);
-	initRemoteSwitch();
+	//mountFat32SDCard();
+	//initDisplay();
+	//initNeopixels();
+	//setEngineState(0);
+	//initRemoteSwitch();
 	initRotaryEncoder();
-	initHeater();
-	initDs18b20();
+	//initHeater();
+	//initDs18b20();
 
 
 	/*
@@ -313,7 +312,7 @@ int main(void)
      * Initialize Background Services
      *
 	 */
-	initTriopBreederService();
+
 
 
 	/*
@@ -321,8 +320,7 @@ int main(void)
 	 * Initialize the Ui Application Layer
 	 * 
 	 * */
-	initUiStack();
-	display();
+
 
 	printf("Microsys v1.0 running\r\n");
     /* Loop forever */
@@ -330,13 +328,7 @@ int main(void)
 	{
 
 		cliApiTask(task);
-		if (getHibernateServiceData()->hibernateState == 0)
-		{
-			uiStackTask(hibernateChange); // skip encoder handling of woken up
-		}
 
-		triopBreederServiceLoop();
-		hibernateChange = hibernateServiceLoop();
 	}
 }
 #endif
