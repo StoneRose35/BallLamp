@@ -58,7 +58,8 @@ void isr_uart1_irq21()
  */
 uint8_t sendCharAsyncUsb()
 {
-	if (usbCommBuffer.outputBufferWriteCnt != usbCommBuffer.outputBufferReadCnt && (*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))//((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
+	if (usbCommBuffer.outputBufferWriteCnt != usbCommBuffer.outputBufferReadCnt 
+	&& (*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) != (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB))//((*UART_UARTFR & (1 << UART_UARTFR_BUSY_LSB)) == 0))
 	{
 		*DMA_CH1_READ_ADDR = (uint32_t)(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferWriteCnt);
 		if (usbCommBuffer.outputBufferReadCnt > usbCommBuffer.outputBufferWriteCnt)
@@ -114,23 +115,17 @@ void printf(const char* data)
 	{
 		if ((context & (1 << CONTEXT_USB)) == (1 << CONTEXT_USB))
 		{
+			while ( 
+			(*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) == (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)
+			);
 			*(usbCommBuffer.outputBuffer+usbCommBuffer.outputBufferReadCnt) = *(data + cnt);
 			usbCommBuffer.outputBufferReadCnt++;
 			usbCommBuffer.outputBufferReadCnt &= ((1 << OUTPUT_BUFFER_SIZE)-1);
 
 			if (usbCommBuffer.outputBufferReadCnt==usbCommBuffer.outputBufferWriteCnt-1) // ring buffer full
 			{
-				hasBlocked = 1;
-				// disable dma interrupt for channel 1 during the blocked phase
-				*DMA_INTE0 &= ~(1 << 1);
-				// block and wait for the dma transfer to end
-				uint8_t sc_res = sendCharAsyncUsb();
-				while (sc_res == 0)
-				{
-					sc_res = sendCharAsyncUsb();
-				}
-				// reenable it afterwards
-				*DMA_INTE0 |= (1 << 1);
+			    uint8_t sc_res = sendCharAsyncUsb();
+				while((*DMA_CH1_CTRL_TRIG & (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB)) == (1 << DMA_CH1_CTRL_TRIG_BUSY_LSB));
 			}
 		}
 		if ((context & (1 << CONTEXT_BT)) == (1 << CONTEXT_BT))
@@ -151,10 +146,7 @@ void printf(const char* data)
 		cnt++;
 		cur_data = *(data + cnt);
 	}
-	if (hasBlocked == 0)
-	{
-		sendCharAsyncUsb();
-	}
+	sendCharAsyncUsb();
 }
 
 /* USB Uart, used for serial communication over usb
