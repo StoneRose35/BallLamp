@@ -154,6 +154,7 @@
 #include <neopixelDriver.h>
 #include "system.h"
 #include "core.h"
+#include "romfunc.h"
 #include "systemClock.h"
 #include "systick.h"
 #include "datetimeClock.h"
@@ -181,6 +182,8 @@
 #include "heater.h"
 #include "services/triopsBreederService.h"
 #include "services/hibernateService.h"
+#include "i2s.h"
+#include "audio/sineplayer.h"
 
 
 
@@ -268,7 +271,8 @@ void mountFat32SDCard()
  */
 int main(void)
 {
-
+	//uint16_t* audioBufferPtr;
+	volatile float a, b,c ;
 	/*
 	 *
 	 * Initialize Hardware components
@@ -305,6 +309,8 @@ int main(void)
 	initRotaryEncoder();
 	//initHeater();
 	//initDs18b20();
+	initI2S();
+	
 
 
 	/*
@@ -312,7 +318,7 @@ int main(void)
      * Initialize Background Services
      *
 	 */
-
+	enableAudioEngine();
 
 
 	/*
@@ -323,12 +329,42 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
+	a = 1.2;
+	b = 2.3;
     /* Loop forever */
 	for(;;)
 	{
 
 		cliApiTask(task);
+		/*
+		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
+		{
+			audioBufferPtr = getEditableBuffer();
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c++)
+			{
+				// samples are always left right interleaved
+				// do something with samples
 
+				// so far play a sine wave of 440 Hz
+				*(audioBufferPtr+c) = getNextSineValue();
+			}
+			task &= ~(1 << TASK_PROCESS_AUDIO);
+		}
+		*/
+
+	// test the rom functions
+		BootRomInfoType*  bootInfo;
+		getBootRomInfo(&bootInfo);
+		char * copyrightNote;
+		copyrightNote = getCopyright();
+
+
+		c = fadd(a,b);
+		c = fsub(c,9.8);
+		c = fmul(c,a);
+		c = fdiv(c,b);
+		printf(copyrightNote);
+		
 	}
 }
 #endif

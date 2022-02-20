@@ -3,6 +3,15 @@
 #define __ROM_FUNC
 
 #include <stdint.h>
+typedef struct bootRomInfo
+{
+    char magic1;
+    char magic2;
+    uint8_t magic3;
+    uint8_t version;
+} BootRomInfoType;
+
+void * getRomData(char c1,char c2);
 
 typedef void *(*rom_table_lookup_fn)(uint16_t *table, uint32_t code);
 typedef void (*flash_range_erase_fn)(uint32_t addr,uint32_t count,uint32_t block_size,uint8_t block_cmd);
@@ -13,6 +22,21 @@ void flash_range_program(uint32_t addr, const uint8_t *data, uint32_t count);
 
 typedef  float (*f_proc_fct)(float a,float b);
 typedef float(*f_proc_fct_conv)(uint32_t a);
+typedef float(*f_proc_single)(float a);
 
+void initFloatFunctions();
+
+float fadd(float a,float b);
+float fsub(float a,float b);
+float fmul(float a,float b);
+float fdiv(float a,float b);
+float fsqrt(float a);
+float fcos(float a);
+float fsin(float a);
+float ftan(float a);
+float fexp(float a);
+float fln(float a);
+char * getCopyright();
+void getBootRomInfo(BootRomInfoType** bootRomInfo);
 
 #endif
