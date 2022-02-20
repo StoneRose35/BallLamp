@@ -5,7 +5,7 @@
 #
 # **********************************
 
-PROJECT=pico_lamp
+PROJECT=microsys_audio
 CC=arm-none-eabi-gcc
 OBJCPY=arm-none-eabi-objcopy
 ELF2UF2=./tools/elf2uf2
@@ -18,23 +18,21 @@ LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 BOOTLOADER=bs2_fast_qspi2
 
-all: clean_objs bs2_code_size $(PROJECT).uf2 
+all: bs2_code_size $(PROJECT).uf2 
 
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
+AUDIO_OBJS := $(patsubst Src/common/audio/%.c,out/%.o,$(wildcard Src/common/audio/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
 SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
 ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
 
 
 all_rp2040: $(RP2040_OBJS) 
-
 all_common: $(COMMON_OBJS)
-
+all_audio: $(AUDIO_OBJS)
 all_apps: $(APPS_OBJS)
-
 all_services: $(SERVICES_OBJS)
-
 all_images: $(ASSET_IMAGES)
 
 clean_objs:
@@ -109,6 +107,10 @@ bootstage2.o: bootstage2.S
 out/%.o: Src/common/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
+# audio libs
+out/%.o: Src/common/audio/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
 # rp2040 specific libs
 out/%.o: Src/rp2040/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
@@ -140,7 +142,7 @@ Inc/gen/pio0_pio.h: Inc/gen tools/pioasm
 
 
 # main linking and generating flashable content
-$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services $(ASSET_IMAGES)
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services all_audio $(ASSET_IMAGES)
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o 
 #~/pico/pico-libs/rp2_common/pico_stdio/stdio.c.obj ~/pico/pico-libs/common/pico_sync/mutex.c.obj ~/pico/pico-libs/rp2_common/hardware_timer/timer.c.obj ~/pico/pico-libs/common/pico_time/time.c.obj
 

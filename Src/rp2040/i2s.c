@@ -4,13 +4,19 @@
 #include "hardware/regs/io_bank0.h"
 #include "gen/pio0_pio.h"
 #include "i2s.h"
+#include "dma.h"
 
+//__attribute__((aligned (AUDIO_BUFFER_SIZE*2*2)))
+static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];
+static volatile  uint32_t dbfrPtr; 
+volatile uint32_t audioState;
 
 void initI2S()
 {
     uint16_t instr_mem_cnt = 0;
 	uint16_t first_instr_pos;
 
+	audioState = 0;
  
     first_instr_pos = instr_mem_cnt;
     // disable optional side-set, set wrap top and wrap bottom
@@ -54,6 +60,43 @@ void initI2S()
     // set pin directions to output
     *PIO1_SM0_INSTR = 0xE09F;
 
+	// initialize DMA
+	*DMA_CH2_WRITE_ADDR = (uint32_t)PIO1_SM0_TXF;
+	dbfrPtr = 0;
+	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
+	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE;
+	*DMA_CH2_CTRL_TRIG = (8 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
+						| (1 << DMA_CH2_CTRL_TRIG_INCR_READ_LSB) 
+						| (1 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) 
+						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
+
     // start PIO 1, state machine 0
 	*PIO1_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0));
+}
+
+void toggleAudioBuffer()
+{
+	dbfrPtr += AUDIO_BUFFER_SIZE*2;
+	dbfrPtr &= (AUDIO_BUFFER_SIZE*2-1);
+	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
+	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE; //elif rock spielen 
+}
+
+void enableAudioEngine()
+{
+	*DMA_CH2_CTRL_TRIG |= (1 << DMA_CH2_CTRL_TRIG_EN_LSB);
+	audioState = (1 << AUDIO_STATE_ON);
+}
+
+void disableAudioEngine()
+{
+	*DMA_CH2_CTRL_TRIG &= ~(1 << DMA_CH2_CTRL_TRIG_EN_LSB);
+	audioState = 0;
+}
+
+uint16_t* getEditableBuffer()
+{
+	uint16_t * otherBuffer;
+	otherBuffer = (uint16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2) & (AUDIO_BUFFER_SIZE*2-1)) + (uint32_t)i2sDoubleBuffer);
+	return otherBuffer;
 }

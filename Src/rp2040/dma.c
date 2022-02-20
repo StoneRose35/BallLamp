@@ -1,9 +1,11 @@
 
 #include "dma.h"
 #include "neopixelDriver.h"
+#include "i2s.h"
 
 extern volatile uint8_t sendState;
 extern volatile uint32_t task;
+extern volatile uint32_t audioState;
 
 void initDMA()
 {
@@ -39,6 +41,20 @@ void isr_dma_irq0_irq11()
 		*DMA_INTS0 |= (1<<1);
 		*DMA_CH1_CTRL_TRIG &= ~(1 << DMA_CH1_CTRL_TRIG_EN_LSB); // disable dma channel 1
 		task |= (1 << TASK_USB_CONSOLE_TX);
+	}
+	else if ((*DMA_INTS0 & (1<<2))==(1 << 2)) // from channel 2: toggle i2s buffer pointer
+	{
+		*DMA_INTS0 |= (1<<1);
+		if ((task & (1 << TASK_PROCESS_AUDIO)) == 0)
+		{
+			toggleAudioBuffer();
+			audioState &= ~(1 << AUDIO_STATE_BUFFER_UNDERRUN);
+		}
+		else
+		{
+			audioState  |= (1 << AUDIO_STATE_BUFFER_UNDERRUN);
+		}
+		task |= (1 << TASK_PROCESS_AUDIO);
 	}
 	return;
 }

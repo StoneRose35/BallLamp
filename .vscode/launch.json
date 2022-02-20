@@ -38,7 +38,7 @@
             "cwd": "${workspaceRoot}",
             "name": "Launch via Picoprobe",
             "preLaunchTask": "Build using make",
-            "executable": "./out/pico_lamp.elf",
+            "executable": "./out/microsys_audio.elf",
             "request": "launch",
             "type": "cortex-debug",
             "servertype": "openocd",
