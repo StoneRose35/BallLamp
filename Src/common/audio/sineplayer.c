@@ -394,10 +394,10 @@ const int16_t sinevals[256]={
 volatile uint32_t currentPhase=0;
 volatile uint8_t currentNote=63;
 
-uint16_t getNextSineValue()
+int16_t getNextSineValue()
 {
-    uint16_t v1,v2;
-    uint32_t nval;
+    int16_t v1,v2;
+    int32_t nval;
     v1=sinevals[((currentPhase >> 24) & 0xFF)];
     v2=sinevals[(((currentPhase + phaseincrements[currentNote])>>24) & 0xFF)];
     nval = v1 + ((((phaseincrements[currentNote] >> 8) & 0xFFFF)*(v2-v1)) >> 16);

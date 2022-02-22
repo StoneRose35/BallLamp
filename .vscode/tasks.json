@@ -27,7 +27,7 @@
                 "-I./../Inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "../Src/common/stringFunctions.c", "../Src/common/piRegulator.c",
+                "${file}", "./../Src/common/audio/*.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
