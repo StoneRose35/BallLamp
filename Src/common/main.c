@@ -271,7 +271,7 @@ void mountFat32SDCard()
  */
 int main(void)
 {
-	//uint16_t* audioBufferPtr;
+	int16_t* audioBufferPtr;
 	volatile float a, b,c ;
 	/*
 	 *
@@ -336,23 +336,24 @@ int main(void)
 	{
 
 		cliApiTask(task);
-		/*
+		
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
 			audioBufferPtr = getEditableBuffer();
-			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c++)
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c+=2)
 			{
 				// samples are always left right interleaved
 				// do something with samples
 
 				// so far play a sine wave of 440 Hz
-				*(audioBufferPtr+c) = getNextSineValue();
+				*(audioBufferPtr+c) = getNextSineValue() ;
 			}
 			task &= ~(1 << TASK_PROCESS_AUDIO);
 		}
-		*/
+		
 
 	// test the rom functions
+	
 		BootRomInfoType*  bootInfo;
 		getBootRomInfo(&bootInfo);
 		char * copyrightNote;

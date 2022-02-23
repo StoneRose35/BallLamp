@@ -108,7 +108,7 @@ jmp y-- bitloop side 0 [4]
 .program i2s_write
 ; one out pin, two sideset pins
 ; pio program runs at the speed of the bit clock (samplingrate*2*16)
-; preferably chain the tx fifo, shift out to the right (default)
+; preferably chain the tx fifo, shift out to the left 
 .side_set 2 ; uses two sideset pins, pin 1 is the word clock and pin 0 the data clock
 set x,0 side 0 ; put default value of 0 into x for the case the software buffer stalls
 .wrap_target

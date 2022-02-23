@@ -25,9 +25,10 @@ void initI2S()
 	| ( (i2s_write_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  pull after 16 bits have been read, disable autopull, join fifo
-	*PIO1_SM0_SHIFTCTRL |= (16 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
+	*PIO1_SM0_SHIFTCTRL = (16 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
                            |(0 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB) 
-                           | (1 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB);
+                           | (1 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB) 
+						   | (0 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
 	// offset the jump instruction by position of the first command since the jump addresses
@@ -67,7 +68,7 @@ void initI2S()
 	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE;
 	*DMA_CH2_CTRL_TRIG = (8 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
 						| (1 << DMA_CH2_CTRL_TRIG_INCR_READ_LSB) 
-						| (1 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) 
+						| (2 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // always read left and right at once
 						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
 
     // start PIO 1, state machine 0
@@ -94,9 +95,9 @@ void disableAudioEngine()
 	audioState = 0;
 }
 
-uint16_t* getEditableBuffer()
+int16_t* getEditableBuffer()
 {
-	uint16_t * otherBuffer;
-	otherBuffer = (uint16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2) & (AUDIO_BUFFER_SIZE*2-1)) + (uint32_t)i2sDoubleBuffer);
+	int16_t * otherBuffer;
+	otherBuffer = (int16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2) & (AUDIO_BUFFER_SIZE*2-1)) + (uint32_t)i2sDoubleBuffer);
 	return otherBuffer;
 }
