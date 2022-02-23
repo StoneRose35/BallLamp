@@ -398,9 +398,12 @@ int16_t getNextSineValue()
 {
     int16_t v1,v2;
     int32_t nval;
-    v1=sinevals[((currentPhase >> 24) & 0xFF)];
-    v2=sinevals[(((currentPhase + phaseincrements[currentNote])>>24) & 0xFF)];
-    nval = v1 + ((((phaseincrements[currentNote] >> 8) & 0xFFFF)*(v2-v1)) >> 16);
+    uint8_t idx1,idx2;
+    idx1 = ((currentPhase >> 24) & 0xFF);
+    idx2=idx1+1;
+    v1=sinevals[idx1];
+    v2=sinevals[idx2];
+    nval = v1 + ((((currentPhase >> 8) & 0xFFFF)*(v2-v1)) >> 16);
     currentPhase += phaseincrements[currentNote];
     return nval;
 }

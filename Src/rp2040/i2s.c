@@ -32,7 +32,7 @@ void initI2S()
 	// fill in instructions
 	// offset the jump instruction by position of the first command since the jump addresses
 	// are relative to the program
-	for(uint8_t c=0;c < ds18b20read_program.length;c++){
+	for(uint8_t c=0;c < i2s_write_program.length;c++){
 		*(PIO1_INSTR_MEM + instr_mem_cnt++) = (*(i2s_write_program.instructions + c) & 0xe000)==0 ?
 		 *(i2s_write_program.instructions + c) + first_instr_pos : *(i2s_write_program.instructions + c);
 	}
