@@ -2,6 +2,7 @@
 #include "dma.h"
 #include "neopixelDriver.h"
 #include "i2s.h"
+#include "adc.h"
 
 extern volatile uint8_t sendState;
 extern volatile uint32_t task;
@@ -55,6 +56,20 @@ void isr_dma_irq0_irq11()
 			audioState  |= (1 << AUDIO_STATE_BUFFER_UNDERRUN);
 		}
 		task |= (1 << TASK_PROCESS_AUDIO);
+	}
+	else if ((*DMA_INTS0 & (1<<3))==(1 << 3)) // from channel 2: toogle audio input buffer
+	{
+		*DMA_INTS0 |= (1<<1);
+		if ((task & (1 << TASK_PROCESS_AUDIO_INPUT)) == 0)
+		{
+			toogleAudioInputBuffer();
+			audioState &= ~(1 << AUDIO_STATE_INPUT_BUFFER_OVERRUN);
+		}
+		else
+		{
+			audioState  |= (1 << AUDIO_STATE_INPUT_BUFFER_OVERRUN);
+		}
+		task |= (1 << TASK_PROCESS_AUDIO_INPUT);
 	}
 	return;
 }

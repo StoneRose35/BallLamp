@@ -1,4 +1,9 @@
 #include "adc.h"
+#include "dma.h"
+#include "system.h"
+static uint16_t audioInDoubleBuffer[AUDIO_INPUT_BUFFER_SIZE*2];
+static volatile  uint32_t dbfrPtr; 
+volatile uint32_t audioInputState;
 
 /**
  * @brief initializes the adc, the usb pll must be on before the initialization can take place
@@ -48,5 +53,51 @@ uint16_t readChannel(uint8_t channelnr)
     // reset the state of the pad
     *(PADS_ADC0 + channelnr) = adcChannelPadSettings;
     return res;
+}
 
+void initDoubleBufferedReading(uint8_t channelnr)
+{
+    // setup pads
+    *(PADS_ADC0 + channelnr) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
+    *(PADS_ADC0 + channelnr) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+
+    // set samping rate
+    *ADC_DIV=(F_ADC_USB/AUDIO_SAMPLING_RATE) - 1; 
+
+    // enable fifo
+    *ADC_FCS = (1 << ADC_FCS_EN_LSB); 
+
+    	// initialize DMA
+	*DMA_CH3_READ_ADDR = (uint32_t)ADC_RESULT;
+	dbfrPtr = 0;
+	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
+	*DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE;
+	*DMA_CH3_CTRL_TRIG = (36 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
+						| (1 << DMA_CH2_CTRL_TRIG_INCR_WRITE_LSB) 
+						| (1 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // adc is single channel 16 bit
+						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
+}
+
+void enableAudioInput()
+{
+    *DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE;
+    dbfrPtr = 0;
+	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
+    *ADC_CS |= (1 << ADC_CS_START_MANY_LSB); 
+    *DMA_CH3_CTRL_TRIG |= (1 << DMA_CH2_CTRL_TRIG_EN_LSB);
+}
+
+void toogleAudioInputBuffer()
+{
+    dbfrPtr += AUDIO_INPUT_BUFFER_SIZE;
+	dbfrPtr &= (AUDIO_INPUT_BUFFER_SIZE*2-1);
+	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
+	*DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE; //elif rock spielen 
+}
+
+uint16_t* getReadableAudioBuffer()
+{
+    uint16_t * otherBuffer;
+	otherBuffer = (uint16_t*)(((dbfrPtr + AUDIO_INPUT_BUFFER_SIZE*2) & (AUDIO_INPUT_BUFFER_SIZE*2-1)) + (uint32_t)audioInDoubleBuffer);
+	return otherBuffer;
 }

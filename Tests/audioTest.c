@@ -8,6 +8,8 @@ int main()
     int16_t cval;
     fid = fopen("audioout.txt","wt");
     setNote(64);
+    cval = -16;
+    cval = cval >> 2;
     for (uint16_t c=0;c< 1024;c++)
     {
         cval = getNextSineValue();

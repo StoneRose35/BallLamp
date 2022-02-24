@@ -26,6 +26,11 @@ void initDMA();
 #define DMA_CH2_CTRL_TRIG ((volatile uint32_t*)(DMA_BASE+DMA_CH2_CTRL_TRIG_OFFSET))
 #define DMA_CH2_TRANS_COUNT ((volatile uint32_t*)(DMA_BASE+DMA_CH2_TRANS_COUNT_OFFSET))
 
+#define DMA_CH3_WRITE_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH3_WRITE_ADDR_OFFSET))
+#define DMA_CH3_READ_ADDR ((volatile uint32_t*)(DMA_BASE+DMA_CH3_READ_ADDR_OFFSET))
+#define DMA_CH3_CTRL_TRIG ((volatile uint32_t*)(DMA_BASE+DMA_CH3_CTRL_TRIG_OFFSET))
+#define DMA_CH3_TRANS_COUNT ((volatile uint32_t*)(DMA_BASE+DMA_CH3_TRANS_COUNT_OFFSET))
+
 #define DMA_INTE0 ((volatile uint32_t*)(DMA_BASE+DMA_INTE0_OFFSET))
 #define DMA_INTS0 ((volatile uint32_t*)(DMA_BASE+DMA_INTS0_OFFSET))
 

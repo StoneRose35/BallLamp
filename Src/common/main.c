@@ -272,7 +272,11 @@ void mountFat32SDCard()
 int main(void)
 {
 	int16_t* audioBufferPtr;
-	volatile float a, b,c ;
+	uint16_t* audioBufferInputPtr;
+	int16_t inputSample;
+	int16_t highpass_old_out=0;
+	int16_t highpass_old_in=0;
+	int16_t highpass_out=0;
 	/*
 	 *
 	 * Initialize Hardware components
@@ -310,6 +314,7 @@ int main(void)
 	//initHeater();
 	//initDs18b20();
 	initI2S();
+
 	
 
 
@@ -318,7 +323,9 @@ int main(void)
      * Initialize Background Services
      *
 	 */
+	initDoubleBufferedReading(0);
 	enableAudioEngine();
+	enableAudioInput();
 
 
 	/*
@@ -329,8 +336,8 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
-	a = 1.2;
-	b = 2.3;
+	//a = 1.2;
+	//b = 2.3;
     /* Loop forever */
 	for(;;)
 	{
@@ -339,21 +346,32 @@ int main(void)
 		
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
-			audioBufferPtr = getEditableBuffer();
-			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c+=2)
+			audioBufferPtr = getEditableAudioBuffer();
+			audioBufferInputPtr = getReadableAudioBuffer();
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c+=2)
 			{
-				// samples are always left right interleaved
-				// do something with samples
+				// convert raw input to signed 16 bit
+				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 
-				// so far play a sine wave of 440 Hz
-				*(audioBufferPtr+c) = getNextSineValue() ;
+				// high-pass the input to remove dc component
+				#define ALPHA 10
+				highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_in)*((1 << 15) - ALPHA)) >> 15);
+
+				highpass_old_in = inputSample;
+				highpass_old_out = highpass_out;
+
+				// amplitude modulate the input with a fixed sine wave
+				*(audioBufferPtr+c) =  ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
+				
+
 			}
-			task &= ~(1 << TASK_PROCESS_AUDIO);
+			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 		}
 		
 
 	// test the rom functions
-	
+	/*
 		BootRomInfoType*  bootInfo;
 		getBootRomInfo(&bootInfo);
 		char * copyrightNote;
@@ -365,7 +383,7 @@ int main(void)
 		c = fmul(c,a);
 		c = fdiv(c,b);
 		printf(copyrightNote);
-		
+	*/	
 	}
 }
 #endif

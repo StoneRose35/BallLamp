@@ -10,10 +10,10 @@
 #define I2S_CLKDIV_INT 78
 #define I2S_CLKDIV_FRAC 32
 
-#define AUDIO_BUFFER_SIZE 32 // size of one buffer in samples
+#define AUDIO_BUFFER_SIZE 16*2*2 // size of one buffer in samples, which is 16 stereo 16bit (2 byte) samples
 
-#define AUDIO_STATE_BUFFER_UNDERRUN 2
-#define AUDIO_STATE_ON 1
+#define AUDIO_STATE_BUFFER_UNDERRUN 1
+#define AUDIO_STATE_ON 0
 
 
 #define PIO1_INSTR_MEM ((volatile uint32_t*)(PIO1_BASE+PIO_INSTR_MEM0_OFFSET))
@@ -44,6 +44,6 @@ void initI2S();
 void enableAudioEngine();
 void disableAudioEngine();
 void toggleAudioBuffer();
-int16_t* getEditableBuffer();
+int16_t* getEditableAudioBuffer();
 
 #endif

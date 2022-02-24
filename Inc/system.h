@@ -39,6 +39,7 @@
 #ifdef RP2040_FEATHER
 
 #define F_XOSC (12000000)
+#define F_ADC_USB (48000000)
 // divider factors, calculated using clingo with clockcalculation.lp
 #define POSTDIV1 6
 #define POSTDIV1_USB 6
@@ -73,6 +74,7 @@
 #define TASK_USB_CONSOLE_TX 2 //!< bit position of the task bit array, set: the task for handling the usb console on sending characters should be called
 #define TASK_BT_CONSOLE_TX 3 //!< bit position of the task bit array, set: the task for handling the bluetooth console on sending characters should be called
 #define TASK_PROCESS_AUDIO 4 //<! bit position of the task bit array, set: one half of the audio double buffer has been written completely and is available for processing
+#define TASK_PROCESS_AUDIO_INPUT 5 //<! audio input buffer has been filled, process it
 
 #define CONTEXT_USB 0 //!<bit position: if set output of prints is routed to the USB console
 #define CONTEXT_BT 1 //!<bit position: if set output of prints is routed to the bluetooth console

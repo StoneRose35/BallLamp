@@ -7,7 +7,7 @@
 #include "dma.h"
 
 //__attribute__((aligned (AUDIO_BUFFER_SIZE*2*2)))
-static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];
+static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2];
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioState;
 
@@ -65,7 +65,7 @@ void initI2S()
 	*DMA_CH2_WRITE_ADDR = (uint32_t)PIO1_SM0_TXF;
 	dbfrPtr = 0;
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
-	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE;
+	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE >> 1;
 	*DMA_CH2_CTRL_TRIG = (8 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
 						| (1 << DMA_CH2_CTRL_TRIG_INCR_READ_LSB) 
 						| (2 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // always read left and right at once
@@ -77,10 +77,10 @@ void initI2S()
 
 void toggleAudioBuffer()
 {
-	dbfrPtr += AUDIO_BUFFER_SIZE*2;
+	dbfrPtr += AUDIO_BUFFER_SIZE;
 	dbfrPtr &= (AUDIO_BUFFER_SIZE*2-1);
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
-	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE; //elif rock spielen 
+	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE >> 1; //elif rock spielen 
 }
 
 void enableAudioEngine()
@@ -95,7 +95,7 @@ void disableAudioEngine()
 	audioState = 0;
 }
 
-int16_t* getEditableBuffer()
+int16_t* getEditableAudioBuffer()
 {
 	int16_t * otherBuffer;
 	otherBuffer = (int16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2) & (AUDIO_BUFFER_SIZE*2-1)) + (uint32_t)i2sDoubleBuffer);
