@@ -184,7 +184,8 @@
 #include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
-
+#include "minimal_main.h"
+#include "multicore.h"
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -286,6 +287,8 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
+	startCore1(&notmain);
+
 	initUsbPll();
 	initSystickTimer();
 	initDMA();
@@ -310,10 +313,10 @@ int main(void)
 	//initNeopixels();
 	//setEngineState(0);
 	//initRemoteSwitch();
-	initRotaryEncoder();
+	//initRotaryEncoder();
 	//initHeater();
 	//initDs18b20();
-	initI2S();
+	//initI2S();
 
 	
 
@@ -338,12 +341,13 @@ int main(void)
 	printf("Microsys v1.0 running\r\n");
 	//a = 1.2;
 	//b = 2.3;
+	volatile uint32_t nvic_State;
     /* Loop forever */
 	for(;;)
 	{
 
 		cliApiTask(task);
-		
+		nvic_State = *NVIC_ISER;
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
 			audioBufferPtr = getEditableAudioBuffer();

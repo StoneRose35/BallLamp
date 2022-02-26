@@ -141,7 +141,8 @@ SECTIONS
     PROVIDE ( __end__ = . );
   } > RAM
 
-
+    __StackBottomOne = ORIGIN(SCRATCH_X);
+    __StackTopOne = ORIGIN(SCRATCH_X) + LENGTH(SCRATCH_X);
     __StackTop = ORIGIN(SCRATCH_Y) + LENGTH(SCRATCH_Y);
     __StackBottom = ORIGIN(SCRATCH_Y);
 
