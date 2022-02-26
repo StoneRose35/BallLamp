@@ -289,11 +289,11 @@ int main(void)
 	initUsbPll();
 	initSystickTimer();
 	initDMA();
-	initPwm();
+	//initPwm();
 	initPio();
 	initGpio();
-	initSpi();
-	initDatetimeClock();
+	//initSpi();
+	//initDatetimeClock();
 	initUart(BAUD_RATE);
 	initAdc();
 
@@ -361,10 +361,8 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				// amplitude modulate the input with a fixed sine wave
-				*(audioBufferPtr+c) =  ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*(audioBufferPtr+c) =  getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
 				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
-				
-
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 		}

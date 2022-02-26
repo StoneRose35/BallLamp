@@ -30,7 +30,7 @@ void isr_dma_irq0_irq11()
 	if ((*DMA_INTS0 & (1<<0))==(1 << 0)) // if from channel 0: neopixel  frame timer
 	{
 		// clear interrupt
-		*DMA_INTS0 |= (1<<0);
+		*DMA_INTS0 = (1<<0);
 
 		// disable dma channel 0
 		*DMA_CH0_CTRL_TRIG &= ~(1 << 0);
@@ -39,27 +39,27 @@ void isr_dma_irq0_irq11()
 	}
 	else if ((*DMA_INTS0 & (1<<1))==(1 << 1)) // from channel 1: usb uart transmission done
 	{
-		*DMA_INTS0 |= (1<<1);
+		*DMA_INTS0 = (1<<1);
 		*DMA_CH1_CTRL_TRIG &= ~(1 << DMA_CH1_CTRL_TRIG_EN_LSB); // disable dma channel 1
 		task |= (1 << TASK_USB_CONSOLE_TX);
 	}
 	else if ((*DMA_INTS0 & (1<<2))==(1 << 2)) // from channel 2: toggle i2s buffer pointer
 	{
-		*DMA_INTS0 |= (1<<1);
+		*DMA_INTS0 = (1<<2);
 		if ((task & (1 << TASK_PROCESS_AUDIO)) == 0)
 		{
-			toggleAudioBuffer();
 			audioState &= ~(1 << AUDIO_STATE_BUFFER_UNDERRUN);
 		}
 		else
 		{
 			audioState  |= (1 << AUDIO_STATE_BUFFER_UNDERRUN);
 		}
+		toggleAudioBuffer();
 		task |= (1 << TASK_PROCESS_AUDIO);
 	}
-	else if ((*DMA_INTS0 & (1<<3))==(1 << 3)) // from channel 2: toogle audio input buffer
+	else if ((*DMA_INTS0 & (1<<3))==(1 << 3)) // from channel 3: toogle audio input buffer
 	{
-		*DMA_INTS0 |= (1<<1);
+		*DMA_INTS0 = (1<<3);
 		if ((task & (1 << TASK_PROCESS_AUDIO_INPUT)) == 0)
 		{
 			toogleAudioInputBuffer();

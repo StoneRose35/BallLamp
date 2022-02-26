@@ -7,8 +7,8 @@
 #define I2S_DATA_PIN 10
 
 // 120MHz / 78.125 = 48kHz*2*16
-#define I2S_CLKDIV_INT 78
-#define I2S_CLKDIV_FRAC 32
+#define I2S_CLKDIV_INT 36
+#define I2S_CLKDIV_FRAC 196
 
 #define AUDIO_BUFFER_SIZE 16*2*2 // size of one buffer in samples, which is 16 stereo 16bit (2 byte) samples
 
@@ -22,13 +22,13 @@
 #define PIO1_FDEBUG ((volatile uint32_t*)(PIO1_BASE + PIO_FDEBUG_OFFSET))
 #define PIO1_FSTAT ((volatile uint32_t*)(PIO1_BASE + PIO_FSTAT_OFFSET))
 
-#define PIO1_SM0_EXECCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_EXECCTRL_OFFSET))
-#define PIO1_SM0_SHIFTCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_SHIFTCTRL_OFFSET))
-#define PIO1_SM0_PINCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_PINCTRL_OFFSET))
-#define PIO1_SM0_CLKDIV ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_CLKDIV_OFFSET))
-#define PIO1_SM0_TXF ((volatile uint32_t*)(PIO1_BASE+PIO_TXF2_OFFSET))
-#define PIO1_SM0_INSTR  ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_INSTR_OFFSET))
-#define PIO1_SM0_RXF ((volatile uint32_t*)(PIO1_BASE+PIO_RXF2_OFFSET))
+#define PIO1_SM0_EXECCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM0_EXECCTRL_OFFSET))
+#define PIO1_SM0_SHIFTCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM0_SHIFTCTRL_OFFSET))
+#define PIO1_SM0_PINCTRL ((volatile uint32_t*)(PIO1_BASE+PIO_SM0_PINCTRL_OFFSET))
+#define PIO1_SM0_CLKDIV ((volatile uint32_t*)(PIO1_BASE+PIO_SM0_CLKDIV_OFFSET))
+#define PIO1_SM0_TXF ((volatile uint32_t*)(PIO1_BASE+PIO_TXF0_OFFSET))
+#define PIO1_SM0_INSTR  ((volatile uint32_t*)(PIO1_BASE+PIO_SM0_INSTR_OFFSET))
+#define PIO1_SM0_RXF ((volatile uint32_t*)(PIO1_BASE+PIO_RXF0_OFFSET))
 
 #define I2S_WS_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2S_WS_PIN))
 #define I2S_WS_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*I2S_WS_PIN))

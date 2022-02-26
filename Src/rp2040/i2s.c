@@ -24,8 +24,8 @@ void initI2S()
 	| ( (i2s_write_wrap_target + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
 	| ( (i2s_write_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
-	//  pull after 16 bits have been read, disable autopull, join fifo
-	*PIO1_SM0_SHIFTCTRL = (16 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
+	//  pull after 2*16 bits have been read, disable autopull, join fifo
+	*PIO1_SM0_SHIFTCTRL = (32 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
                            |(0 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB) 
                            | (1 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB) 
 						   | (0 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
@@ -42,24 +42,27 @@ void initI2S()
 	// define DS18B20 as a set pin and as the lowest input pin
 	// define one set pin
 	*PIO1_SM0_PINCTRL = 
-	(2 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB)
-    | (I2S_DATA_PIN << PIO_SM2_PINCTRL_OUT_BASE_LSB)
-	| (I2S_BCK_PIN << PIO_SM2_PINCTRL_SIDESET_BASE_LSB)
+	  (2 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB)
+	| (1 << PIO_SM0_PINCTRL_OUT_COUNT_LSB)
+    | (I2S_DATA_PIN << PIO_SM0_PINCTRL_OUT_BASE_LSB)
+	| (I2S_BCK_PIN << PIO_SM0_PINCTRL_SIDESET_BASE_LSB)
+	| (I2S_DATA_PIN << PIO_SM0_PINCTRL_SET_BASE_LSB)
+	| (3 << PIO_SM0_PINCTRL_SET_COUNT_LSB)
     ;
 
-	// switch control of i2s pins to pio
-	*I2S_BCK_PIN_CNTR = 6;
-    *I2S_DATA_PIN_CNTR = 6;
-    *I2S_WS_PIN_CNTR = 6;
+	// switch control of i2s pins to pio1
+	*I2S_BCK_PIN_CNTR = 7;
+    *I2S_DATA_PIN_CNTR = 7;
+    *I2S_WS_PIN_CNTR = 7;
 
 	// set clock divider : 120Mhz/78 (.125)
-	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB);// | (I2S_CLKDIV_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
+	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB) | (I2S_CLKDIV_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
+
+    // set pin directions to output
+    *PIO1_SM0_INSTR = 0xE087;
 
 	// jump to first instruction
 	*PIO1_SM0_INSTR = first_instr_pos;
-
-    // set pin directions to output
-    *PIO1_SM0_INSTR = 0xE09F;
 
 	// initialize DMA
 	*DMA_CH2_WRITE_ADDR = (uint32_t)PIO1_SM0_TXF;
@@ -71,6 +74,7 @@ void initI2S()
 						| (2 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // always read left and right at once
 						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
 
+	*DMA_INTE0 |= (1 << 2);
     // start PIO 1, state machine 0
 	*PIO1_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0));
 }
@@ -80,7 +84,7 @@ void toggleAudioBuffer()
 	dbfrPtr += AUDIO_BUFFER_SIZE;
 	dbfrPtr &= (AUDIO_BUFFER_SIZE*2-1);
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
-	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE >> 1; //elif rock spielen 
+	*DMA_CH2_TRANS_COUNT_TRIG = AUDIO_BUFFER_SIZE >> 1; // write to alias 1 to trigger dma on writing transmission count
 }
 
 void enableAudioEngine()
