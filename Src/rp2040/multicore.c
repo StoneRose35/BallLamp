@@ -12,10 +12,10 @@ void startCore1(void(*secondMain)())
 {
     uint32_t * stackPtr = &__StackBottom;
     stackPtr[0] = (uint32_t)secondMain;
-    const uint32_t cmd_sequence[] = {0, 0, 1, (uintptr_t) M0PLUS_VTOR, (uintptr_t) stackPtr, (uintptr_t)jumpIntoCore1Main};
+    const uint32_t cmd_sequence[] = {0, 0, 1, (uintptr_t) *M0PLUS_VTOR, (uintptr_t) stackPtr, (uintptr_t)jumpIntoCore1Main};
     
     uint32_t nvic_current = *NVIC_ISER;
-    *NVIC_ICER |= (1 << 15); // clear proc0 SIO interrupt
+    *NVIC_ICER = (1 << 15); // clear proc0 SIO interrupt
 
     uint8_t seq = 0;
     do {

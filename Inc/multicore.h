@@ -13,11 +13,9 @@
 
 #define M0PLUS_VTOR ((volatile uint32_t*)(PPB_BASE + M0PLUS_VTOR_OFFSET))
 #define NVIC_ISER ((volatile uint32_t*)(PPB_BASE + M0PLUS_NVIC_ISER_OFFSET))
-#define NVIC_ICER ((volatile uint32_t*)(PPB_BASE + M0PLUS_NVIC_ISER_OFFSET))
+#define NVIC_ICER ((volatile uint32_t*)(PPB_BASE + M0PLUS_NVIC_ICER_OFFSET))
 
 void startCore1(void(*secondMain)());
-
-void multicore_fifo_drain();
 
 void __sev();
 

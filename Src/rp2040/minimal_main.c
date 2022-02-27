@@ -11,7 +11,10 @@
 #include "stringFunctions.h"
 #include "system.h"
 
+#define LED_PIN (25) // 13 on rp2040 feather, 25 on rpi pico boards
+
 #define GPIO13_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO13_CTRL_OFFSET))
+#define GPIO25_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO25_CTRL_OFFSET))
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
 
@@ -20,7 +23,7 @@
 
 #define NVIC_ISER ((volatile uint32_t*)(PPB_BASE + M0PLUS_NVIC_ISER_OFFSET))
 
-#define LED_PIN (13)
+
 
 
 volatile int testarray[256];
@@ -34,8 +37,8 @@ void notmain()
 {
 	//void * dynamicArray;
 	//*RESETS |= (1 << RESETS_RESET_UART0_LSB) | (1 <<RESETS_RESET_UART1_LSB);
-	//uint16_t a=0;
-	//char nrbfr[8];
+	uint16_t a=0;
+	char nrbfr[8];
 	//setupClock();
 	blinkSetup();
 	//initUart(9600);
@@ -49,23 +52,26 @@ void notmain()
 		_sr35_delay(6500000UL);
 		*GPIO_OUT &= ~(1 << LED_PIN);
 		_sr35_delay(6500000UL);	
-		/*printf("on blink ");
-		UInt16ToChar(a,nrbfr);
-		printf(nrbfr);
-		printf("\r\n");
-		a++;	
-		uint8_t sendresult;
-		*((int*)dynamicArray+10) =9;
-		sendresult = sendCharAsyncUsb();
+		//printf("on blink ");
+		//UInt16ToChar(a,nrbfr);
+		//printf(nrbfr);
+		//printf("\r\n");
+		//a++;	
+		//uint8_t sendresult;
+		//*((int*)dynamicArray+10) =9;
+		/*
+		        context = (1 << CONTEXT_USB);
+sendresult = sendCharAsyncUsb();
 		while (sendresult == 0)
 		{
 			sendresult = sendCharAsyncUsb();
 		}
+		*/
 		if (a == 10000)
 		{
 			a=0;
 		}
-		*/
+		
 	}	
 }
 
@@ -78,7 +84,7 @@ void blinkSetup()
 	*GPIO_OE &= ~(1 << LED_PIN);
 	*GPIO_OUT &= ~(1 << LED_PIN);
 
-    *GPIO13_CNTR =  5; // function 5 (SIO)
+    *GPIO25_CNTR =  5; // function 5 (SIO)
 	*GPIO_OE |= (1 << LED_PIN);
 }
 

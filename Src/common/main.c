@@ -296,7 +296,7 @@ int main(void)
 	initPio();
 	initGpio();
 	//initSpi();
-	//initDatetimeClock();
+	initDatetimeClock();
 	initUart(BAUD_RATE);
 	initAdc();
 
@@ -316,7 +316,7 @@ int main(void)
 	//initRotaryEncoder();
 	//initHeater();
 	//initDs18b20();
-	//initI2S();
+	initI2S();
 
 	
 
