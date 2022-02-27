@@ -14,5 +14,7 @@
 /Doc/.idea
 /Tests/piRegulatorTest
 /Tests/piregulator.txt
+/Tests/audioTest
+/Tests/audioout.txt
 /Src/common/fatLib
 /tools/fattestsmall.img
