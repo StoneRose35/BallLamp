@@ -6,8 +6,8 @@
 #include "i2s.h"
 #include "dma.h"
 
-//__attribute__((aligned (AUDIO_BUFFER_SIZE*2*2)))
-static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2];
+
+static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioState;
 
@@ -25,9 +25,9 @@ void initI2S()
 	| ( (i2s_write_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
 	//  pull after 2*16 bits have been read, disable autopull, join fifo
-	*PIO1_SM0_SHIFTCTRL = (32 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
+	*PIO1_SM0_SHIFTCTRL = (0 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
                            |(0 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB) 
-                           | (1 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB) 
+                           | (0 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB) 
 						   | (0 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
 
 	// fill in instructions
@@ -81,10 +81,10 @@ void initI2S()
 
 void toggleAudioBuffer()
 {
-	dbfrPtr += AUDIO_BUFFER_SIZE;
-	dbfrPtr &= (AUDIO_BUFFER_SIZE*2-1);
+	dbfrPtr += AUDIO_BUFFER_SIZE*4;
+	dbfrPtr &= (AUDIO_BUFFER_SIZE*4*2-1);
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
-	*DMA_CH2_TRANS_COUNT_TRIG = AUDIO_BUFFER_SIZE >> 1; // write to alias 1 to trigger dma on writing transmission count
+	*DMA_CH2_TRANS_COUNT_TRIG = AUDIO_BUFFER_SIZE; // write to alias 1 to trigger dma on writing transmission count
 }
 
 void enableAudioEngine()
@@ -102,6 +102,6 @@ void disableAudioEngine()
 int16_t* getEditableAudioBuffer()
 {
 	int16_t * otherBuffer;
-	otherBuffer = (int16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2) & (AUDIO_BUFFER_SIZE*2-1)) + (uint32_t)i2sDoubleBuffer);
+	otherBuffer = (int16_t*)(((dbfrPtr + AUDIO_BUFFER_SIZE*2*2) & (AUDIO_BUFFER_SIZE*2*2*2-1)) + (uint32_t)i2sDoubleBuffer);
 	return otherBuffer;
 }

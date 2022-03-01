@@ -287,7 +287,7 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-	startCore1(&notmain);
+	//startCore1(&notmain);
 
 	initUsbPll();
 	initSystickTimer();
@@ -339,20 +339,20 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
-	//a = 1.2;
-	//b = 2.3;
-	volatile uint32_t nvic_State;
+
+	uint8_t notecnt=0;
+	uint16_t notelength=0;
+	setNote(notecnt);
     /* Loop forever */
 	for(;;)
 	{
 
 		cliApiTask(task);
-		nvic_State = *NVIC_ISER;
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
 			audioBufferPtr = getEditableAudioBuffer();
 			audioBufferInputPtr = getReadableAudioBuffer();
-			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c+=2)
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c+=2)
 			{
 				// convert raw input to signed 16 bit
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
@@ -365,10 +365,18 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				// amplitude modulate the input with a fixed sine wave
-				*(audioBufferPtr+c) =  getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*(audioBufferPtr+c) = getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
 				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
+			notelength++;
+			if (notelength > 2000)
+			{
+				notecnt++;
+				notecnt &=0x7F;
+				setNote(notecnt);
+				notelength=0;
+			}
 		}
 		
 

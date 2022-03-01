@@ -10,7 +10,7 @@
 #define I2S_CLKDIV_INT 36
 #define I2S_CLKDIV_FRAC 196
 
-#define AUDIO_BUFFER_SIZE 16*2*2 // size of one buffer in samples, which is 16 stereo 16bit (2 byte) samples
+#define AUDIO_BUFFER_SIZE 16 // in stereo 16bit samples, thus size of one audio buffer in bytes is this value*4
 
 #define AUDIO_STATE_BUFFER_UNDERRUN 1
 #define AUDIO_STATE_ON 0
