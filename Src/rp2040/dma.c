@@ -62,13 +62,13 @@ void isr_dma_irq0_irq11()
 		*DMA_INTS0 = (1<<3);
 		if ((task & (1 << TASK_PROCESS_AUDIO_INPUT)) == 0)
 		{
-			toogleAudioInputBuffer();
 			audioState &= ~(1 << AUDIO_STATE_INPUT_BUFFER_OVERRUN);
 		}
 		else
 		{
 			audioState  |= (1 << AUDIO_STATE_INPUT_BUFFER_OVERRUN);
 		}
+		toggleAudioInputBuffer();
 		task |= (1 << TASK_PROCESS_AUDIO_INPUT);
 	}
 	return;

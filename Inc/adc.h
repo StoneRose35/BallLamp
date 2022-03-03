@@ -18,11 +18,12 @@
 #define ADC_DIV ((volatile uint32_t*)(ADC_BASE + ADC_DIV_OFFSET))
 #define ADC_RESULT ((volatile uint32_t*)(ADC_BASE + ADC_RESULT_OFFSET))
 #define ADC_FCS ((volatile uint32_t*)(ADC_BASE + ADC_FCS_OFFSET))
+#define ADC_FIFO ((volatile uint32_t*)(ADC_BASE + ADC_FIFO_OFFSET))
 
 #define PADS_ADC0 ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO26_OFFSET))
 
 
-#define AUDIO_INPUT_BUFFER_SIZE 16*2
+#define AUDIO_INPUT_BUFFER_SIZE 16
 #define AUDIO_SAMPLING_RATE 48000
 
 #define AUDIO_STATE_INPUT_ON 2
@@ -33,7 +34,7 @@ uint16_t readChannel(uint8_t channelnr);
 void initDoubleBufferedReading(uint8_t channelnr);
 
 void enableAudioInput();
-void toogleAudioInputBuffer();
+void toggleAudioInputBuffer();
 uint16_t * getReadableAudioBuffer();
 
 #endif

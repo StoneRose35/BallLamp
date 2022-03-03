@@ -355,7 +355,7 @@ int main(void)
 			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c+=2)
 			{
 				// convert raw input to signed 16 bit
-				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
+				inputSample = (*(audioBufferInputPtr + (c>>1)) << 4) - 0x7FFF;
 
 				// high-pass the input to remove dc component
 				#define ALPHA 10
@@ -365,7 +365,7 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				// amplitude modulate the input with a fixed sine wave
-				*(audioBufferPtr+c) = getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*(audioBufferPtr+c) = inputSample; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
 				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));

@@ -62,20 +62,24 @@ void initDoubleBufferedReading(uint8_t channelnr)
     *(PADS_ADC0 + channelnr) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
 
     // set samping rate
-    *ADC_DIV=(F_ADC_USB/AUDIO_SAMPLING_RATE) - 1; 
+    *ADC_DIV=((F_ADC_USB/AUDIO_SAMPLING_RATE) - 1) << 8; 
 
-    // enable fifo
-    *ADC_FCS = (1 << ADC_FCS_EN_LSB); 
+    // enable fifo and dreq and set thresh to 1
+    *ADC_FCS = (1 << ADC_FCS_EN_LSB) | (1 << ADC_FCS_DREQ_EN_LSB) | (1 << ADC_FCS_THRESH_LSB); 
 
-    	// initialize DMA
-	*DMA_CH3_READ_ADDR = (uint32_t)ADC_RESULT;
+    // enable irq for channel 3
+    *DMA_INTE0 |= (1 << 3);
+
+    // initialize DMA
+	*DMA_CH3_READ_ADDR = (uint32_t)ADC_FIFO;
 	dbfrPtr = 0;
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
 	*DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE;
-	*DMA_CH3_CTRL_TRIG = (36 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
-						| (1 << DMA_CH2_CTRL_TRIG_INCR_WRITE_LSB) 
-						| (1 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // adc is single channel 16 bit
-						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
+	*DMA_CH3_CTRL_TRIG = (36 << DMA_CH3_CTRL_TRIG_TREQ_SEL_LSB) 
+						| (1 << DMA_CH3_CTRL_TRIG_INCR_WRITE_LSB) 
+						| (1 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // adc is single channel 16 bit
+						| (0 << DMA_CH3_CTRL_TRIG_EN_LSB);
+
 }
 
 void enableAudioInput()
@@ -84,20 +88,20 @@ void enableAudioInput()
     dbfrPtr = 0;
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
     *ADC_CS |= (1 << ADC_CS_START_MANY_LSB); 
-    *DMA_CH3_CTRL_TRIG |= (1 << DMA_CH2_CTRL_TRIG_EN_LSB);
+    *DMA_CH3_CTRL_TRIG |= (1 << DMA_CH3_CTRL_TRIG_EN_LSB);
 }
 
-void toogleAudioInputBuffer()
+void toggleAudioInputBuffer()
 {
-    dbfrPtr += AUDIO_INPUT_BUFFER_SIZE;
-	dbfrPtr &= (AUDIO_INPUT_BUFFER_SIZE*2-1);
+    dbfrPtr += AUDIO_INPUT_BUFFER_SIZE*2;
+	dbfrPtr &= (AUDIO_INPUT_BUFFER_SIZE*2*2-1);
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
-	*DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE; //elif rock spielen 
+    *DMA_CH3_TRANS_COUNT_TRIG = AUDIO_INPUT_BUFFER_SIZE; // write to alias 1 to trigger dma on writing transmission count
 }
 
 uint16_t* getReadableAudioBuffer()
 {
     uint16_t * otherBuffer;
-	otherBuffer = (uint16_t*)(((dbfrPtr + AUDIO_INPUT_BUFFER_SIZE*2) & (AUDIO_INPUT_BUFFER_SIZE*2-1)) + (uint32_t)audioInDoubleBuffer);
+	otherBuffer = (uint16_t*)(((dbfrPtr + AUDIO_INPUT_BUFFER_SIZE*2) & (AUDIO_INPUT_BUFFER_SIZE*2*2-1)) + (uint32_t)audioInDoubleBuffer);
 	return otherBuffer;
 }
