@@ -184,8 +184,10 @@
 #include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
+#include "audio/simple_chorus.h"
 #include "minimal_main.h"
 #include "multicore.h"
+
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -343,6 +345,7 @@ int main(void)
 	uint8_t notecnt=0;
 	uint16_t notelength=0;
 	setNote(notecnt);
+	initSimpleChorus();
     /* Loop forever */
 	for(;;)
 	{
@@ -365,7 +368,7 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				// amplitude modulate the input with a fixed sine wave
-				*(audioBufferPtr+c) = inputSample; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*(audioBufferPtr+c) = simpleChorusProcessSample(inputSample); // inputSample; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
 				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
