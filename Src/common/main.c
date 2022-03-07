@@ -184,7 +184,6 @@
 #include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
-#include "minimal_main.h"
 #include "multicore.h"
 
 
@@ -287,7 +286,7 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-	//startCore1(&notmain);
+	startCore1(&core1IrqSync);
 
 	initUsbPll();
 	initSystickTimer();
@@ -328,7 +327,7 @@ int main(void)
 	 */
 	initDoubleBufferedReading(0);
 	enableAudioEngine();
-	enableAudioInput();
+	enableAudioInput(0);
 
 
 	/*
@@ -342,6 +341,8 @@ int main(void)
 
 	uint8_t notecnt=0;
 	uint16_t notelength=0;
+	uint8_t carrybitOld=0,carrybit=0;
+	uint32_t wordout;
 	setNote(notecnt);
     /* Loop forever */
 	for(;;)
@@ -352,10 +353,10 @@ int main(void)
 		{
 			audioBufferPtr = getEditableAudioBuffer();
 			audioBufferInputPtr = getReadableAudioBuffer();
-			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE*2;c+=2)
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c++)
 			{
 				// convert raw input to signed 16 bit
-				inputSample = (*(audioBufferInputPtr + (c>>1)) << 4) - 0x7FFF;
+				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 
 				// high-pass the input to remove dc component
 				#define ALPHA 10
@@ -364,9 +365,12 @@ int main(void)
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
-				// amplitude modulate the input with a fixed sine wave
-				*(audioBufferPtr+c) = inputSample; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
-				*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
+				//inputSample = getNextSineValue();
+				carrybit= inputSample & 0x1;
+				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
+				carrybitOld = carrybit; 
+				*((uint32_t*)audioBufferPtr+c) = wordout; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				//*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 			notelength++;

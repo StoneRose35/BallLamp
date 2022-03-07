@@ -5,6 +5,17 @@ static uint16_t audioInDoubleBuffer[AUDIO_INPUT_BUFFER_SIZE*2];
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioInputState;
 
+
+/**
+ * @brief run on core 1, just sets the irq for pio1, sm0 so that core1 one can handle this interrupt without being affected by other irq's
+ *   
+ */
+void core1IrqSync()
+{
+	*NVIC_ISER = (1 << 9);
+    while(1);
+}
+
 /**
  * @brief initializes the adc, the usb pll must be on before the initialization can take place
  * 
@@ -62,7 +73,7 @@ void initDoubleBufferedReading(uint8_t channelnr)
     *(PADS_ADC0 + channelnr) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
 
     // set samping rate
-    *ADC_DIV=((F_ADC_USB/AUDIO_SAMPLING_RATE) - 1) << 8; 
+    //*ADC_DIV=((F_ADC_USB/AUDIO_SAMPLING_RATE) - 1) << 8; 
 
     // enable fifo and dreq and set thresh to 1
     *ADC_FCS = (1 << ADC_FCS_EN_LSB) | (1 << ADC_FCS_DREQ_EN_LSB) | (1 << ADC_FCS_THRESH_LSB); 
@@ -82,13 +93,21 @@ void initDoubleBufferedReading(uint8_t channelnr)
 
 }
 
-void enableAudioInput()
+void enableAudioInput(uint8_t freeRunning)
 {
     *DMA_CH3_TRANS_COUNT = AUDIO_INPUT_BUFFER_SIZE;
     dbfrPtr = 0;
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
-    *ADC_CS |= (1 << ADC_CS_START_MANY_LSB); 
+    if (freeRunning == 1)
+    {
+        *ADC_CS |= (1 << ADC_CS_START_MANY_LSB); 
+    }
     *DMA_CH3_CTRL_TRIG |= (1 << DMA_CH3_CTRL_TRIG_EN_LSB);
+}
+
+void startConversion()
+{
+    *ADC_CS |= (1 << ADC_CS_START_ONCE_LSB); 
 }
 
 void toggleAudioInputBuffer()

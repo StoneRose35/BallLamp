@@ -33,7 +33,10 @@ void initAdc();
 uint16_t readChannel(uint8_t channelnr);
 void initDoubleBufferedReading(uint8_t channelnr);
 
-void enableAudioInput();
+void startConversion();
+void core1IrqSync();
+
+void enableAudioInput(uint8_t freeRunning);
 void toggleAudioInputBuffer();
 uint16_t * getReadableAudioBuffer();
 

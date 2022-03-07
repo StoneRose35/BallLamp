@@ -33,6 +33,12 @@ do_zero:
 .wrap
 
 
+.program square_oscillator
+.side_set 1
+square_osc_loop:
+nop side 1
+jmp square_osc_loop side 0
+
 
 .program ds18b20read
 
@@ -107,7 +113,7 @@ jmp y-- bitloop side 0 [4]
 
 .program i2s_write
 ; one out pin, two sideset pins
-; pio program runs at the speed of the bit clock (samplingrate*2*16)
+; pio program runs at the speed of the bit clock (samplingrate*2*17)
 ; preferably chain the tx fifo, shift out to the left 
 .side_set 2 ; uses two sideset pins, pin 1 is the word clock and pin 0 the data clock
 set x,0 side 0 ; put default value of 0 into x for the case the software buffer stalls
@@ -122,4 +128,50 @@ set y,15 side 3
 i2s_write_loop_r:
 out pins,1 side 2
 jmp y-- i2s_write_loop_r side 3
+.wrap
+
+.program i2s_write_2
+; one out pin, two sideset pins
+; pio program runs at the speed of the bit clock (samplingrate*2*16)
+; preferably chain the tx fifo, shift out to the left, the words muste be shifted one bit to the right since the lrclock is always off by one bit 
+.side_set 2 ; uses two sideset pins, pin 1 is the word clock and pin 0 the data clock
+set x,0 side 0 ; put default value of 0 into x for the case the software buffer stalls
+.wrap_target
+out pins,1 side 0 [1]
+set y,14 side 1 [1]
+i2s_write_loop_l:
+out pins,1 side 0 [1]
+jmp y-- i2s_write_loop_l side 1 [1]
+out pins, 1 side 2 [1]
+irq 0 side 3
+set y,14 side 3
+i2s_write_loop_r:
+out pins,1 side 2 [1]
+jmp y-- i2s_write_loop_r side 3 [1]
+.wrap
+
+.program i2s_read
+nop
+.wrap_target
+push noblock
+set y,15
+i2s_read_loop_l:
+in pins,1
+jmp y-- i2s_read_loop_l
+nop
+set y,15
+i2s_read_loop_r:
+in pins,1
+jmp y-- i2s_read_loop_r
+.wrap
+
+; run with autopush and start synchronous to i2s_write_2
+; and push threshold set to 32 
+.program i2s_read_2
+nop
+nop
+nop
+.wrap_target
+nop
+in pins,1
 .wrap
