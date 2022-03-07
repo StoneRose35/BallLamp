@@ -35,43 +35,13 @@ uint8_t context = (1 << CONTEXT_USB);
 
 void notmain()
 {
-	//void * dynamicArray;
-	//*RESETS |= (1 << RESETS_RESET_UART0_LSB) | (1 <<RESETS_RESET_UART1_LSB);
-	uint16_t a=0;
-	char nrbfr[8];
-	//setupClock();
 	blinkSetup();
-	//initUart(9600);
-
-	//dynamicArray=malloc(24*sizeof(int));
-	volatile uint32_t nvic_state2;
 	while(1)
 	{
-		nvic_state2=*NVIC_ISER;
 		*GPIO_OUT |= (1 << LED_PIN);
 		_sr35_delay(6500000UL);
 		*GPIO_OUT &= ~(1 << LED_PIN);
-		_sr35_delay(6500000UL);	
-		//printf("on blink ");
-		//UInt16ToChar(a,nrbfr);
-		//printf(nrbfr);
-		//printf("\r\n");
-		//a++;	
-		//uint8_t sendresult;
-		//*((int*)dynamicArray+10) =9;
-		/*
-		        context = (1 << CONTEXT_USB);
-sendresult = sendCharAsyncUsb();
-		while (sendresult == 0)
-		{
-			sendresult = sendCharAsyncUsb();
-		}
-		*/
-		if (a == 10000)
-		{
-			a=0;
-		}
-		
+		_sr35_delay(6500000UL);			
 	}	
 }
 

@@ -184,7 +184,9 @@
 #include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
+#include "audio/simple_chorus.h"
 #include "multicore.h"
+
 
 
 RGBStream lampsdata[N_LAMPS];
@@ -344,6 +346,7 @@ int main(void)
 	uint8_t carrybitOld=0,carrybit=0;
 	uint32_t wordout;
 	setNote(notecnt);
+	initSimpleChorus();
     /* Loop forever */
 	for(;;)
 	{
@@ -365,12 +368,12 @@ int main(void)
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
-				//inputSample = getNextSineValue();
+				inputSample = simpleChorusProcessSample(inputSample);
 				carrybit= inputSample & 0x1;
 				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
 				carrybitOld = carrybit; 
 				*((uint32_t*)audioBufferPtr+c) = wordout; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
-				//*(audioBufferPtr+c+1) = *(audioBufferPtr+c);
+
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 			notelength++;
