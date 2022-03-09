@@ -23,7 +23,7 @@ void initSimpleChorus()
 /** set frequency in Hz/100 */
 void setFrequency(uint16_t freq)
 {
-    simpleChorusData.lfoPhaseinc=freq/4800000*4*256;
+    simpleChorusData.lfoPhaseinc=freq*4*256*SIMPLE_CHORUS_LFO_DIVIDER/4800000;
 }
 
 
