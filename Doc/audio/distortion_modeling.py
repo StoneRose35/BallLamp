@@ -78,13 +78,13 @@ def calculate_transfer_fct(n_points=64,scalingfact=1.0):
 
 if __name__ == "__main__":
     fs = 48000.
-    sine_freq = 321.
+    sine_freq = 1200.
     sine_periods = 64
 
     oversampling = 2
     distortionCurve = TransferFunction(0.5, 0.6, 0.85, 0.97)
 
-    n_samples = int(fs/sine_freq*sine_periods/2)*2
+    n_samples = int(fs/sine_freq*sine_periods/2)*2*oversampling
     non_upsampled = []
     t_vals = np.linspace(0.,2.*np.pi*sine_periods,n_samples)
     windows_fct = np.concatenate((np.linspace(0,1,int(n_samples/2)), np.linspace(1,0,int(n_samples/2))))
@@ -92,16 +92,17 @@ if __name__ == "__main__":
     sine_vals_distorted = [distortionCurve.compute(x) for x in sine_vals]
     spec_orig = scipy.fft.fft(sine_vals)
     spec_distorted = scipy.fft.fft(sine_vals_distorted)
-    faxis_orig = scipy.fft.fftfreq(n_samples,1./fs)
-    upsampled = np.zeros(n_samples*oversampling)
-    upsampled[0::oversampling]=sine_vals
+    faxis_orig = scipy.fft.fftfreq(n_samples,1./fs/oversampling)
+    upsampled = np.zeros(n_samples)
+    upsampled[0::oversampling]=sine_vals[0::oversampling]
     b,a = scipy.signal.butter(2,1/oversampling)
     upsampled = scipy.signal.lfilter(b,a,upsampled)*oversampling
     spec_upsampled = scipy.fft.fft(upsampled)
 
     distorted_upsampled = [distortionCurve.compute(x) for x in upsampled]
+    distorted_upsampled = scipy.signal.lfilter(b, a, distorted_upsampled) * oversampling
     spec_distorted_upsampled = scipy.fft.fft(distorted_upsampled)
-    faxis_upsampled = scipy.fft.fftfreq(n_samples*oversampling, 1./fs/oversampling)
+    faxis_upsampled = scipy.fft.fftfreq(n_samples, 1./fs/oversampling)
     plt.subplot(4,1,1)
     plt.plot(upsampled)
     plt.subplot(4,1,2)
