@@ -188,6 +188,7 @@
 #include "audio/secondOrderIirFilter.h"
 #include "audio/firFilter.h"
 #include "multicore.h"
+#include "core1Main.h"
 
 
 
@@ -226,9 +227,9 @@ int main(void)
 	int16_t* audioBufferPtr;
 	uint16_t* audioBufferInputPtr;
 	int16_t inputSample;
-	int16_t highpass_old_out=0;
-	int16_t highpass_old_in=0;
-	int16_t highpass_out=0;
+	//int16_t highpass_old_out=0;
+	//int16_t highpass_old_in=0;
+	//int16_t highpass_out=0;
 	SimpleChorusType chorus1;
 	SecondOrderIirFilterType filter1, filter2;
 
@@ -241,7 +242,7 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-	startCore1(&core1IrqSync);
+	startCore1(&core1Main);
 
 	initUsbPll();
 	initSystickTimer();
@@ -381,7 +382,7 @@ int main(void)
 0xba3}
 	};
 
-		initfirFilter(&filter3);
+	initfirFilter(&filter3);
 	/* chebychev highpass @ 100Hz,bandstop 20dB */
 	filter2.coeffB[0]=16314;
 	filter2.coeffB[1]=-32627;
@@ -405,13 +406,17 @@ int main(void)
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 
 				// high-pass the input to remove dc component
-				#define ALPHA 10
+				/*#define ALPHA 10
 				highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_in)*((1 << 15) - ALPHA)) >> 15);
 
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
 				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+				*/
+				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
+				inputSample = firFilterProcessSample(inputSample,&filter3);
+				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
 
 
 				carrybit= inputSample & 0x1;

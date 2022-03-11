@@ -1,6 +1,7 @@
 #include "system.h"
 #include "dma.h"
 #include "multicore.h"
+#include "core1Main.h"
 #include "audio/firFilter.h"
 void core1Main()
 {
