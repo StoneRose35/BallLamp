@@ -65,19 +65,22 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
     low_peak_width = 140
     low_peak_atten=10
     low_peak_order = 2
-    low_peak_mix = 0.5
+    low_peak_mix = 0.0
     [b,a ] = scipy.signal.cheby2(low_peak_order,low_peak_atten,[low_peak_freq-low_peak_width,low_peak_freq+low_peak_width],btype="bandpass",analog=False,output="ba",fs=sampling_rate)
     wzb, hzn = scipy.signal.freqz(b,a,fs=sampling_rate,worN=sample_length)
-    hzn = 4*hzn / max(abs(hzn))
+    hzn = hzn / max(abs(hzn))
     hz = hz*(1.-low_peak_mix) + hzn*low_peak_mix
 
     ir_size=64
     ir_pad_size=8
     ir_highpass_freq = 100
     ir = get_ir("resources/TubePreamp2/DYN-7B/OD-E112-G12-65-DYN-7B-09-30-BRIGHT.wav")
-    ir = highpassed_ir(ir,ir_highpass_freq,sampling_rate)
+    #ir = highpassed_ir(ir,ir_highpass_freq,sampling_rate)
     short_ir = shorten_ir(ir,ir_size,ir_pad_size)
+    short_ir = highpassed_ir(short_ir,ir_highpass_freq,sampling_rate)
     wzb, hzn = scipy.signal.freqz(short_ir, fs=sampling_rate,worN=sample_length)
+    for el in short_ir:
+        print("0x{:x},".format(np.ushort(el*32767)))
     hzn=hzn/max(abs(hzn))
     hz = hz*hzn
     if axes is None:

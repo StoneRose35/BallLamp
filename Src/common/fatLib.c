@@ -4,6 +4,8 @@
 #include "systemChoice.h"
 #include "fatLib.h"
 #include "stringFunctions.h"
+#include "systick.h"
+#include "consoleHandler.h"
 
 #ifdef HARDWARE
 #include "spi_sdcard_display.h"
@@ -1645,3 +1647,56 @@ uint8_t filenameEquals(DirectoryEntryType * entry,char * fileName)
     return fnameEqual;
 }
 
+/**
+ * @brief tries to mount the FAT32-formatted first partition on the sd-card
+ *        since printf is used the CLI/API must be initialized first
+ * 
+ */
+void mountFat32SDCard(DirectoryPointerType ** cwd,DirectoryPointerType ** ndir)
+{
+	uint16_t sdInitCnt=0;
+	uint8_t retcode=0;
+	char nrbfr[16];
+	printf("initializing SD Card.. ");
+	retcode = 1;
+	while (sdInitCnt < 25 && retcode != 0)
+	{
+		retcode=initSdCard();
+		if(retcode==0)
+		{
+			printf("OK\r\n");
+		}
+		else
+		{
+			waitSysticks(4);
+		}
+		sdInitCnt++;
+	}
+	if (sdInitCnt == 25)
+	{
+		printf("Failure, Code ");
+		UInt8ToChar(retcode,nrbfr);
+		printf(nrbfr);
+		printf(" after timeout\r\n");
+	}
+	if (retcode == 0)
+	{
+		printf("mounting SD Card.. ");
+		retcode = initFatSDCard();
+		if(retcode==0)
+		{
+			printf("OK\r\n");
+			createDirectoryPointer(cwd);
+			createDirectoryPointer(ndir);
+			openRootDirectory(*cwd);
+			addToPath(" ");
+		}
+		else
+		{
+			printf("Failure, Code ");
+			UInt8ToChar(retcode,nrbfr);
+			printf(nrbfr);
+			printf("\r\n");
+		}
+	}
+}

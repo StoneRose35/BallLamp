@@ -95,6 +95,7 @@ uint32_t getPreviousCluster(uint8_t*,uint32_t clusterNr);
 
 
 uint8_t initFatSDCard();
+void mountFat32SDCard(DirectoryPointerType ** cwd,DirectoryPointerType ** ndir);
 uint8_t openRootDirectory(DirectoryPointerType * fp);
 uint8_t openFile(DirectoryPointerType * parentDir,char * filename,FilePointerType * fp);
 uint8_t openDirectory(DirectoryPointerType * parentDir,char * dirname,DirectoryPointerType * fp);

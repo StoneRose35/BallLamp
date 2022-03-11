@@ -184,7 +184,9 @@
 #include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
-#include "audio/simple_chorus.h"
+#include "audio/simpleChorus.h"
+#include "audio/secondOrderIirFilter.h"
+#include "audio/firFilter.h"
 #include "multicore.h"
 
 
@@ -212,59 +214,7 @@ DirectoryPointerType * cwd;
 DirectoryPointerType * ndir;
 
 
-/**
- * @brief tries to mount the FAT32-formatted first partition on the sd-card
- *        since printf is used the CLI/API must be initialized first
- * 
- */
-void mountFat32SDCard()
-{
-	uint16_t sdInitCnt=0;
-	uint8_t retcode=0;
-	char nrbfr[16];
-	printf("initializing SD Card.. ");
-	retcode = 1;
-	while (sdInitCnt < 25 && retcode != 0)
-	{
-		retcode=initSdCard();
-		if(retcode==0)
-		{
-			printf("OK\r\n");
-		}
-		else
-		{
-			waitSysticks(4);
-		}
-		sdInitCnt++;
-	}
-	if (sdInitCnt == 25)
-	{
-		printf("Failure, Code ");
-		UInt8ToChar(retcode,nrbfr);
-		printf(nrbfr);
-		printf(" after timeout\r\n");
-	}
-	if (retcode == 0)
-	{
-		printf("mounting SD Card.. ");
-		retcode = initFatSDCard();
-		if(retcode==0)
-		{
-			printf("OK\r\n");
-			createDirectoryPointer(&cwd);
-			createDirectoryPointer(&ndir);
-			openRootDirectory(cwd);
-			addToPath(" ");
-		}
-		else
-		{
-			printf("Failure, Code ");
-			UInt8ToChar(retcode,nrbfr);
-			printf(nrbfr);
-			printf("\r\n");
-		}
-	}
-}
+
 
 /**
  * @brief the main entry point, should never exit
@@ -279,6 +229,9 @@ int main(void)
 	int16_t highpass_old_out=0;
 	int16_t highpass_old_in=0;
 	int16_t highpass_out=0;
+	SimpleChorusType chorus1;
+	SecondOrderIirFilterType filter1, filter2;
+
 	/*
 	 *
 	 * Initialize Hardware components
@@ -309,7 +262,7 @@ int main(void)
 	 * 
 	 * */
 	initCliApi();
-	//mountFat32SDCard();
+	//mountFat32SDCard(&cwd,&ndir);
 	//initDisplay();
 	//initNeopixels();
 	//setEngineState(0);
@@ -341,12 +294,102 @@ int main(void)
 
 	printf("Microsys v1.0 running\r\n");
 
-	uint8_t notecnt=0;
-	uint16_t notelength=0;
+	//uint8_t notecnt=0;
+	//uint16_t notelength=0;
 	uint8_t carrybitOld=0,carrybit=0;
 	uint32_t wordout;
-	setNote(notecnt);
-	initSimpleChorus();
+	//setNote(notecnt);
+	initSimpleChorus(&chorus1);
+	initSecondOrderIirFilter(&filter1);
+	initSecondOrderIirFilter(&filter2);
+
+
+
+	/* filters of the reduced cab simulator, in the order of processing */
+
+	/* butterworth lowpass @ 6000Hz */
+	filter1.coeffB[0]=3672;
+	filter1.coeffB[1]=7343;
+	filter1.coeffB[2]=3672;
+	filter1.coeffA[0]=-28048;
+	filter1.coeffA[1]=9968;
+
+	FirFilterType filter3 = {
+		.coefficients = {0xbbf,
+0xc6c,
+0xffe,
+0x1aa6,
+0x2e9a,
+0x4e98,
+0x77f3,
+0x8ba2,
+0x67c4,
+0x346d,
+0x1499,
+0xf0b6,
+0xd030,
+0xc87d,
+0xcd24,
+0xd4ff,
+0xec4a,
+0x199,
+0x8eb,
+0xdfd,
+0xbf4,
+0x7a6,
+0xb63,
+0xea6,
+0x1072,
+0xe48,
+0xffef,
+0xf168,
+0xf084,
+0xf9dc,
+0x59c,
+0xbf4,
+0x5bc,
+0xfecd,
+0xfe31,
+0xfa33,
+0xf503,
+0xf951,
+0x2f5,
+0xc54,
+0x13bd,
+0x15f4,
+0x1369,
+0xe91,
+0xca6,
+0xd53,
+0xe29,
+0xcf3,
+0x757,
+0xb6,
+0xfb64,
+0xf6b3,
+0xf745,
+0xfc6c,
+0x97,
+0x4b0,
+0xa52,
+0xeca,
+0x11e1,
+0x12d8,
+0x1085,
+0xd49,
+0xb9e,
+0xba3}
+	};
+
+		initfirFilter(&filter3);
+	/* chebychev highpass @ 100Hz,bandstop 20dB */
+	filter2.coeffB[0]=16314;
+	filter2.coeffB[1]=-32627;
+	filter2.coeffB[2]=16314;
+	filter2.coeffA[0]=-32627;
+	filter2.coeffA[1]=16244;
+
+
     /* Loop forever */
 	for(;;)
 	{
@@ -368,7 +411,9 @@ int main(void)
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
-				inputSample = simpleChorusProcessSample(inputSample);
+				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+
+
 				carrybit= inputSample & 0x1;
 				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
 				carrybitOld = carrybit; 
@@ -376,14 +421,14 @@ int main(void)
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
-			notelength++;
+			/*notelength++;
 			if (notelength > 2000)
 			{
 				notecnt++;
 				notecnt &=0x7F;
 				setNote(notecnt);
 				notelength=0;
-			}
+			}*/
 		}
 		
 

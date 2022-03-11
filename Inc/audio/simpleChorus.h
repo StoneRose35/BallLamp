@@ -6,6 +6,7 @@
 #define SIMPLE_CHORUS_LFO_DIVIDER 256
 typedef struct 
 {
+    int16_t delayBuffer[SIMPLE_CHORUS_DELAY_SIZE];
     int16_t frequency;
     int16_t depth;
     int16_t mix; // 0 to 255
@@ -13,9 +14,10 @@ typedef struct
     uint8_t lfoQuadrant; // 0 (ascending) or 1 (descending)
     int16_t lfoPhaseinc;
     uint16_t delayInputPtr;
+    uint16_t lfoUpdateCnt;
 } SimpleChorusType;
 
-void initSimpleChorus();
+void initSimpleChorus(SimpleChorusType*data);
 
-int16_t simpleChorusProcessSample(int16_t sampleIn);
+int16_t simpleChorusProcessSample(int16_t sampleIn,SimpleChorusType*data);
 #endif
