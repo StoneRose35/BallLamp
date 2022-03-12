@@ -227,9 +227,9 @@ int main(void)
 	int16_t* audioBufferPtr;
 	uint16_t* audioBufferInputPtr;
 	int16_t inputSample;
-	//int16_t highpass_old_out=0;
-	//int16_t highpass_old_in=0;
-	//int16_t highpass_out=0;
+	int16_t highpass_old_out=0;
+	int16_t highpass_old_in=0;
+	int16_t highpass_out=0;
 	SimpleChorusType chorus1;
 	SecondOrderIirFilterType filter1, filter2;
 
@@ -309,12 +309,13 @@ int main(void)
 	/* filters of the reduced cab simulator, in the order of processing */
 
 	/* butterworth lowpass @ 6000Hz */
+	
 	filter1.coeffB[0]=3672;
 	filter1.coeffB[1]=7343;
 	filter1.coeffB[2]=3672;
 	filter1.coeffA[0]=-28048;
 	filter1.coeffA[1]=9968;
-
+    
 	FirFilterType filter3 = {
 		.coefficients = {0xbbf,
 0xc6c,
@@ -406,17 +407,19 @@ int main(void)
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 
 				// high-pass the input to remove dc component
-				/*#define ALPHA 10
+				/*
+				#define ALPHA 30000
 				highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_in)*((1 << 15) - ALPHA)) >> 15);
 
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
-				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
-				*/
-				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
+				inputSample = highpass_out;*/
+				//inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+				
+				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
 				inputSample = firFilterProcessSample(inputSample,&filter3);
-				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
+				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
 
 
 				carrybit= inputSample & 0x1;

@@ -7,6 +7,15 @@ void initfirFilter(FirFilterType*data)
     data->delayPointer=0;
     for(uint8_t c=0;c<data->filterLength;c++)
     {
+        /*
+        if (c==0)
+        {
+            data->coefficients[c]=32767;
+        }
+        else
+        {
+            data->coefficients[c]=0;
+        }*/
         //data->coefficients[c]=0;
         data->delayBuffer[c]=0;
     }
@@ -14,13 +23,13 @@ void initfirFilter(FirFilterType*data)
 
 void addSample(int16_t sampleIn,FirFilterType*data)
 {
-    data->delayBuffer[data->delayPointer--]=sampleIn;
-    data->delayPointer &= (data->filterLength-1);
+    *(data->delayBuffer + data->delayPointer--)=sampleIn;
+    data->delayPointer &= (uint8_t)(data->filterLength-1);
 }
 
 int16_t firFilterProcessSample(int16_t sampleIn,FirFilterType*data)
 {
-    int16_t firstHalf,secondHalf;
+    int16_t firstHalf,secondHalf=0;
     addSample(sampleIn,data);
     while ((*SIO_FIFO_ST & ( 1 << SIO_FIFO_ST_RDY_LSB)) == 0);
     // send pointer to data to core1 to indicate that a fir calculation has to be made
@@ -38,7 +47,7 @@ int16_t processFirstHalf(FirFilterType*data)
     uint8_t runningPtr=(data->delayPointer+1) & (data->filterLength-1);
     for(uint8_t c=0;c<(data->filterLength >> 1);c++)
     {
-        res += (data->delayBuffer[runningPtr]*data->coefficients[runningPtr]) >> 15;
+        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c]) >> 15;
         runningPtr += 1;
         runningPtr &= (data->filterLength-1);
     }
@@ -51,7 +60,7 @@ int16_t processSecondHalf(FirFilterType*data)
     uint8_t runningPtr=(data->delayPointer+1+(data->filterLength>>1)) & (data->filterLength-1);
     for(uint8_t c=0;c<(data->filterLength >> 1);c++)
     {
-        res += (data->delayBuffer[runningPtr]*data->coefficients[runningPtr]) >> 15;
+        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c+(data->filterLength >> 1)]) >> 15;
         runningPtr += 1;
         runningPtr &= (data->filterLength-1);
     }

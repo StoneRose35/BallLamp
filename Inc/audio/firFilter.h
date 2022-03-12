@@ -3,10 +3,10 @@
 #include <stdint.h>
 typedef struct 
 {
-    uint8_t filterLength;
-    uint8_t delayPointer;
     int16_t coefficients[64];
     int16_t delayBuffer[64];
+    uint8_t filterLength;
+    uint8_t delayPointer;
 } FirFilterType;
 
 void initfirFilter(FirFilterType*data);
