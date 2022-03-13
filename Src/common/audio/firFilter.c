@@ -29,16 +29,17 @@ void addSample(int16_t sampleIn,FirFilterType*data)
 
 int16_t firFilterProcessSample(int16_t sampleIn,FirFilterType*data)
 {
-    int16_t firstHalf,secondHalf=0;
+    volatile int16_t firstHalf,secondHalf;
     addSample(sampleIn,data);
     while ((*SIO_FIFO_ST & ( 1 << SIO_FIFO_ST_RDY_LSB)) == 0);
     // send pointer to data to core1 to indicate that a fir calculation has to be made
-    *SIO_FIFO_WR = (uint32_t)data;
-    firstHalf = processFirstHalf(data);
+    *SIO_FIFO_WR = (uint32_t)&data;
+    secondHalf = processSecondHalf(data);
     // wait for core1 to be finished, core 1 sends the result of the second half back
     while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
-    secondHalf = (int16_t)*SIO_FIFO_RD;
-    return firstHalf+secondHalf;
+    firstHalf = (int16_t)(*SIO_FIFO_RD & 0xFFFF);
+    firstHalf += secondHalf;
+    return firstHalf;
 }
 
 int16_t processFirstHalf(FirFilterType*data)

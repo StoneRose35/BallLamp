@@ -22,7 +22,7 @@
         {
             "type": "cppbuild",
             "label": "C/C++: gcc-9 Aktive Datei kompilieren",
-            "command": "/usr/bin/gcc",
+            "command": "/usr/bin/gcc-9",
             "args": [
                 "-I./../Inc",
                 "-fdiagnostics-color=always",

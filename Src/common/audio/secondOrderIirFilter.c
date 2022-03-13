@@ -15,7 +15,7 @@ void initSecondOrderIirFilter(SecondOrderIirFilterType* data)
 int16_t secondOrderIirFilterProcessSample(int16_t sampleIn,SecondOrderIirFilterType*data)
 {
     int16_t out;
-    data->w[0] = sampleIn + (((uint32_t)data->coeffA[0]*(uint32_t)data->w[1]) >> 15) + (((uint32_t)data->coeffA[1]*(uint32_t)data->w[2]) >> 15);
+    data->w[0] = sampleIn - (((uint32_t)data->coeffA[0]*(uint32_t)data->w[1]) >> 15) - (((uint32_t)data->coeffA[1]*(uint32_t)data->w[2]) >> 15);
     //data->w[0] += (data->coeffA[0]*data->w[1]) >> 15;
     //data->w[0] += (data->coeffA[1]*data->w[2]) >> 15;
 

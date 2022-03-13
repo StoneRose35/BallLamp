@@ -164,6 +164,7 @@
 #include "pwm.h"
 #include "adc.h"
 #include "spi_sdcard_display.h"
+#include "debugLed.h"
 #include "fatLib.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
@@ -215,7 +216,14 @@ DirectoryPointerType * cwd;
 DirectoryPointerType * ndir;
 
 
-
+int16_t* audioBufferPtr;
+uint16_t* audioBufferInputPtr;
+int16_t inputSample;
+SimpleChorusType chorus1;
+SecondOrderIirFilterType filter1, filter2;
+uint8_t carrybitOld=0,carrybit=0;
+uint32_t wordout;
+uint32_t core1Handshake;
 
 /**
  * @brief the main entry point, should never exit
@@ -224,14 +232,11 @@ DirectoryPointerType * ndir;
  */
 int main(void)
 {
-	int16_t* audioBufferPtr;
-	uint16_t* audioBufferInputPtr;
-	int16_t inputSample;
+
 	int16_t highpass_old_out=0;
 	int16_t highpass_old_in=0;
 	int16_t highpass_out=0;
-	SimpleChorusType chorus1;
-	SecondOrderIirFilterType filter1, filter2;
+
 
 	/*
 	 *
@@ -272,7 +277,7 @@ int main(void)
 	//initHeater();
 	//initDs18b20();
 	initI2S();
-
+	initDebugLed();
 	
 
 
@@ -297,8 +302,7 @@ int main(void)
 
 	//uint8_t notecnt=0;
 	//uint16_t notelength=0;
-	uint8_t carrybitOld=0,carrybit=0;
-	uint32_t wordout;
+
 	//setNote(notecnt);
 	initSimpleChorus(&chorus1);
 	initSecondOrderIirFilter(&filter1);
@@ -391,6 +395,14 @@ int main(void)
 	filter2.coeffA[0]=-32627;
 	filter2.coeffA[1]=16244;
 
+	// sync with core 1
+	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
+	core1Handshake=*SIO_FIFO_RD;
+	while (core1Handshake != 0xcafeface)
+	{
+		DebugLedOn();
+		core1Handshake = *SIO_FIFO_RD;
+	}
 
     /* Loop forever */
 	for(;;)
@@ -405,21 +417,22 @@ int main(void)
 			{
 				// convert raw input to signed 16 bit
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
-
+				inputSample = inputSample >> 1;
 				// high-pass the input to remove dc component
-				/*
-				#define ALPHA 30000
-				highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_in)*((1 << 15) - ALPHA)) >> 15);
-
+				
+				#define ALPHA 31000
+				//highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_out)*((1 << 15) - ALPHA)) >> 15);
+				highpass_out = (((((1 << 15) + ALPHA) >> 1)*(inputSample - highpass_old_in))>>15) + ((ALPHA*highpass_old_out) >> 15);
 				highpass_old_in = inputSample;
 				highpass_old_out = highpass_out;
 
-				inputSample = highpass_out;*/
-				//inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+				inputSample = highpass_out;
+				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
 				
-				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
+				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
 				inputSample = firFilterProcessSample(inputSample,&filter3);
 				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
+				
 
 
 				carrybit= inputSample & 0x1;
