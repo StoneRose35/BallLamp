@@ -164,6 +164,7 @@
 #include "pwm.h"
 #include "adc.h"
 #include "spi_sdcard_display.h"
+#include "ssd1306_display.h"
 #include "debugLed.h"
 #include "fatLib.h"
 #include "consoleHandler.h"
@@ -279,6 +280,7 @@ int main(void)
 	//initRotaryEncoder();
 	//initHeater();
 	//initDs18b20();
+	initSsd1306Display();
 	initI2S();
 	initDebugLed();
 	
@@ -302,6 +304,7 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
+	ssd1306WriteText("BolFx 4.2",0,0);
 
 	//uint8_t notecnt=0;
 	//uint16_t notelength=0;
