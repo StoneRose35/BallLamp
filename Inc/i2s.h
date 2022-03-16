@@ -2,11 +2,14 @@
 #define _I2S_H_
 #include <stdint.h>
 
+#define I2S_INPUT
+
 #define I2S_WS_PIN 12
 #define I2S_BCK_PIN 11
 #define I2S_DATA_PIN 10
 #define I2S_DATA_IN_PIN 9
 #define I2S_MCLK_PIN 8
+#define I2S_DEBUG_PIN 6
 
 // 120MHz / 78.125 = 48kHz*2*16
 #define I2S_CLKDIV_INT 36
@@ -71,6 +74,8 @@
 #define I2S_DATA_IN_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*I2S_DATA_IN_PIN))
 #define I2S_MCLK_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2S_MCLK_PIN))
 #define I2S_MCLK_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*I2S_MCLK_PIN))
+#define I2S_DEBUG_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2S_DEBUG_PIN))
+#define I2S_DEBUG_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*I2S_DEBUG_PIN))
 
 #define GPIO_OE ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OE_OFFSET))
 #define GPIO_OUT ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_OUT_OFFSET))
@@ -80,5 +85,7 @@ void enableAudioEngine();
 void disableAudioEngine();
 void toggleAudioBuffer();
 int16_t* getEditableAudioBuffer();
-
+#ifdef I2S_INPUT
+int16_t* getInputAudioBuffer();
+#endif
 #endif

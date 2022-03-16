@@ -20,3 +20,8 @@ void DebugLedOff()
 {
     *(GPIO_OUT+2) = (1 << LED_PIN);
 }
+
+void DebugLedToggle()
+{
+    *(GPIO_OUT+3) = (1 << LED_PIN);
+}

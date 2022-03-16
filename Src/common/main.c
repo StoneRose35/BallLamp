@@ -163,7 +163,7 @@
 #include "pio.h"
 #include "pwm.h"
 #include "adc.h"
-#include "spi_sdcard_display.h"
+//#include "spi_sdcard_display.h"
 #include "ssd1306_display.h"
 #include "debugLed.h"
 #include "fatLib.h"
@@ -220,7 +220,11 @@ DirectoryPointerType * ndir;
 
 
 int16_t* audioBufferPtr;
+#ifndef I2S_INPUT
 uint16_t* audioBufferInputPtr;
+#else
+int16_t* audioBufferInputPtr;
+#endif
 int16_t inputSample;
 SimpleChorusType chorus1;
 SecondOrderIirFilterType filter1, filter2;
@@ -240,7 +244,6 @@ int main(void)
 	int16_t highpass_old_out=0;
 	int16_t highpass_old_in=0;
 	int16_t highpass_out=0;
-
 
 	/*
 	 *
@@ -291,9 +294,9 @@ int main(void)
      * Initialize Background Services
      *
 	 */
-	initDoubleBufferedReading(0);
+	//initDoubleBufferedReading(0);
 	enableAudioEngine();
-	enableAudioInput(0);
+	//enableAudioInput(0);
 
 
 	/*
@@ -304,6 +307,7 @@ int main(void)
 
 
 	printf("Microsys v1.0 running\r\n");
+	ssd1306ClearDisplay();
 	ssd1306WriteText("BolFx 4.2",0,0);
 
 	//uint8_t notecnt=0;
@@ -355,12 +359,21 @@ int main(void)
 		cliApiTask(task);
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
+
 			audioBufferPtr = getEditableAudioBuffer();
+			#ifndef I2S_INPUT
 			audioBufferInputPtr = getReadableAudioBuffer();
+			#else
+			audioBufferInputPtr = getInputAudioBuffer();
+			#endif
 			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c++)
 			{
 				// convert raw input to signed 16 bit
+				#ifndef I2S_INPUT
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
+				#else
+				inputSample=(*(audioBufferInputPtr + c*2) >> 1) + (*(audioBufferInputPtr + c*2+1) >> 1);
+				#endif
 				inputSample = inputSample >> 1;
 				// high-pass the input to remove dc component
 				
@@ -371,9 +384,9 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				inputSample = highpass_out;
-				//inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
 				//inputSample = waveShaperProcessSample(inputSample,&waveshaper1);
-				inputSample = OversamplingDistortionProcessSample(inputSample,&waveshaper1);
+				//inputSample = OversamplingDistortionProcessSample(inputSample,&waveshaper1);
 
 				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
 				inputSample = firFilterProcessSample(inputSample,&filter3);

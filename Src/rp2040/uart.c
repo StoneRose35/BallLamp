@@ -237,6 +237,7 @@ void initBTUart(uint16_t baudrate)
 
 void initGpio()
 {
+	//NEVER-EVER RESET GPIO PINS!!! (not works anymore)
     *RESETS &= ~(1 << RESETS_RESET_IO_BANK0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_IO_BANK0_LSB)) == 0);
 }

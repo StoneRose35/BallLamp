@@ -14,4 +14,5 @@ void initDebugLed();
 
 void DebugLedOn();
 void DebugLedOff();
+void DebugLedToggle();
 #endif
