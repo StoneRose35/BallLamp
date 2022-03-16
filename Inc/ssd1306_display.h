@@ -15,11 +15,11 @@ void initSsd1306Display();
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr);
 void ssd1306WriteText(char * str,uint16_t posH,uint16_t posV);
 
-#define CS_DISPLAY 12
+#define CS_DISPLAY 21
 #define SCK 18
 #define MOSI 19
-#define DISPLAY_CD 25
-#define DISPLAY_RESET 24
+#define DISPLAY_CD 14
+#define DISPLAY_RESET 15
 
 #define SCK_DISPLAY_SLOW 10 // resulting in 5 MHz spi clock for display
 
