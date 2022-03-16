@@ -138,7 +138,7 @@ void initI2S()
 	*PIO1_SM1_CLKDIV = (I2S_CLKDIV_INT << PIO_SM1_CLKDIV_INT_LSB) | (I2S_CLKDIV_FRAC << PIO_SM1_CLKDIV_FRAC_LSB);
 
 	    // set pin directions to output
-    *PIO1_SM0_INSTR = 0xE081;
+    *PIO1_SM1_INSTR = 0xE081;
 
 	// jump to first instruction
 	*PIO1_SM1_INSTR = first_instr_pos;
