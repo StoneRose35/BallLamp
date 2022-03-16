@@ -188,6 +188,8 @@
 #include "audio/simpleChorus.h"
 #include "audio/secondOrderIirFilter.h"
 #include "audio/firFilter.h"
+#include "audio/waveShaper.h"
+#include "audio/oversamplingWaveshaper.h"
 #include "multicore.h"
 #include "core1Main.h"
 
@@ -195,11 +197,11 @@
 
 RGBStream lampsdata[N_LAMPS];
 RGBStream * lamps = lampsdata;
-uint32_t clr_cnt = 0;
-uint32_t bit_cnt = 0;
+//uint32_t clr_cnt = 0;
+//uint32_t bit_cnt = 0;
 
-uint8_t rawdata[N_LAMPS*24+1];
-uint8_t* rawdata_ptr = rawdata;
+//uint8_t rawdata[N_LAMPS*24+1];
+//uint8_t* rawdata_ptr = rawdata;
 
 //TaskType interpolatorsArray[N_LAMPS];
 //TasksType interpolators;
@@ -221,6 +223,7 @@ uint16_t* audioBufferInputPtr;
 int16_t inputSample;
 SimpleChorusType chorus1;
 SecondOrderIirFilterType filter1, filter2;
+WaveShaperDataType waveshaper1;
 uint8_t carrybitOld=0,carrybit=0;
 uint32_t wordout;
 uint32_t core1Handshake;
@@ -307,6 +310,7 @@ int main(void)
 	initSimpleChorus(&chorus1);
 	initSecondOrderIirFilter(&filter1);
 	initSecondOrderIirFilter(&filter2);
+	initWaveShaper(&waveshaper1,&waveShaperDefaultOverdrive);
 
 
 
@@ -314,86 +318,23 @@ int main(void)
 
 	/* butterworth lowpass @ 6000Hz */
 	
-	filter1.coeffB[0]=3672;
-	filter1.coeffB[1]=7343;
-	filter1.coeffB[2]=3672;
-	filter1.coeffA[0]=-28048;
-	filter1.coeffA[1]=9968;
+	filter1.coeffB[0]=3199;
+	filter1.coeffB[1]=6398;
+	filter1.coeffB[2]=3199;
+	filter1.coeffA[0]=-30893;
+	filter1.coeffA[1]=10922;
     
 	FirFilterType filter3 = {
-		.coefficients = {0xbbf,
-0xc6c,
-0xffe,
-0x1aa6,
-0x2e9a,
-0x4e98,
-0x77f3,
-0x8ba2,
-0x67c4,
-0x346d,
-0x1499,
-0xf0b6,
-0xd030,
-0xc87d,
-0xcd24,
-0xd4ff,
-0xec4a,
-0x199,
-0x8eb,
-0xdfd,
-0xbf4,
-0x7a6,
-0xb63,
-0xea6,
-0x1072,
-0xe48,
-0xffef,
-0xf168,
-0xf084,
-0xf9dc,
-0x59c,
-0xbf4,
-0x5bc,
-0xfecd,
-0xfe31,
-0xfa33,
-0xf503,
-0xf951,
-0x2f5,
-0xc54,
-0x13bd,
-0x15f4,
-0x1369,
-0xe91,
-0xca6,
-0xd53,
-0xe29,
-0xcf3,
-0x757,
-0xb6,
-0xfb64,
-0xf6b3,
-0xf745,
-0xfc6c,
-0x97,
-0x4b0,
-0xa52,
-0xeca,
-0x11e1,
-0x12d8,
-0x1085,
-0xd49,
-0xb9e,
-0xba3}
+		.coefficients = {0xd92, 0xe31, 0x113d, 0x19e0, 0x29f1, 0x436b, 0x659b, 0x8242, 0x80ea, 0x5bcf, 0x304b, 0x12a0, 0xf1bd, 0xd3db, 0xcb60, 0xcdf2, 0xd476, 0xe539, 0xf98f, 0x6c2, 0xca4, 0xf38, 0xcde, 0x9f6, 0xd60, 0x105f, 0x1211, 0x1087, 0x5b7, 0xf86c, 0xf2bb, 0xf6d4, 0x5f, 0x973, 0xc4f, 0x67c, 0x94, 0x5, 0xfc61, 0xf7b8, 0xfa0f, 0x193, 0xa46, 0x11e5, 0x1681, 0x16e9, 0x13f9, 0x100c, 0xe8a, 0xf2a, 0xfef, 0xef4, 0xa70, 0x494, 0xff4a, 0xfabc, 0xfb5e, 0xff9b, 0x4b2, 0x85c, 0xb1c, 0xd25, 0xdf6, 0xd76}
 	};
 
 	initfirFilter(&filter3);
 	/* chebychev highpass @ 100Hz,bandstop 20dB */
-	filter2.coeffB[0]=16314;
-	filter2.coeffB[1]=-32627;
-	filter2.coeffB[2]=16314;
-	filter2.coeffA[0]=-32627;
-	filter2.coeffA[1]=16244;
+	filter2.coeffB[0]=32638;
+	filter2.coeffB[1]=259;
+	filter2.coeffB[2]=32638;
+	filter2.coeffA[0]=260;
+	filter2.coeffA[1]=32510;
 
 	// sync with core 1
 	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
@@ -427,8 +368,10 @@ int main(void)
 				highpass_old_out = highpass_out;
 
 				inputSample = highpass_out;
-				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
-				
+				//inputSample = simpleChorusProcessSample(inputSample,&chorus1);
+				//inputSample = waveShaperProcessSample(inputSample,&waveshaper1);
+				inputSample = OversamplingDistortionProcessSample(inputSample,&waveshaper1);
+
 				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
 				inputSample = firFilterProcessSample(inputSample,&filter3);
 				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
@@ -442,14 +385,6 @@ int main(void)
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
-			/*notelength++;
-			if (notelength > 2000)
-			{
-				notecnt++;
-				notecnt &=0x7F;
-				setNote(notecnt);
-				notelength=0;
-			}*/
 		}
 		
 

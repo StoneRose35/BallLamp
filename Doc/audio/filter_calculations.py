@@ -72,14 +72,13 @@ class SawtoothAdditive:
         self.currentPhase &= 0xFFFFFFFF
         return sineval
 
-def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,oversampling=2,fc=None):
+def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,rs=20,oversampling=2,fc=None):
     ftype = 'lowpass'
-    fs=48000
+    fs = 48000
     if fc is None:
         fc = fs/2
     order = 2
     sample_size = 16
-    rs=20
     f0 = fc/(fs*oversampling)*2.
     bd, ad = signal.cheby2(order,rs, f0, analog=False, btype=ftype, output='ba')
 
@@ -94,7 +93,7 @@ def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,ove
         freqs = wz*(fs*oversampling)/2./np.pi
         plt.subplot(2,1,1)
         plt.plot(freqs,20.*np.log10(abs(hz)))
-        plt.axis([20,(fs*oversampling)/2,-60,0])
+        #plt.axis([20,(fs*oversampling)/2,-60,0])
         #plt.xscale("log")
         plt.subplot(2,1,2)
         plt.plot(freqs,np.unwrap(np.arctan2(np.real(hz),np.imag(hz)))*180./np.pi)
@@ -116,8 +115,8 @@ def design_and_plot_oversampling_lowpass_butter(do_plot=False,to_integer=True,ov
     f0 = fc/(fs*oversampling)*2.
     bd, ad = signal.butter(order, f0, analog=False, btype=ftype, output='ba')
 
-    bvals = np.array(bd * ((1 << (sample_size)) - 1)).astype(int)
-    avals = np.array(ad*((1 << (sample_size)) -1)).astype(int)
+    bvals = np.array(bd * ((1 << (sample_size-1)) - 1)).astype(int)
+    avals = np.array(ad*((1 << (sample_size-1)) -1)).astype(int)
     if do_plot is True:
         print("B coefficients: {}".format(bvals))
         print("A coefficients: {}".format(avals))
@@ -231,11 +230,26 @@ def antialiasing_filter():
     plt.show()
 
 
+def design_oversampling_comb_lp_filter(rs=3,oversampling=4,fs=48000):
+    for c in range(oversampling-1):
+        f_cutoff = (np.tan((fs/2*(c+1))/((oversampling*fs)/2.))*oversampling*fs/2.)/np.sqrt(2)
+        print("Chebychev filter @{}Hz, attenuation:{}dB".format(int(f_cutoff),rs))
+        design_and_plot_oversampling_lowpass_cheby(True, oversampling=oversampling, rs=rs, fc=f_cutoff)
+    print("Butterworth filter @12000Hz")
+    design_and_plot_oversampling_lowpass_butter(True, oversampling=oversampling, fc=12000)
+
+
 if __name__ == "__main__":
     notenr = 128
     sample_rate=48000
-    oversampling = 1
+    oversampling = 4
     phaseincr_bitsize=32
-    design_and_plot_oversampling_lowpass_cheby(True,oversampling=1,fc=12000)
+    rs=3
+    #design_oversampling_comb_lp_filter(rs,oversampling,sample_rate)
+    design_and_plot_oversampling_lowpass_cheby(True,oversampling=4,rs=1,fc=17333.18)  #first antialiasing filter
+    #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=37084.24) #second antialiasing filter
+    #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=63238) # third antialiasing filter
+    #design_and_plot_oversampling_lowpass_butter(True,oversampling=1,fc=6000)
+
 
 

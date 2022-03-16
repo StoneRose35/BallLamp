@@ -26,7 +26,8 @@
         "datetimeclock.h": "c",
         "stringfunctions.h": "c",
         "triopsbreederservice.h": "c",
-        "ds18b20.h": "c"
+        "ds18b20.h": "c",
+        "oversamplingwaveshaper.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

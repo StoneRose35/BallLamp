@@ -1,14 +1,22 @@
 import scipy.io
 import scipy.fft
+import scipy.interpolate
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
 
-def get_ir(fname):
+def get_ir(fname,sampling_rate=48000):
     wavdata = scipy.io.wavfile.read(fname)
     rawwav=wavdata[1]
     powertwo=2
     dt = 1./wavdata[0]
+    dt_expected=1./sampling_rate
+    if (np.abs(dt-dt_expected) > 1e-9):
+        n_samples_new = int(np.ceil(len(rawwav)*dt/dt_expected))
+        x_old = np.linspace(0,len(rawwav)*dt,len(rawwav))
+        x_new = np.linspace(0,len(rawwav)*dt,n_samples_new)
+        interpolator = scipy.interpolate.interp1d (x_old,rawwav)
+        rawwav = interpolator(x_new)
     while (1 << powertwo) < rawwav.size:
         powertwo += 1
     paddedsize = (1 << powertwo)
@@ -49,6 +57,10 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
     iir_lowpass_order = 2
     iir_lowpass_cutoff = 6000
     b, a=scipy.signal.butter(iir_lowpass_order,iir_lowpass_cutoff,btype="low",analog=False,output="ba",fs=sampling_rate)
+    b_out, a_out = scipy.signal.butter(iir_lowpass_order,iir_lowpass_cutoff,btype="low",analog=False,output="ba",fs=48000)
+    b_out = b_out*32767.
+    a_out = a_out*32767.
+    print("butterworth lowpass @{}Hz,\r\n\tb: {}\r\n\ta: {}".format(iir_lowpass_cutoff,b_out.astype("int16"),a_out.astype("int16")))
     wz, hzn = scipy.signal.freqz(b,a,fs=sampling_rate,worN=sample_length)
     hz = hz*hzn
 
@@ -56,6 +68,11 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
     iir_highpass_order = 2
     iir_highpass_atten = 20
     b, a = scipy.signal.cheby2(iir_highpass_order,iir_highpass_atten,iir_highpass_cutoff,btype="high",analog=False,output="ba",fs=sampling_rate)
+    b_out, a_out = scipy.signal.cheby2(iir_highpass_order, iir_highpass_atten, iir_highpass_cutoff, btype="high", analog=False,
+                               output="ba", fs=48000)
+    b_out = b_out*32767.
+    a_out = a_out*32767.
+    print("chebychev highpass @{}Hz with attenuation {}dB\r\n\tb: {}\r\n\ta: {}".format(iir_highpass_cutoff, iir_highpass_atten, b_out.astype("int16"), a_out.astype("int16")))
     #b, a = scipy.signal.butter(iir_highpass_order,iir_highpass_cutoff,btype="high",analog=False,output="ba",fs=sampling_rate)
     wzb,hzn = scipy.signal.freqz(b,a,fs=sampling_rate,worN=sample_length)
     hz = hz*hzn
@@ -80,7 +97,7 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
     short_ir = highpassed_ir(short_ir,ir_highpass_freq,sampling_rate)
     wzb, hzn = scipy.signal.freqz(short_ir, fs=sampling_rate,worN=sample_length)
     for el in short_ir:
-        print("0x{:x},".format(np.ushort(el*32767)))
+        print("0x{:x}, ".format(np.ushort(el*32767)),end="")
     hzn=hzn/max(abs(hzn))
     hz = hz*hzn
     if axes is None:

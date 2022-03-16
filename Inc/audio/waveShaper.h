@@ -8,8 +8,12 @@ typedef struct
 
 } WaveShaperDataType;
 
+const WaveShaperDataType waveShaperUnity;
+const WaveShaperDataType waveShaperDefaultOverdrive;
+const WaveShaperDataType waveShaperSoftOverdrive;
 
-void initWaveShaper(WaveShaperDataType * data);
+
+void initWaveShaper(WaveShaperDataType * data,const WaveShaperDataType* copyFrom);
 
 int16_t waveShaperProcessSample(int16_t sampleIn,WaveShaperDataType*data);
 #endif
