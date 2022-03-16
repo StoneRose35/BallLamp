@@ -69,23 +69,37 @@ void initSsd1306Display()
 void setCursor(uint8_t row, uint8_t col)
 {
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
-    // set column, high nibble
-    *SSPDR = 0x10 & (col >> 4);
-    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
     // set column, low nibble
-    *SSPDR = 0x0 & (col & 0x0F);
+    *SSPDR = 0x0 | (col & 0x0F);
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    // set column, high nibble
+    *SSPDR = 0x10 | (col >> 4);
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
     // set row / page
-    *SSPDR = 0xB0 & row;
+    *SSPDR = 0xB0 | row;
      while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
 
+}
+
+void ssd1306ClearDisplay()
+{
+    for(uint8_t r=0;r<8;r++)
+    {
+        for(uint8_t c=0;c<128;c++)
+        {
+            setCursor(r,c+2);
+            *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
+            *SSPDR = 0x0;
+            while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+        }
+    }   
 }
 
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
 {
     uint8_t fontIdx;
-    setCursor(row,col*6);
+    setCursor(row,col*6+2);
     fontIdx = (uint8_t)chr - ' ';
 
     *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
@@ -99,13 +113,13 @@ void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
 
 }
 
-void ssd1306WriteText(char * str,uint16_t posH,uint16_t posV)
+void ssd1306WriteText(char * str,uint8_t posH,uint8_t posV)
 {
     uint8_t cnt = 0;
-    uint16_t hCurrent=posH;
+    uint8_t hCurrent=posH;
     while(*(str+cnt) != 0)
     {
-        ssd1306WriteChar(*(str+cnt),posV,hCurrent);
+        ssd1306WriteChar(posV,hCurrent,*(str+cnt));
 
         hCurrent += 1;
 

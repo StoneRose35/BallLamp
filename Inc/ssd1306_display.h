@@ -13,7 +13,8 @@ void initSsd1306Display();
 
 
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr);
-void ssd1306WriteText(char * str,uint16_t posH,uint16_t posV);
+void ssd1306WriteText(char * str,uint8_t posH,uint8_t posV);
+void ssd1306ClearDisplay();
 
 #define CS_DISPLAY 21
 #define SCK 18
