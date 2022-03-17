@@ -31,14 +31,7 @@ int16_t waveShaperProcessSample(int16_t sampleIn,WaveShaperDataType* data)
     uint16_t sampleUint;
     uint32_t rem;
     int16_t out;
-    if(sampleIn < 0)
-    {
-        sampleUint = 0x7FFF + sampleIn;
-    }
-    else
-    {
-        sampleUint = sampleIn;
-    }
+    sampleUint = 0x7FFF + sampleIn;
     indx = (((uint16_t)sampleUint) & 0xFE00) >> 9;
     rem = sampleUint - (((uint16_t)sampleUint) & 0xFE00);
     if (indx < 127)

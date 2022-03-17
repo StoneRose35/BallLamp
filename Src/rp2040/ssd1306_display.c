@@ -34,7 +34,7 @@ void initSsd1306Display()
     *DISPLAY_CD_PIN_CNTR = 5;
     *DISPLAY_RESET_PIN_CNTR = 5;
 
-    // configure control register 0: 8-bit data, 10 MHz Clock
+    // configure control register 0: 8-bit data, 5 MHz Clock
     *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
     // configure clock divider
     *SSPCPSR = 2;
