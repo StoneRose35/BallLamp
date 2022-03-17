@@ -23,6 +23,7 @@ all: clean_objs bs2_code_size $(PROJECT).uf2
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 AUDIO_OBJS := $(patsubst Src/common/audio/%.c,out/%.o,$(wildcard Src/common/audio/*.c))
+AUDIO_FX_OBJS := $(patsubst Src/common/audio/fxprogram/%.c,out/%.o,$(wildcard Src/common/audio/fxprogram/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
 SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
 ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
@@ -30,7 +31,7 @@ ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
 
 all_rp2040: $(RP2040_OBJS) 
 all_common: $(COMMON_OBJS)
-all_audio: $(AUDIO_OBJS)
+all_audio: $(AUDIO_OBJS) $(AUDIO_FX_OBJS)
 all_apps: $(APPS_OBJS)
 all_services: $(SERVICES_OBJS)
 all_images: $(ASSET_IMAGES)
@@ -109,6 +110,10 @@ out/%.o: Src/common/%.c
 
 # audio libs
 out/%.o: Src/common/audio/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
+# audio fx libs
+out/%.o: Src/common/audio/fxprogram/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 # rp2040 specific libs

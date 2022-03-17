@@ -173,17 +173,17 @@
 #include "colorInterpolator.h"
 #include "interpolators.h"
 #include "stringFunctions.h"
-#include "taskManager.h"
+//#include "taskManager.h"
 #include "neopixelCommands.h"
 #include "charDisplay.h"
-#include "ds18b20.h"
-#include "remoteSwitch.h"
-#include "rotaryEncoder.h"
+//#include "ds18b20.h"
+//#include "remoteSwitch.h"
+//#include "rotaryEncoder.h"
 #include "cliApiTask.h"
-#include "uiStack.h"
-#include "heater.h"
-#include "services/triopsBreederService.h"
-#include "services/hibernateService.h"
+//#include "uiStack.h"
+//#include "heater.h"
+//#include "services/triopsBreederService.h"
+//#include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
 #include "audio/simpleChorus.h"
@@ -193,21 +193,13 @@
 #include "audio/oversamplingWaveshaper.h"
 #include "multicore.h"
 #include "core1Main.h"
+#include "audio/fxprogram/fxProgram.h"
 
 
 
 RGBStream lampsdata[N_LAMPS];
 RGBStream * lamps = lampsdata;
-//uint32_t clr_cnt = 0;
-//uint32_t bit_cnt = 0;
 
-//uint8_t rawdata[N_LAMPS*24+1];
-//uint8_t* rawdata_ptr = rawdata;
-
-//TaskType interpolatorsArray[N_LAMPS];
-//TasksType interpolators;
-
-//BufferedInputType btInput;
 
 volatile uint32_t task;
 volatile uint8_t context;
@@ -226,9 +218,6 @@ uint16_t* audioBufferInputPtr;
 int16_t* audioBufferInputPtr;
 #endif
 int16_t inputSample;
-SimpleChorusType chorus1;
-SecondOrderIirFilterType filter1, filter2;
-WaveShaperDataType waveshaper1;
 uint8_t carrybitOld=0,carrybit=0;
 uint32_t wordout;
 uint32_t core1Handshake;
@@ -241,9 +230,6 @@ uint32_t core1Handshake;
 int main(void)
 {
 
-	int16_t highpass_old_out=0;
-	int16_t highpass_old_in=0;
-	int16_t highpass_out=0;
 
 	/*
 	 *
@@ -275,14 +261,6 @@ int main(void)
 	 * 
 	 * */
 	initCliApi();
-	//mountFat32SDCard(&cwd,&ndir);
-	//initDisplay();
-	//initNeopixels();
-	//setEngineState(0);
-	//initRemoteSwitch();
-	//initRotaryEncoder();
-	//initHeater();
-	//initDs18b20();
 	initSsd1306Display();
 	initI2S();
 	initDebugLed();
@@ -294,54 +272,16 @@ int main(void)
      * Initialize Background Services
      *
 	 */
-	//initDoubleBufferedReading(0);
-	enableAudioEngine();
-	//enableAudioInput(0);
-
-
-	/*
-	 *
-	 * Initialize the Ui Application Layer
-	 * 
-	 * */
-
+	enableAudioEngine(); // i2s adc and dac
+	initRoundRobinReading(); // internal adc for reading parameters
 
 	printf("Microsys v1.0 running\r\n");
 	ssd1306ClearDisplay();
 	ssd1306WriteText("BolFx 4.2",0,0);
 
-	//uint8_t notecnt=0;
-	//uint16_t notelength=0;
 
-	//setNote(notecnt);
-	initSimpleChorus(&chorus1);
-	initSecondOrderIirFilter(&filter1);
-	initSecondOrderIirFilter(&filter2);
-	initWaveShaper(&waveshaper1,&waveShaperDefaultOverdrive);
+	fxProgram1.setup(fxProgram1.data);
 
-
-
-	/* filters of the reduced cab simulator, in the order of processing */
-
-	/* butterworth lowpass @ 6000Hz */
-	
-	filter1.coeffB[0]=3199;
-	filter1.coeffB[1]=6398;
-	filter1.coeffB[2]=3199;
-	filter1.coeffA[0]=-30893;
-	filter1.coeffA[1]=10922;
-    
-	FirFilterType filter3 = {
-		.coefficients = {0xd92, 0xe31, 0x113d, 0x19e0, 0x29f1, 0x436b, 0x659b, 0x8242, 0x80ea, 0x5bcf, 0x304b, 0x12a0, 0xf1bd, 0xd3db, 0xcb60, 0xcdf2, 0xd476, 0xe539, 0xf98f, 0x6c2, 0xca4, 0xf38, 0xcde, 0x9f6, 0xd60, 0x105f, 0x1211, 0x1087, 0x5b7, 0xf86c, 0xf2bb, 0xf6d4, 0x5f, 0x973, 0xc4f, 0x67c, 0x94, 0x5, 0xfc61, 0xf7b8, 0xfa0f, 0x193, 0xa46, 0x11e5, 0x1681, 0x16e9, 0x13f9, 0x100c, 0xe8a, 0xf2a, 0xfef, 0xef4, 0xa70, 0x494, 0xff4a, 0xfabc, 0xfb5e, 0xff9b, 0x4b2, 0x85c, 0xb1c, 0xd25, 0xdf6, 0xd76}
-	};
-
-	initfirFilter(&filter3);
-	/* chebychev highpass @ 100Hz,bandstop 20dB */
-	filter2.coeffB[0]=32638;
-	filter2.coeffB[1]=259;
-	filter2.coeffB[2]=32638;
-	filter2.coeffA[0]=260;
-	filter2.coeffA[1]=32510;
 
 	// sync with core 1
 	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
@@ -372,52 +312,20 @@ int main(void)
 				#ifndef I2S_INPUT
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 				#else
-				inputSample=(*(audioBufferInputPtr + c*2) >> 1) + (*(audioBufferInputPtr + c*2+1) >> 1);
+				inputSample=*(audioBufferInputPtr + c*2+1);// + (*(audioBufferInputPtr + c*2+1) >> 1);
 				#endif
-				inputSample = inputSample >> 1;
-				// high-pass the input to remove dc component
-				
-				#define ALPHA 31000
-				//highpass_out = ((ALPHA*highpass_old_out) >> 15) + (((inputSample - highpass_old_out)*((1 << 15) - ALPHA)) >> 15);
-				highpass_out = (((((1 << 15) + ALPHA) >> 1)*(inputSample - highpass_old_in))>>15) + ((ALPHA*highpass_old_out) >> 15);
-				highpass_old_in = inputSample;
-				highpass_old_out = highpass_out;
 
-				inputSample = highpass_out;
-				inputSample = simpleChorusProcessSample(inputSample,&chorus1);
-				//inputSample = waveShaperProcessSample(inputSample,&waveshaper1);
-				//inputSample = OversamplingDistortionProcessSample(inputSample,&waveshaper1);
-
-				inputSample = secondOrderIirFilterProcessSample(inputSample,&filter1);
-				inputSample = firFilterProcessSample(inputSample,&filter3);
-				//inputSample = secondOrderIirFilterProcessSample(inputSample,&filter2);
-				
-
+				inputSample = fxProgram1.processSample(inputSample,fxProgram1.data);
 
 				carrybit= inputSample & 0x1;
 				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
 				carrybitOld = carrybit; 
-				*((uint32_t*)audioBufferPtr+c) = wordout; //getNextSineValue(); // ((highpass_out >> 2)*((getNextSineValue()>>3) + (1 << 14))) >> 15;
+				*((uint32_t*)audioBufferPtr+c) = wordout; 
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 		}
 		
-
-	// test the rom functions
-	/*
-		BootRomInfoType*  bootInfo;
-		getBootRomInfo(&bootInfo);
-		char * copyrightNote;
-		copyrightNote = getCopyright();
-
-
-		c = fadd(a,b);
-		c = fsub(c,9.8);
-		c = fmul(c,a);
-		c = fdiv(c,b);
-		printf(copyrightNote);
-	*/	
 	}
 }
 #endif

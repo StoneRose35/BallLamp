@@ -25,6 +25,7 @@
 
 #define AUDIO_INPUT_BUFFER_SIZE 16
 #define AUDIO_SAMPLING_RATE 48000
+#define UI_UPDATE_RATE 10
 
 #define AUDIO_STATE_INPUT_ON 2
 #define AUDIO_STATE_INPUT_BUFFER_OVERRUN 3
@@ -39,5 +40,11 @@ void core1IrqSync();
 void enableAudioInput(uint8_t freeRunning);
 void toggleAudioInputBuffer();
 uint16_t * getReadableAudioBuffer();
+
+void initRoundRobinReading();
+
+uint16_t getChannel0Value();
+uint16_t getChannel1Value();
+uint16_t getChannel2Value();
 
 #endif

@@ -5,7 +5,31 @@ static uint16_t audioInDoubleBuffer[AUDIO_INPUT_BUFFER_SIZE*2];
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioInputState;
 
+extern uint32_t task;
 
+volatile uint16_t adcChannel0Value, adcChannel1Value, adcChannel2Value;
+
+void isr_adc_fifo_irq22()
+{
+    adcChannel0Value = *ADC_FIFO;
+    adcChannel1Value = *ADC_FIFO;
+    adcChannel2Value = *ADC_FIFO;
+    task |= (1 << TASK_UPDATE_POTENTIOMETER_VALUES);
+}
+
+uint16_t getChannel0Value()
+{
+    return adcChannel0Value;
+}
+
+uint16_t getChannel1Value()
+{
+    return adcChannel1Value;
+}
+uint16_t getChannel2Value()
+{
+    return adcChannel2Value;
+}
 /**
  * @brief run on core 1, just sets the irq for pio1, sm0 so that core1 one can handle this interrupt without being affected by other irq's
  *   
@@ -90,6 +114,27 @@ void initDoubleBufferedReading(uint8_t channelnr)
 						| (1 << DMA_CH3_CTRL_TRIG_INCR_WRITE_LSB) 
 						| (1 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // adc is single channel 16 bit
 						| (0 << DMA_CH3_CTRL_TRIG_EN_LSB);
+}
+
+
+void initRoundRobinReading()
+{
+    // setup pads
+    *(PADS_ADC0 + 0) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
+    *(PADS_ADC0 + 0) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+    *(PADS_ADC0 + 1) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
+    *(PADS_ADC0 + 1) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+    *(PADS_ADC0 + 2) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
+    *(PADS_ADC0 + 2) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+
+    // set update frequency
+    *ADC_DIV=((F_ADC_USB/(UI_UPDATE_RATE*3)) - 1) << 8; 
+
+    // set threshhold to 3
+    *ADC_FCS = (1 << ADC_FCS_EN_LSB) | (3 << ADC_FCS_THRESH_LSB); 
+
+    // set round robin for channels 0 to 2
+    *ADC_CS = ((1 << 0) << ADC_CS_RROBIN_LSB) | ((1 << 1) << ADC_CS_RROBIN_LSB) | ((1 << 2) << ADC_CS_RROBIN_LSB);
 
 }
 
