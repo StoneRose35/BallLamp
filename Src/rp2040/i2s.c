@@ -8,9 +8,9 @@
 #include "adc.h"
 
 
-static uint16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];
+static int16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];
 #ifdef I2S_INPUT
-static uint16_t i2sDoubleBufferIn[AUDIO_BUFFER_SIZE*2*2];
+static int16_t i2sDoubleBufferIn[AUDIO_BUFFER_SIZE*2*2];
 #endif
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioState;

@@ -12,7 +12,7 @@
 #define I2S_DEBUG_PIN 6
 
 // 120MHz / 78.125 = 48kHz*2*16
-#define I2S_CLKDIV_INT 36
+#define I2S_CLKDIV_INT 39
 #define I2S_CLKDIV_FRAC 16
 
 #define I2S_CLKDIV_DBL_INT 19
