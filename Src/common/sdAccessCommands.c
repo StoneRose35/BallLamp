@@ -8,8 +8,8 @@
 #include "consoleHandler.h"
 static uint8_t card_init = 0;
 
-extern DirectoryPointerType * cwd;
-extern DirectoryPointerType * ndir;
+DirectoryPointerType * cwd;
+DirectoryPointerType * ndir;
 
 void sdInitCommand(char * cmd,void* context)
 {

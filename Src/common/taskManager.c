@@ -21,6 +21,8 @@
 #include "displayCommands.h"
 #include "uart.h"
 
+RGBStream lampsdata[N_LAMPS];
+RGBStream * lamps = lampsdata;
 
 /**
  * @brief the currently implemented commands
