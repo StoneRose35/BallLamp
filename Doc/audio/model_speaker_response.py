@@ -51,6 +51,9 @@ def highpassed_ir(ir, f_cutoff,f_sample):
     #plt.show()
     return hp_ir
 
+def renorm_ir(ir):
+    current_power = np.sqrt(np.sum(np.power(ir,2)))
+    return ir/current_power
 
 def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=4096):
     hz = np.ones(sample_length)
@@ -95,6 +98,7 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
     #ir = highpassed_ir(ir,ir_highpass_freq,sampling_rate)
     short_ir = shorten_ir(ir,ir_size,ir_pad_size)
     short_ir = highpassed_ir(short_ir,ir_highpass_freq,sampling_rate)
+    short_ir = renorm_ir(short_ir)
     wzb, hzn = scipy.signal.freqz(short_ir, fs=sampling_rate,worN=sample_length)
     for el in short_ir:
         print("0x{:x}, ".format(np.ushort(el*32767)),end="")
