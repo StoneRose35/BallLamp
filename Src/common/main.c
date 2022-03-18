@@ -240,7 +240,6 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-	startCore1(&core1Main);
 
 	initUsbPll();
 	initSystickTimer();
@@ -252,7 +251,7 @@ int main(void)
 	initDatetimeClock();
 	initUart(BAUD_RATE);
 	initAdc();
-
+	startCore1(&core1Main);
 
 
 	/*
@@ -281,7 +280,6 @@ int main(void)
 
 
 	fxProgram1.setup(fxProgram1.data);
-
 
 	// sync with core 1
 	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));

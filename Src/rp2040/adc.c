@@ -1,6 +1,7 @@
 #include "adc.h"
 #include "dma.h"
 #include "system.h"
+
 static uint16_t audioInDoubleBuffer[AUDIO_INPUT_BUFFER_SIZE*2];
 static volatile  uint32_t dbfrPtr; 
 volatile uint32_t audioInputState;
@@ -120,12 +121,12 @@ void initDoubleBufferedReading(uint8_t channelnr)
 void initRoundRobinReading()
 {
     // setup pads
-    *(PADS_ADC0 + 0) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
-    *(PADS_ADC0 + 0) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
-    *(PADS_ADC0 + 1) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
-    *(PADS_ADC0 + 1) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
-    *(PADS_ADC0 + 2) |= (1 << PADS_BANK0_GPIO26_IE_LSB);
-    *(PADS_ADC0 + 2) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+    *(PADS_ADC0 + 0) &= ~(1 << PADS_BANK0_GPIO26_PDE_LSB);
+    //*(PADS_ADC0 + 0) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+    *(PADS_ADC0 + 1) &= ~(1 << PADS_BANK0_GPIO26_PDE_LSB);
+    //*(PADS_ADC0 + 1) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
+    *(PADS_ADC0 + 2) &= ~(1 << PADS_BANK0_GPIO26_PDE_LSB);
+    //*(PADS_ADC0 + 2) &= ~(1 << PADS_BANK0_GPIO26_OD_LSB);
 
     // set update frequency
     *ADC_DIV=((F_ADC_USB/(UI_UPDATE_RATE*3)) - 1) << 8; 
@@ -133,9 +134,14 @@ void initRoundRobinReading()
     // set threshhold to 3
     *ADC_FCS = (1 << ADC_FCS_EN_LSB) | (3 << ADC_FCS_THRESH_LSB); 
 
-    // set round robin for channels 0 to 2
-    *ADC_CS = ((1 << 0) << ADC_CS_RROBIN_LSB) | ((1 << 1) << ADC_CS_RROBIN_LSB) | ((1 << 2) << ADC_CS_RROBIN_LSB);
+    // enable interrupt
+    *ADC_INTE = (1 << ADC_INTE_FIFO_LSB);
 
+    // set round robin for channels 0 to 2
+    *ADC_CS |= ((1 << 0) << ADC_CS_RROBIN_LSB) | ((1 << 1) << ADC_CS_RROBIN_LSB) | ((1 << 2) << ADC_CS_RROBIN_LSB);
+
+    // start reading
+    *ADC_CS |= (1 << ADC_CS_START_MANY_LSB); 
 }
 
 void enableAudioInput(uint8_t freeRunning)

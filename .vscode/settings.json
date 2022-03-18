@@ -27,7 +27,10 @@
         "stringfunctions.h": "c",
         "triopsbreederservice.h": "c",
         "ds18b20.h": "c",
-        "oversamplingwaveshaper.h": "c"
+        "oversamplingwaveshaper.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

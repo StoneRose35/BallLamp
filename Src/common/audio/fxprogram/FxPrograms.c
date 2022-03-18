@@ -40,7 +40,7 @@ void fxProgram1Param1Callback(uint16_t val,void*data) // highpass cutoff before 
     {
         val = 10;
     }
-    while(pData->updateLock > 0);
+    //while(pData->updateLock > 0);
     pData->highpassCutoff = val;
 }
 
@@ -50,7 +50,7 @@ void fxProgram1Param2Callback(uint16_t val,void*data) // number of waveshaper (m
     // map 0-4095 to 1-8
     val >>= 9;
     val += 1; 
-    while(pData->updateLock > 0);
+    //while(pData->updateLock > 0);
     pData->nWaveshapers = val;
 }
 
@@ -59,7 +59,7 @@ void fxProgram1Param3Callback(uint16_t val,void*data) // cab sim on/off
 {
     FxProgram1DataType* pData = (FxProgram1DataType*)data;
     val >>= 11;
-    while(pData->updateLock > 0);
+    //while(pData->updateLock > 0);
     pData->cabSimOnOff = val;
 }
 
@@ -84,7 +84,8 @@ FxProgram1DataType fxProgram1data = {
     .highpass_old_out=0,
     .highpass_out=0,
     .highpassCutoff = 31000,
-    .nWaveshapers = 1
+    .nWaveshapers = 1,
+    .cabSimOnOff = 1
 };
 FxProgramType fxProgram1 = {
     .name = "Amp-Simulator",
@@ -92,6 +93,7 @@ FxProgramType fxProgram1 = {
     .param1Callback = &fxProgram1Param1Callback,
     .param2Callback = &fxProgram1Param2Callback,
     .param3Callback = &fxProgram1Param3Callback,
+    .setup = &fxProgram1Setup,
     .data = (void*)&fxProgram1data
 };
 

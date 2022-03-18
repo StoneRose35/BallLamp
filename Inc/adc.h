@@ -19,6 +19,7 @@
 #define ADC_RESULT ((volatile uint32_t*)(ADC_BASE + ADC_RESULT_OFFSET))
 #define ADC_FCS ((volatile uint32_t*)(ADC_BASE + ADC_FCS_OFFSET))
 #define ADC_FIFO ((volatile uint32_t*)(ADC_BASE + ADC_FIFO_OFFSET))
+#define ADC_INTE ((volatile uint32_t*)(ADC_BASE + ADC_INTE_OFFSET))
 
 #define PADS_ADC0 ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO26_OFFSET))
 
