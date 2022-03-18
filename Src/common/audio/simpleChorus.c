@@ -12,15 +12,14 @@ void initSimpleChorus(SimpleChorusType*data)
     {
         data->delayBuffer[c]=0;
     }
-    data->depth=10;
-    data->mix=127;
     data->lfoQuadrant=0;
     data->lfoVal=0;
-    data->lfoPhaseinc=500*4*256*SIMPLE_CHORUS_LFO_DIVIDER/4800000;
+    data->lfoValOld=0;
+    data->lfoPhaseinc=data->frequency*4*256*SIMPLE_CHORUS_LFO_DIVIDER/4800000;
 }
 
 /** set frequency in Hz/100 */
-void setFrequency(uint16_t freq,SimpleChorusType*data)
+void simpleChorusSetFrequency(uint16_t freq,SimpleChorusType*data)
 {
     data->lfoPhaseinc=freq*4*256*SIMPLE_CHORUS_LFO_DIVIDER/4800000;
 }
@@ -30,9 +29,11 @@ int16_t simpleChorusProcessSample(int16_t sampleIn,SimpleChorusType*data)
 {
     int16_t delayPtr;
     int16_t sampleOut;
+    int16_t lfoValInterp;
     data->lfoUpdateCnt++;
     if (data->lfoUpdateCnt == SIMPLE_CHORUS_LFO_DIVIDER)
     {
+        data->lfoValOld = data->lfoVal;
         if (data->lfoQuadrant == 0 )
         {
             data->lfoVal += data->lfoPhaseinc;
@@ -57,9 +58,9 @@ int16_t simpleChorusProcessSample(int16_t sampleIn,SimpleChorusType*data)
     }
 
         data->delayInputPtr &= (SIMPLE_CHORUS_DELAY_SIZE-1);
-
+        lfoValInterp = data->lfoValOld + ((data->lfoUpdateCnt*(data->lfoVal - data->lfoValOld)) >> 8);
         // compute current index of the delay pointer
-        delayPtr = (data->delayInputPtr-1) - (((data->lfoVal+0xFF)*data->depth) >> 8);
+        delayPtr = (data->delayInputPtr-1) - 4 - (((lfoValInterp+0xFF)*data->depth) >> 8);
         if (delayPtr < 0)
         {
             delayPtr = SIMPLE_CHORUS_DELAY_SIZE + delayPtr;

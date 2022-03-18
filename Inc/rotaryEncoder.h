@@ -5,7 +5,7 @@
 
 #define ENCODER_1 7
 #define ENCODER_2 10
-#define SWITCH 9
+#define SWITCH 22
 #define BACKLIGHT 8
 
 #define ROTARY_ENCODER_DEBOUNCE 1

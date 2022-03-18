@@ -56,20 +56,21 @@ void isr_io_irq_bank0_irq13()
 void initRotaryEncoder()
 {
     // define pullups for encoder input and switch
-    *ENCODER_1_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    *ENCODER_1_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
-    *ENCODER_2_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    *ENCODER_2_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
+    //*ENCODER_1_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
+    //*ENCODER_1_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
+    //*ENCODER_2_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
+    //*ENCODER_2_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
+
     *SWITCH_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
     *SWITCH_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
 
     // set io bank control to sio
-    *ENCODER_1_PIN_CNTR = 5;
-    *ENCODER_2_PIN_CNTR = 5;
+    //*ENCODER_1_PIN_CNTR = 5;
+    //*ENCODER_2_PIN_CNTR = 5;
     *SWITCH_PIN_CNTR = 5;
 
     // enable level change interrupt
-    *ENCODER_1_INTE |=  (1 << ENCODER_1_EDGE_LOW) | (1 << ENCODER_1_EDGE_HIGH);
+    //*ENCODER_1_INTE |=  (1 << ENCODER_1_EDGE_LOW) | (1 << ENCODER_1_EDGE_HIGH);
     *SWITCH_INTE |= (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
     *NVIC_ISER = (1 << 13);
 

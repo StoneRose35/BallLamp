@@ -163,6 +163,7 @@
 #include "pio.h"
 //#include "pwm.h"
 #include "adc.h"
+#include "timer.h"
 //#include "spi_sdcard_display.h"
 #include "ssd1306_display.h"
 #include "debugLed.h"
@@ -178,7 +179,7 @@
 #include "charDisplay.h"
 //#include "ds18b20.h"
 //#include "remoteSwitch.h"
-//#include "rotaryEncoder.h"
+#include "rotaryEncoder.h"
 #include "cliApiTask.h"
 //#include "uiStack.h"
 //#include "heater.h"
@@ -215,6 +216,8 @@ uint32_t wordout;
 uint32_t core1Handshake;
 volatile int16_t avgOut=0,avgOutOld=0,avgIn=0,avgInOld=0;
 uint16_t bufferCnt=0;
+volatile uint8_t fxProgramIdx = 0;
+volatile uint32_t ticStart,ticEnd,cpuLoad;
 #define UI_UPDATE_IN_SAMPLE_BUFFERS 300
 #define AVERAGING_LOWPASS_CUTOFF 10
 
@@ -245,6 +248,7 @@ int main(void)
 	initGpio();
 	//initSpi();
 	//initDatetimeClock();
+	initTimer();
 	initUart(BAUD_RATE);
 	initAdc();
 	startCore1(&core1Main);
@@ -259,7 +263,7 @@ int main(void)
 	initSsd1306Display();
 	initI2S();
 	initDebugLed();
-	
+	initRotaryEncoder();
 
 
 	/*
@@ -267,14 +271,17 @@ int main(void)
      * Initialize Background Services
      *
 	 */
-	enableAudioEngine(); // i2s adc and dac
+
 	initRoundRobinReading(); // internal adc for reading parameters
 
 	printf("Microsys v1.0 running\r\n");
 	ssd1306ClearDisplay();
-	fxProgram1.setup(fxProgram1.data);
-
-	ssd1306WriteText(fxProgram1.name,0,0);
+	for (uint8_t c=0;c<N_FX_PROGRAMS;c++)
+	{
+		fxPrograms[c]->setup(fxPrograms[c]->data);
+	}
+	ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
+	enableAudioEngine(); // i2s adc and dac
 
 	// sync with core 1
 	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
@@ -284,7 +291,8 @@ int main(void)
 		DebugLedOn();
 		core1Handshake = *SIO_FIFO_RD;
 	}
-
+	ticEnd=0;
+	ticStart=0;
     /* Loop forever */
 	for(;;)
 	{
@@ -292,6 +300,7 @@ int main(void)
 		cliApiTask(task);
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
+			ticStart = getTimeLW();
 
 			audioBufferPtr = getEditableAudioBuffer();
 			#ifndef I2S_INPUT
@@ -299,6 +308,7 @@ int main(void)
 			#else
 			audioBufferInputPtr = getInputAudioBuffer();
 			#endif
+
 			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c++)
 			{
 				// convert raw input to signed 16 bit
@@ -318,7 +328,8 @@ int main(void)
 				}
 				avgInOld = ((AVERAGING_LOWPASS_CUTOFF*avgIn) >> 15) + (((32768-AVERAGING_LOWPASS_CUTOFF)*avgInOld) >> 15);
 
-				inputSample = fxProgram1.processSample(inputSample,fxProgram1.data);
+				inputSample = fxPrograms[fxProgramIdx]->processSample(inputSample,fxPrograms[fxProgramIdx]->data);
+
 
 				if (inputSample < 0)
 				{
@@ -338,6 +349,13 @@ int main(void)
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 			bufferCnt++;
+
+			ticEnd= getTimeLW();
+			if(ticEnd > ticStart)
+			{
+				// compute cpu load as range from 0 to 255
+				cpuLoad = ((ticEnd-ticStart)*256*256*F_SAMPLING/AUDIO_BUFFER_SIZE/1000000) >> 8;
+			}
 		}
 		if (bufferCnt == UI_UPDATE_IN_SAMPLE_BUFFERS)
 		{

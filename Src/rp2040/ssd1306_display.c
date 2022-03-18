@@ -19,11 +19,6 @@ void initSsd1306Display()
 	*RESETS &= ~(1 << RESETS_RESET_SPI0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_SPI0_LSB)) == 0);
 
-    // get pads out of reset
-    *RESETS |= (1 << RESETS_RESET_PADS_BANK0_LSB); 
-	*RESETS &= ~(1 << RESETS_RESET_PADS_BANK0_LSB);
-	while ((*RESETS_DONE & (1 << RESETS_RESET_PADS_BANK0_LSB)) == 0);
-
     // wire up the spi
     *MOSI_PIN_CNTR = 1;
     *SCK_PIN_CNTR = 1;

@@ -4,6 +4,9 @@
 #include "audio/waveShaper.h"
 #include "audio/secondOrderIirFilter.h"
 #include "audio/firFilter.h"
+#include "audio/simpleChorus.h"
+
+#define N_FX_PROGRAMS 2
 
 typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
@@ -30,7 +33,13 @@ typedef struct {
     uint8_t updateLock;
 } FxProgram1DataType;
 
+typedef struct {
+    SimpleChorusType chorusData;
+} FxProgram2DataType;
 
 FxProgramType fxProgram1;
+FxProgramType fxProgram2;
+
+FxProgramType * fxPrograms[N_FX_PROGRAMS];
 
 #endif

@@ -2,6 +2,8 @@
 #define _I2S_H_
 #include <stdint.h>
 
+#define F_SAMPLING 48000
+
 #define I2S_INPUT
 
 #define I2S_WS_PIN 12

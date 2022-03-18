@@ -89,7 +89,7 @@ FxProgram1DataType fxProgram1data = {
     .cabSimOnOff = 1
 };
 FxProgramType fxProgram1 = {
-    .name = "Amp-Simulator",
+    .name = "Amp-Simulator       ",
     .processSample = &fxProgram1processSample,
     .param1Callback = &fxProgram1Param1Callback,
     .param2Callback = &fxProgram1Param2Callback,
@@ -98,3 +98,6 @@ FxProgramType fxProgram1 = {
     .data = (void*)&fxProgram1data
 };
 
+FxProgramType* fxPrograms[N_FX_PROGRAMS]={
+    &fxProgram1, &fxProgram2
+};

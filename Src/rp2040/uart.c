@@ -237,9 +237,14 @@ void initBTUart(uint16_t baudrate)
 
 void initGpio()
 {
-	//NEVER-EVER RESET GPIO PINS!!! (not works anymore)
+	//NEVER-EVER RESET GPIO PINS!!! (nothing works anymore)
     *RESETS &= ~(1 << RESETS_RESET_IO_BANK0_LSB);
 	while ((*RESETS_DONE & (1 << RESETS_RESET_IO_BANK0_LSB)) == 0);
+
+	// get pads out of reset
+    *RESETS |= (1 << RESETS_RESET_PADS_BANK0_LSB); 
+	*RESETS &= ~(1 << RESETS_RESET_PADS_BANK0_LSB);
+	while ((*RESETS_DONE & (1 << RESETS_RESET_PADS_BANK0_LSB)) == 0);
 }
 
 #endif
