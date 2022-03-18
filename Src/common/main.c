@@ -154,27 +154,27 @@
 #include <neopixelDriver.h>
 #include "system.h"
 #include "core.h"
-#include "romfunc.h"
+//#include "romfunc.h"
 #include "systemClock.h"
 #include "systick.h"
-#include "datetimeClock.h"
+//#include "datetimeClock.h"
 #include "uart.h"
 #include "dma.h"
 #include "pio.h"
-#include "pwm.h"
+//#include "pwm.h"
 #include "adc.h"
 //#include "spi_sdcard_display.h"
 #include "ssd1306_display.h"
 #include "debugLed.h"
-#include "fatLib.h"
+//#include "fatLib.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
 #include "bufferedInputHandler.h"
-#include "colorInterpolator.h"
-#include "interpolators.h"
+//#include "colorInterpolator.h"
+//#include "interpolators.h"
 #include "stringFunctions.h"
 //#include "taskManager.h"
-#include "neopixelCommands.h"
+//#include "neopixelCommands.h"
 #include "charDisplay.h"
 //#include "ds18b20.h"
 //#include "remoteSwitch.h"
@@ -196,19 +196,11 @@
 #include "audio/fxprogram/fxProgram.h"
 
 
-
-RGBStream lampsdata[N_LAMPS];
-RGBStream * lamps = lampsdata;
-
-
 volatile uint32_t task;
 volatile uint8_t context;
 
 extern CommBufferType usbCommBuffer;
 extern CommBufferType btCommBuffer;
-
-DirectoryPointerType * cwd;
-DirectoryPointerType * ndir;
 
 
 int16_t* audioBufferPtr;
@@ -221,6 +213,10 @@ int16_t inputSample;
 uint8_t carrybitOld=0,carrybit=0;
 uint32_t wordout;
 uint32_t core1Handshake;
+volatile int16_t avgOut=0,avgOutOld=0,avgIn=0,avgInOld=0;
+uint16_t bufferCnt=0;
+#define UI_UPDATE_IN_SAMPLE_BUFFERS 300
+#define AVERAGING_LOWPASS_CUTOFF 10
 
 /**
  * @brief the main entry point, should never exit
@@ -248,7 +244,7 @@ int main(void)
 	initPio();
 	initGpio();
 	//initSpi();
-	initDatetimeClock();
+	//initDatetimeClock();
 	initUart(BAUD_RATE);
 	initAdc();
 	startCore1(&core1Main);
@@ -276,10 +272,9 @@ int main(void)
 
 	printf("Microsys v1.0 running\r\n");
 	ssd1306ClearDisplay();
-	ssd1306WriteText("BolFx 4.2",0,0);
-
-
 	fxProgram1.setup(fxProgram1.data);
+
+	ssd1306WriteText(fxProgram1.name,0,0);
 
 	// sync with core 1
 	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
@@ -313,7 +308,27 @@ int main(void)
 				inputSample=*(audioBufferInputPtr + c*2+1);// + (*(audioBufferInputPtr + c*2+1) >> 1);
 				#endif
 
+				if (inputSample < 0)
+				{
+					avgIn = -inputSample;
+				}
+				else
+				{
+					avgIn = inputSample;
+				}
+				avgInOld = ((AVERAGING_LOWPASS_CUTOFF*avgIn) >> 15) + (((32768-AVERAGING_LOWPASS_CUTOFF)*avgInOld) >> 15);
+
 				inputSample = fxProgram1.processSample(inputSample,fxProgram1.data);
+
+				if (inputSample < 0)
+				{
+					avgOut = -inputSample;
+				}
+				else
+				{
+					avgOut = inputSample;
+				}
+				avgOutOld = ((AVERAGING_LOWPASS_CUTOFF*avgOut) >> 15) + (((32768-AVERAGING_LOWPASS_CUTOFF)*avgOutOld) >> 15);
 
 				carrybit= inputSample & 0x1;
 				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
@@ -322,6 +337,12 @@ int main(void)
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
+			bufferCnt++;
+		}
+		if (bufferCnt == UI_UPDATE_IN_SAMPLE_BUFFERS)
+		{
+			bufferCnt = 0;
+			task |= (1 << TASK_UPDATE_AUDIO_UI);
 		}
 		
 	}

@@ -70,10 +70,10 @@ void setCursor(uint8_t row, uint8_t col)
 {
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
     // set column, low nibble
-    *SSPDR = 0x0 | (col & 0x0F);
+    *SSPDR = ((col+2) & 0x0F);
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
     // set column, high nibble
-    *SSPDR = 0x10 | (col >> 4);
+    *SSPDR = 0x10 | ((col+2) >> 4);
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
 
     // set row / page
@@ -88,7 +88,7 @@ void ssd1306ClearDisplay()
     {
         for(uint8_t c=0;c<128;c++)
         {
-            setCursor(r,c+2);
+            setCursor(r,c);
             *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
             *SSPDR = 0x0;
             while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
@@ -96,10 +96,29 @@ void ssd1306ClearDisplay()
     }   
 }
 
+/**
+ * @brief fill a full or parts of a row with bytes
+ * 
+ * @param row the row from 0 to 7
+ * @param col starting column from 0 to 127
+ * @param arr the data array (lsb is on top)
+ * @param arrayLength the length of the array
+ */
+void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint8_t arrayLength)
+{
+    setCursor(row,col);
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
+    for (uint16_t c=0;c<arrayLength;c++)
+    {
+        *SSPDR = *(arr + c);
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    }
+}
+
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
 {
     uint8_t fontIdx;
-    setCursor(row,col*6+2);
+    setCursor(row,col*6);
     fontIdx = (uint8_t)chr - ' ';
 
     *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
