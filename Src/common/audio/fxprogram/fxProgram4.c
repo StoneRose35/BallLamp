@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include "audio/fxprogram/fxProgram.h"
 
-int16_t fxProgram1processSample(int16_t sampleIn,void*data)
+int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 {
     int16_t out;
-    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     pData->updateLock = 1;
 
     pData->highpass_out = (((((1 << 15) + pData->highpassCutoff) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((pData->highpassCutoff *pData->highpass_old_out) >> 15);
@@ -14,7 +14,7 @@ int16_t fxProgram1processSample(int16_t sampleIn,void*data)
     out = pData->highpass_out;
     for (uint8_t c=0;c<pData->nWaveshapers;c++)
     {
-        out = waveShaperProcessSample(out,&pData->waveshaper1);
+        out = OversamplingDistortionProcessSample(out,&pData->waveshaper1);
     }
 
     out = out >> 2;
@@ -29,9 +29,9 @@ int16_t fxProgram1processSample(int16_t sampleIn,void*data)
 }
 
 
-void fxProgram1Param1Callback(uint16_t val,void*data) // highpass cutoff before the nonlinear stage
+void fxProgram4Param1Callback(uint16_t val,void*data) // highpass cutoff before the nonlinear stage
 {
-    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     val <<=  3; 
     if (val > 31500)
     {
@@ -45,9 +45,9 @@ void fxProgram1Param1Callback(uint16_t val,void*data) // highpass cutoff before 
     pData->highpassCutoff = val;
 }
 
-void fxProgram1Param2Callback(uint16_t val,void*data) // number of waveshaper (more means more distortion)
+void fxProgram4Param2Callback(uint16_t val,void*data) // number of waveshaper (more means more distortion)
 {
-    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     // map 0-4095 to 1-8
     val >>= 9;
     val += 1; 
@@ -56,22 +56,23 @@ void fxProgram1Param2Callback(uint16_t val,void*data) // number of waveshaper (m
 }
 
 
-void fxProgram1Param3Callback(uint16_t val,void*data) // cab sim on/off
+void fxProgram4Param3Callback(uint16_t val,void*data) // cab sim on/off
 {
-    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     val >>= 11;
     //while(pData->updateLock > 0);
     pData->cabSimOnOff = val;
 }
 
-void fxProgram1Setup(void*data)
+void fxProgram4Setup(void*data)
 {
-    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     initfirFilter(&pData->filter3);
-    initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
+    initOversamplingWaveshaper(&pData->waveshaper1);
+    //initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
 }
 
-FxProgram1DataType fxProgram1data = {
+FxProgram4DataType fxProgram4data = {
     /* butterworth lowpass @ 6000Hz */
     .filter1 = {
         	.coeffB = {3199, 6398, 3199},
@@ -88,16 +89,13 @@ FxProgram1DataType fxProgram1data = {
     .nWaveshapers = 1,
     .cabSimOnOff = 1
 };
-FxProgramType fxProgram1 = {
-    .name = "Amp-Simulator       ",
-    .processSample = &fxProgram1processSample,
-    .param1Callback = &fxProgram1Param1Callback,
-    .param2Callback = &fxProgram1Param2Callback,
-    .param3Callback = &fxProgram1Param3Callback,
-    .setup = &fxProgram1Setup,
-    .data = (void*)&fxProgram1data
-};
 
-FxProgramType* fxPrograms[N_FX_PROGRAMS]={
-    &fxProgram1, &fxProgram4, &fxProgram2, &fxProgram3
+FxProgramType fxProgram4 = {
+    .name = "Amp-Simulator Hi-Res",
+    .processSample = &fxProgram4processSample,
+    .param1Callback = &fxProgram4Param1Callback,
+    .param2Callback = &fxProgram4Param2Callback,
+    .param3Callback = &fxProgram4Param3Callback,
+    .setup = &fxProgram4Setup,
+    .data = (void*)&fxProgram4data
 };

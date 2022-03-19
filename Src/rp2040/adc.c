@@ -137,6 +137,9 @@ void initRoundRobinReading()
     // enable interrupt
     *ADC_INTE = (1 << ADC_INTE_FIFO_LSB);
 
+    // enable global interrupt (handled by core 0)
+    *NVIC_ISER = (1 << 22);
+
     // set round robin for channels 0 to 2
     *ADC_CS |= ((1 << 0) << ADC_CS_RROBIN_LSB) | ((1 << 1) << ADC_CS_RROBIN_LSB) | ((1 << 2) << ADC_CS_RROBIN_LSB);
 

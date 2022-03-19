@@ -44,7 +44,7 @@ void core1Main()
 
     *SIO_FIFO_ST = (1 << 2);
     *SIO_FIFO_WR=0xcafeface; // write sync word for core 0 to wait for core 1
-    *NVIC_ISER =  (1 << 22) | (1 << 16); //enable interrupt for adc and sio of proc1 
+    *NVIC_ISER = (1 << 16); //enable interrupt for adc and sio of proc1 
     for(;;)
     {
         if ((task & (1 << TASK_UPDATE_POTENTIOMETER_VALUES)) == (1 << TASK_UPDATE_POTENTIOMETER_VALUES))

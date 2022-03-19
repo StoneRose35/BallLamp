@@ -4,6 +4,7 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/timer.h"
 #include "hardware/regs/resets.h"
+#include "hardware/regs/watchdog.h"
 
 #define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
 #define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
@@ -12,6 +13,9 @@
 #define TIMER_TIMELW ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELW_OFFSET))
 #define TIMER_TIMEHR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMEHR_OFFSET))
 #define TIMER_TIMELR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELR_OFFSET))
+
+#define WATCHDOG_TICK ((volatile uint32_t*)(WATCHDOG_BASE + WATCHDOG_TICK_OFFSET))
+
 void initTimer();
 
 void resetTime();

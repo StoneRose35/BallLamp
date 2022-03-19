@@ -197,7 +197,7 @@
 #include "audio/fxprogram/fxProgram.h"
 
 
-volatile uint32_t task;
+volatile uint32_t task=0;
 volatile uint8_t context;
 
 extern CommBufferType usbCommBuffer;
@@ -210,7 +210,9 @@ uint16_t* audioBufferInputPtr;
 #else
 int16_t* audioBufferInputPtr;
 #endif
-int16_t inputSample;
+int16_t inputSample, inputSampleOther;
+uint32_t inputWord;
+uint32_t rotatemaske;
 uint8_t carrybitOld=0,carrybit=0;
 uint32_t wordout;
 uint32_t core1Handshake;
@@ -240,6 +242,18 @@ int main(void)
 	#endif
     setupClock();
 
+	startCore1(&core1Main);
+	// sync with core 1
+	
+	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
+	core1Handshake=*SIO_FIFO_RD;
+	while (core1Handshake != 0xcafeface)
+	{
+		DebugLedOn();
+		core1Handshake = *SIO_FIFO_RD;
+	}
+	
+
 	initUsbPll();
 	initSystickTimer();
 	initDMA();
@@ -249,9 +263,9 @@ int main(void)
 	//initSpi();
 	//initDatetimeClock();
 	initTimer();
-	initUart(BAUD_RATE);
+	//initUart(BAUD_RATE);
 	initAdc();
-	startCore1(&core1Main);
+	//
 
 
 	/*
@@ -259,9 +273,10 @@ int main(void)
 	 * Initialise Component-specific drivers
 	 * 
 	 * */
-	initCliApi();
+	//initCliApi();
 	initSsd1306Display();
 	initI2S();
+	enableAudioEngine(); // i2s adc and dac
 	initDebugLed();
 	initRotaryEncoder();
 
@@ -274,33 +289,26 @@ int main(void)
 
 	initRoundRobinReading(); // internal adc for reading parameters
 
-	printf("Microsys v1.0 running\r\n");
+	//printf("Microsys v1.0 running\r\n");
 	ssd1306ClearDisplay();
 	for (uint8_t c=0;c<N_FX_PROGRAMS;c++)
 	{
 		fxPrograms[c]->setup(fxPrograms[c]->data);
 	}
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
-	enableAudioEngine(); // i2s adc and dac
 
-	// sync with core 1
-	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
-	core1Handshake=*SIO_FIFO_RD;
-	while (core1Handshake != 0xcafeface)
-	{
-		DebugLedOn();
-		core1Handshake = *SIO_FIFO_RD;
-	}
 	ticEnd=0;
 	ticStart=0;
+	setNote(64);
     /* Loop forever */
 	for(;;)
 	{
 
-		cliApiTask(task);
+		//cliApiTask(task);
 		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
 		{
 			ticStart = getTimeLW();
+
 
 			audioBufferPtr = getEditableAudioBuffer();
 			#ifndef I2S_INPUT
@@ -315,8 +323,20 @@ int main(void)
 				#ifndef I2S_INPUT
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 				#else
-				inputSample=*(audioBufferInputPtr + c*2+1);// + (*(audioBufferInputPtr + c*2+1) >> 1);
+
+				// the input has to be rotated right by two pixels for some strange reasons ... to be fixed later
+				// foldover distortion happens when no shifting is done
+
+				inputSample=*(audioBufferInputPtr + c*2);
+				inputSampleOther=*(audioBufferInputPtr + c*2+1);
+				inputWord = ((uint16_t)inputSample << 16) | (0xFFFF & ((uint16_t)inputSampleOther));
+
+				rotatemaske = inputWord << (32-3);
+				inputWord = (inputWord >> 3) | rotatemaske;
+				inputSample =   0xFFFF & (inputWord >> 16);
+
 				#endif
+				//inputSample = getNextSineValue();
 
 				if (inputSample < 0)
 				{
@@ -326,7 +346,7 @@ int main(void)
 				{
 					avgIn = inputSample;
 				}
-				avgInOld = ((AVERAGING_LOWPASS_CUTOFF*avgIn) >> 15) + (((32768-AVERAGING_LOWPASS_CUTOFF)*avgInOld) >> 15);
+				avgInOld = ((AVERAGING_LOWPASS_CUTOFF*avgIn) >> 15) + (((32767-AVERAGING_LOWPASS_CUTOFF)*avgInOld) >> 15);
 
 				inputSample = fxPrograms[fxProgramIdx]->processSample(inputSample,fxPrograms[fxProgramIdx]->data);
 
@@ -339,22 +359,23 @@ int main(void)
 				{
 					avgOut = inputSample;
 				}
-				avgOutOld = ((AVERAGING_LOWPASS_CUTOFF*avgOut) >> 15) + (((32768-AVERAGING_LOWPASS_CUTOFF)*avgOutOld) >> 15);
+				avgOutOld = ((AVERAGING_LOWPASS_CUTOFF*avgOut) >> 15) + (((32767-AVERAGING_LOWPASS_CUTOFF)*avgOutOld) >> 15);
 
-				carrybit= inputSample & 0x1;
-				wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
-				carrybitOld = carrybit; 
-				*((uint32_t*)audioBufferPtr+c) = wordout; 
+				//carrybit= inputSample & 0x1;
+				//wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
+				//carrybitOld = carrybit; 
+				*((uint32_t*)audioBufferPtr+c) = ((uint16_t)inputSample << 16) | (0xFFFF & (uint16_t)inputSample); //wordout; 
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
 			bufferCnt++;
 
-			ticEnd= getTimeLW();
+			ticEnd = getTimeLW();
 			if(ticEnd > ticStart)
 			{
-				// compute cpu load as range from 0 to 255
-				cpuLoad = ((ticEnd-ticStart)*256*256*F_SAMPLING/AUDIO_BUFFER_SIZE/1000000) >> 8;
+				cpuLoad = ticEnd-ticStart;
+				cpuLoad = cpuLoad*196; //*256*256*F_SAMPLING/AUDIO_BUFFER_SIZE/1000000;
+				cpuLoad = cpuLoad >> 8;
 			}
 		}
 		if (bufferCnt == UI_UPDATE_IN_SAMPLE_BUFFERS)

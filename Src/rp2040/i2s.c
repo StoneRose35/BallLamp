@@ -72,7 +72,7 @@ void initI2S()
     *I2S_WS_PIN_CNTR = 7;
 
 	// set clock divider : 120Mhz/78 (.125)
-	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_DBL_INT << PIO_SM0_CLKDIV_INT_LSB) | (I2S_CLKDIV_DBL_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
+	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB) | (I2S_CLKDIV_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
 
     // set pin directions to output
     *PIO1_SM0_INSTR = 0xE087;
@@ -81,13 +81,13 @@ void initI2S()
 	*PIO1_SM0_INSTR = 0xE020;
 
 	// jump to first instruction
-	*PIO1_SM0_INSTR = first_instr_pos;
+	*PIO1_SM0_INSTR = first_instr_pos+i2s_write_2_offset_is2_write_start;
 
 	// initialize DMA
 	*DMA_CH2_WRITE_ADDR = (uint32_t)PIO1_SM0_TXF;
 	dbfrPtr = 0;
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
-	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE >> 1;
+	*DMA_CH2_TRANS_COUNT = AUDIO_BUFFER_SIZE;
 	*DMA_CH2_CTRL_TRIG = (8 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
 						| (1 << DMA_CH2_CTRL_TRIG_INCR_READ_LSB) 
 						| (2 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // always read left and right at once
@@ -147,7 +147,7 @@ void initI2S()
 	*DMA_CH3_READ_ADDR = (uint32_t)PIO1_SM1_RXF;
 	dbfrPtr = 0;
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)i2sDoubleBufferIn;
-	*DMA_CH3_TRANS_COUNT = AUDIO_BUFFER_SIZE ;
+	*DMA_CH3_TRANS_COUNT = AUDIO_BUFFER_SIZE;
 	*DMA_CH3_CTRL_TRIG = (13 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) // pio1 DREQ_PIO1_RX1
 						| (1 << DMA_CH3_CTRL_TRIG_INCR_WRITE_LSB) 
 						| (2 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // always write left and right at once

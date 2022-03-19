@@ -5,8 +5,9 @@
 #include "audio/secondOrderIirFilter.h"
 #include "audio/firFilter.h"
 #include "audio/simpleChorus.h"
+#include "audio/oversamplingWaveshaper.h"
 
-#define N_FX_PROGRAMS 2
+#define N_FX_PROGRAMS 4
 
 typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
@@ -37,8 +38,22 @@ typedef struct {
     SimpleChorusType chorusData;
 } FxProgram2DataType;
 
+typedef struct {
+    int16_t highpassCutoff;
+    uint8_t nWaveshapers;
+    uint8_t cabSimOnOff;
+    int16_t highpass_out,highpass_old_out,highpass_old_in;
+    OversamplingWaveshaperDataType waveshaper1;
+    FirFilterType filter3;
+    SecondOrderIirFilterType filter1;
+    uint8_t updateLock;
+} FxProgram4DataType;
+
+
 FxProgramType fxProgram1;
 FxProgramType fxProgram2;
+FxProgramType fxProgram3;
+FxProgramType fxProgram4;
 
 FxProgramType * fxPrograms[N_FX_PROGRAMS];
 
