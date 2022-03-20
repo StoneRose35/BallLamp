@@ -2,44 +2,57 @@
 #include "stdio.h"
 #include "audio/sineplayer.h"
 #include "audio/secondOrderIirFilter.h"
+#include "audio/waveShaper.h"
+#include "math.h"
 
-int main()
+void impulseTest()
 {
     FILE * fid;
     int16_t cval;
-    int16_t filterIn,filterOut;
-    SecondOrderIirFilterType filter1,filter2;
-    initSecondOrderIirFilter(&filter1);
-    initSecondOrderIirFilter(&filter2);
-    filter1.coeffB[0]=3672;
-	filter1.coeffB[1]=7343;
-	filter1.coeffB[2]=3672;
-	filter1.coeffA[0]=-28048;
-	filter1.coeffA[1]=9968;
+    int16_t val_out;
+    SecondOrderIirFilterType testFilter = {
+        .coeffB = {32255, -64510, 32255},
+        .coeffA = {-64502, 31751},
+        .w= {0,0,0} 
+    };
 
-    filter2.coeffB[0]=16314;
-	filter2.coeffB[1]=-32627;
-	filter2.coeffB[2]=16314;
-	filter2.coeffA[0]=-32627;
-	filter2.coeffA[1]=16244;
     fid = fopen("audioout.txt","wt");
-    //setNote(64);
-    cval = -16;
-    cval = cval >> 2;
     for (uint16_t c=0;c< 1024;c++)
     {
         if (c==0)
         {
-            filterIn = 20000;
+            cval = 32767;
         }
         else
         {
-            filterIn = 0;
+            cval = 0;
         }
-        //cval = getNextSineValue();
-        filterOut = secondOrderIirFilterProcessSample(filterIn,&filter2);
-
-        fprintf(fid,"%d\r\n",filterOut);
+        val_out = secondOrderIirFilterProcessSample(cval,&testFilter);
+        fprintf(fid,"%d\r\n",val_out);
     }
     fclose(fid);
+}
+
+int main()
+{
+    impulseTest();
+    /*
+    FILE * fid;
+    int16_t cval;
+    int16_t val_out;
+    WaveShaperDataType wavershaper1;
+
+    initWaveShaper(&wavershaper1,&waveShaperDistortion);
+    fid = fopen("audioout.txt","wt");
+    setNote(64);
+
+    for (uint16_t c=0;c< 1024;c++)
+    {
+        cval = getNextSineValue();
+        val_out = waveShaperProcessSample(cval,&wavershaper1);
+
+        fprintf(fid,"%d\r\n",val_out);
+    }
+    fclose(fid);
+    */
 }

@@ -3,9 +3,9 @@
 #include <stdint.h>
 typedef struct 
 {
-    int16_t w[3];
-    int16_t coeffA[2];
-    int16_t coeffB[3];
+    int32_t w[3];
+    int32_t coeffA[2];
+    int32_t coeffB[3];
 } SecondOrderIirFilterType;
 
 void initSecondOrderIirFilter(SecondOrderIirFilterType* data);
