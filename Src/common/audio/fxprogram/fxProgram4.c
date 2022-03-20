@@ -7,52 +7,39 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     pData->updateLock = 1;
 
-    pData->highpass_out = (((((1 << 15) + pData->highpassCutoff) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((pData->highpassCutoff *pData->highpass_old_out) >> 15);
+    pData->highpass_out = (((((1 << 15) + 31000) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((31000 *pData->highpass_old_out) >> 15);
     pData->highpass_old_in = sampleIn;
     pData->highpass_old_out = pData->highpass_out;
 
     out = pData->highpass_out;
-    for (uint8_t c=0;c<pData->nWaveshapers;c++)
-    {
-        out = OversamplingDistortionProcessSample(out,&pData->waveshaper1);
-    }
+    //out = gainStageProcessSample(out, &pData->gainStage);
+
+    out = waveShaperProcessSample(out,&pData->waveshaper1.waveshaper); //  OversamplingDistortionProcessSample(out,&pData->waveshaper1);
 
     out = out >> 2;
     if (pData->cabSimOnOff == 1)
     {
-        out = secondOrderIirFilterProcessSample(out,&pData->filter1);
-        out >>= 1;
-        out = firFilterProcessSample(out,&pData->filter3);
+        //out = secondOrderIirFilterProcessSample(out,&pData->filter1);
+        out = secondOrderIirFilterProcessSample(out,&pData->filter2);
+        //out = secondOrderIirFilterProcessSample(out,&pData->filter3);
     }
     pData->updateLock=0;
     return out;
 }
 
 
-void fxProgram4Param1Callback(uint16_t val,void*data) // highpass cutoff before the nonlinear stage
+void fxProgram4Param1Callback(uint16_t val,void*data) // gain
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    val <<=  3; 
-    if (val > 31500)
-    {
-        val = 31500;
-    }
-    else if (val < 10)
-    {
-        val = 10;
-    }
-    //while(pData->updateLock > 0);
-    pData->highpassCutoff = val;
+
+    pData->gainStage.gain=val<<2;
 }
 
 void fxProgram4Param2Callback(uint16_t val,void*data) // number of waveshaper (more means more distortion)
 {
-    FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    // map 0-4095 to 1-8
-    val >>= 9;
-    val += 1; 
-    //while(pData->updateLock > 0);
-    pData->nWaveshapers = val;
+    //FxProgram4DataType* pData = (FxProgram4DataType*)data;
+
+    //pData->nWaveshapers = val;
 }
 
 
@@ -67,8 +54,8 @@ void fxProgram4Param3Callback(uint16_t val,void*data) // cab sim on/off
 void fxProgram4Setup(void*data)
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    initfirFilter(&pData->filter3);
     initOversamplingWaveshaper(&pData->waveshaper1);
+    initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperDistortion);
     //initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
 }
 
@@ -79,19 +66,27 @@ FxProgram4DataType fxProgram4data = {
             .coeffA = {-30893, 10922},
             .w= {0,0,0} 
     },
+    /*butterworth highpass @170Hz*/
+    .filter2 = {
+        .coeffB = {32255, -64510, 32255},
+        .coeffA = {-64502, 31751},
+        .w= {0,0,0} 
+    },
+    /*Chebychev type 1 notch filter from 100 to 700 Hz*/
     .filter3 = {
-        .coefficients = {0x62c, 0x674, 0x7d6, 0xbc4, 0x1312, 0x1ea7, 0x2e33, 0x3b3a, 0x3a9e, 0x29bf, 0x15f5, 0x878, 0xf984, 0xebee, 0xe813, 0xe93e, 0xec34, 0xf3d3, 0xfd12, 0x312, 0x5bf, 0x6eb, 0x5da, 0x487, 0x614, 0x771, 0x837, 0x784, 0x299, 0xfc8e, 0xf9f8, 0xfbd5, 0x2b, 0x44c, 0x599, 0x2f3, 0x43, 0x2, 0xfe5b, 0xfc3c, 0xfd4d, 0xb7, 0x4ac, 0x823, 0xa3b, 0xa6a, 0x915, 0x74c, 0x69c, 0x6e5, 0x73e, 0x6cc, 0x4bf, 0x215, 0xffae, 0xfd9b, 0xfde5, 0xffd2, 0x222, 0x3cd, 0x50d, 0x5fa, 0x659, 0x61f}
+        .coeffB = {29484, -55659, 27846},
+        .coeffA = {-55659, 24564},
+        .w= {0,0,0} 
     },
     .highpass_old_in=0,
     .highpass_old_out=0,
     .highpass_out=0,
-    .highpassCutoff = 31000,
-    .nWaveshapers = 1,
+    .gainStage.gain=512,
     .cabSimOnOff = 1
 };
 
 FxProgramType fxProgram4 = {
-    .name = "Amp-Simulator Hi-Res",
+    .name = "Amp Hi-Gain        ",
     .processSample = &fxProgram4processSample,
     .param1Callback = &fxProgram4Param1Callback,
     .param2Callback = &fxProgram4Param2Callback,

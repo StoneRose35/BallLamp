@@ -6,6 +6,7 @@
 #include "audio/firFilter.h"
 #include "audio/simpleChorus.h"
 #include "audio/oversamplingWaveshaper.h"
+#include "audio/gainstage.h"
 
 #define N_FX_PROGRAMS 4
 
@@ -39,13 +40,13 @@ typedef struct {
 } FxProgram2DataType;
 
 typedef struct {
-    int16_t highpassCutoff;
-    uint8_t nWaveshapers;
+    gainStageData gainStage;
     uint8_t cabSimOnOff;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
     OversamplingWaveshaperDataType waveshaper1;
-    FirFilterType filter3;
     SecondOrderIirFilterType filter1;
+    SecondOrderIirFilterType filter2;
+    SecondOrderIirFilterType filter3;
     uint8_t updateLock;
 } FxProgram4DataType;
 
