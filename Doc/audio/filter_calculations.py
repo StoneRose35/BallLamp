@@ -1,31 +1,50 @@
 import numpy as np
 import scipy.signal as signal
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import math
 
+
+def int32(x):
+    xint=x & 0xFFFFFFFF
+    if xint > (1 << 31):
+        xint = xint - (1 << 32)
+    return xint
+
+
 class AudioFilter:
-    def __init__(self,a,b,sample_size):
+    def __init__(self,a,b):
         self.a=a
         self.b=b
-        self.sample_size = sample_size
-        self.bfrIn = np.zeros(len(b))
-        #self.bfrOut = np.zeros(len(a))
+        self.w=[int(0),int(0),int(0)]
 
     def apply(self, sample):
         out = 0
-        for cnt in range(len(self.bfrIn)-1,0,-1):
-            self.bfrIn[cnt] = self.bfrIn[cnt-1]
-        self.bfrIn[0] = sample
-
-        for c in range(1, len(self.bfrIn)):
-            self.bfrIn[0] -= self.a[c]*self.bfrIn[c]/(2**(self.sample_size))
-        for c in range(len(self.bfrIn)):
-            out = out + self.b[c]*self.bfrIn[c]/(2**(self.sample_size)) # - self.a[c]*self.bfrOut[c]/(2**(self.sample_size-1))
-        out = int(out)
-        #for cnt in range(len(self.bfrOut)-1,0,-1):
-        #    self.bfrOut[cnt] = self.bfrOut[cnt-1]
-        #self.bfrOut[0] = out
+        self.w[0] = int32(int(sample) - (int32(self.a[0]*self.w[1]) >> 15) - (int32(self.a[1]*self.w[2]) >> 15))
+        out = int32(int32((int32(self.b[0]*self.w[0])>> 15)) + int32((int32(self.b[1]*self.w[1]) >> 15)) + int32((int32(self.b[2]*self.w[2]) >> 15) ))
+        self.w[2]=self.w[1]
+        self.w[1]=self.w[0]
         return out
+
+def compute_td_energy_fraction(bd_orig,ad_orig,sample_size=16,scaling=1.0):
+    bd = bd_orig * scaling
+    ad = ad_orig * scaling
+    bvals = np.array(bd * ((1 << (sample_size - 1)) - 1)).astype(int)
+    avals = np.array(ad[1:] * ((1 << (sample_size - 1)) - 1)).astype(int)
+    testFilter = AudioFilter(avals, bvals)
+    tdOutput = []
+    max_ampl = (1 << (sample_size-1)) -1
+    for c in range(1024):
+        if c == 0:
+            inputVal = max_ampl
+        else:
+            inputVal = 0
+        tdOutput.append(testFilter.apply(inputVal))
+    energy = np.sqrt(np.sum(np.square(tdOutput))) * scaling
+    if scaling > 0.000001:
+        return energy/max_ampl/scaling
+    else:
+        return 0.
 
 def get_phase_increments(f_sampling=48000,oversampling=2,bitres=32):
     notes = range(128)
@@ -54,23 +73,151 @@ def get_sine_table():
         sinetable.append(int(math.cos(c/nvals*math.pi*2)*((1 << (bitres-1)) - 1)))
     return sinetable
 
-class SawtoothAdditive:
-    def __init__(self):
-        self.currentPhase = 0
-        self.sinetable = get_sine_table()
 
-    def getSine(self,phaseinc):
-        self.currentPhase += phaseinc
-        idx1 = int((self.currentPhase >> 24) & 0xFF)
-        idx2 = (idx1 + 1) & 0xFF
-        idxrem = (self.currentPhase >> 8) & 0xFFFF
-        v1 = self.sinetable[idx1]
-        v2 = self.sinetable[idx2]
-        sineval =v1 + (int((v2-v1)*idxrem)/(1 << 16))
+def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,scaling=None,type="cheby2",ftype="lowpass"):
+    if fc is None:
+        fc = fs/2
+    order = 2
+    sample_size = 16
+    auto_scaling = scaling is None
+    if type == "cheby2":
+        sos = signal.cheby2(order,rs, fc, analog=False, btype=ftype, output='sos', fs=fs)
+    elif type == "cheby1":
+        sos = signal.cheby1(order, rs, fc, analog=False, btype=ftype, output='sos', fs=fs)
+    elif type == "butter":
+        sos = signal.butter(order, fc, analog=False, btype=ftype, output='sos', fs=fs)
+    else:
+        sos= [[1.,0.,0.], [1.,0.,0.]]
 
-        self.currentPhase += phaseinc
-        self.currentPhase &= 0xFFFFFFFF
-        return sineval
+    cnt=0
+    sos_returned = []
+    for second_order_filter in sos:
+        bd_orig = second_order_filter[:3]
+        ad_orig = second_order_filter[3:]
+
+        if auto_scaling is True:
+            is_done = False
+            scaling = 1.
+            scaling_low = 0.
+            scaling_eps=0.0001
+            while is_done is False:
+                energy_fraction = compute_td_energy_fraction(bd_orig,ad_orig,sample_size,scaling)
+                energy_fraction_l = compute_td_energy_fraction(bd_orig,ad_orig,sample_size,scaling_low)
+                print("upper scaling: {:.4f}, energy fraction: {:.5f}, lower scaling factor: {:.4f}, energy fraction: {:.5f}".format(scaling,energy_fraction,scaling_low,energy_fraction_l))
+                if (energy_fraction > 1.0 and energy_fraction_l < 1.0):
+                    scaling = scaling +0.5*(scaling_low - scaling)
+                elif energy_fraction < 1.0 and energy_fraction_l < 1.0:
+                    scaling_old =scaling
+                    scaling = scaling + (scaling-scaling_low)
+                    scaling_low = scaling_old
+                    if scaling > 1.0:
+                        scaling=1.0
+                        is_done = True
+                elif energy_fraction < 1.0 and energy_fraction_l > 1.0:
+                    scaling = scaling + 0.5 * (scaling - scaling_low)
+                elif energy_fraction > 1.0 and energy_fraction_l > 1.0:
+                    scaling_old = scaling_low
+                    scaling_low = scaling_low + (scaling - scaling_low)
+                    scaling = scaling_old
+                    if scaling_low < 0:
+                        scaling_low = 0
+                if (scaling - scaling_low) < scaling_eps:
+                    is_done = True
+                    bd = bd_orig * scaling_low
+                    ad = ad_orig * scaling_low
+                    bvals = np.array(bd * ((1 << (sample_size - 1)) - 1)).astype(int)
+                    avals = np.array(ad[1:] * ((1 << (sample_size - 1)) - 1)).astype(int)
+                    scaling = scaling_low
+        else:
+            bd = bd_orig * scaling
+            ad = ad_orig * scaling
+            bvals = np.array(bd * ((1 << (sample_size - 1)) - 1)).astype(int)
+            avals = np.array(ad[1:] * ((1 << (sample_size - 1)) - 1)).astype(int)
+        if do_plot is True:
+            print("B coefficients: {}".format(bvals))
+            print("A coefficients: {}".format(avals))
+            print("post gain factor: {:.6f}".format(1./scaling))
+
+            wz, hz = signal.freqz(bd, ad)
+            fig = plt.figure(figsize=[7.2,7.2],constrained_layout=True)
+            gs = GridSpec(3,2,figure=fig)
+
+            axs0 = fig.add_subplot(gs[0,0])
+            freqs = wz*fs/2./np.pi
+            axs0.plot(freqs,20.*np.log10(abs(hz)),linewidth=2,color="blue")
+            axs0.grid(color="gray",linestyle="--",which="major",axis="both")
+            axs0.grid(color="gray", linestyle="--", which="minor", axis="x")
+            axs0.axis([1,fs/2,-60,10])
+            axs0.set_xscale("log")
+            axs0.set_title("Frequency Response")
+            axs0.set_ylabel("Gain [dB]")
+            axs0.set_xlabel("Frequency [Hz]")
+
+            axs1 = fig.add_subplot(gs[1, 0])
+            axs1.plot(freqs,np.unwrap(np.arctan2(np.real(hz),np.imag(hz)))*180./np.pi,linewidth=2,color="blue")
+            axs1.grid(color="gray",linestyle="--",which="major",axis="both")
+            axs1.grid(color="gray", linestyle="--", which="minor", axis="x")
+            axs1.set_xlim([1,fs/2])
+            axs1.set_xscale("log")
+            axs1.set_title("Phase response")
+            axs1.set_ylabel("Phase [deg]")
+            axs1.set_xlabel("Frequency [Hz]")
+
+            # time-domain test
+            x_time_domain = np.linspace(0,1./fs*1000,1024)
+            testFilter = AudioFilter(avals,bvals)
+            tdOutput=[]
+            for c in range(1024):
+                if c==0:
+                    inputVal=32767
+                else:
+                    inputVal = 0
+                tdOutput.append(testFilter.apply(inputVal))
+            axs2=fig.add_subplot(gs[2,0])
+            axs2.plot(x_time_domain,tdOutput, ".-r", label="positive pulse")
+            testFilter = AudioFilter(avals,bvals)
+            tdOutput=[]
+            for c in range(1024):
+                if c==0:
+                    inputVal=-32767
+                else:
+                    inputVal = 0
+                tdOutput.append(testFilter.apply(inputVal))
+            axs2.plot(x_time_domain,tdOutput, ".-g", label="negative pulse")
+            axs2.set_ylim([-33000, 33000])
+            axs2.set_yticks(np.arange(start=-32768,stop=32769,step=8192))
+            axs2.set_title("Time Domain response")
+            axs2.set_xlabel("Time [ms]")
+            axs2.set_ylabel("Ampl. [Int16]")
+            axs2.grid(color="gray", linestyle="--", which="both", axis="y")
+            axs2.legend(loc="upper right")
+
+            axs3 = fig.add_subplot(gs[:,1])
+            if type == "cheby1":
+                filter_type_displ = "Chebychev Type I, "
+            elif type == "cheby2":
+                filter_type_displ = "Chebychev Type II, "
+            elif type == "butter":
+                filter_type_displ = "Butterworth, "
+            else:
+                filter_type_displ = "Unknown, "
+            filter_type_displ += ftype
+            cnt+=1
+            fsize=0.08
+            axs3.text(0.02,0.97-0*fsize,"Second-Order Section {}/{}".format(cnt,len(sos)))
+            axs3.text(0.02,0.97-1*fsize,"Filter Type: \n    " + filter_type_displ)
+            freq_atten_displ = "Filter Cutoff Frequencies and Attenuation: \n    {}Hz".format(fc)
+            if type!="butter":
+                freq_atten_displ += ", Attenuation: {}dB".format(rs)
+            axs3.text(0.02, 0.97 - 2 * fsize, freq_atten_displ)
+            axs3.text(0.02,0.97-3*fsize,"B coefficients: \n    {}".format(bvals))
+            axs3.text(0.02,0.97-4*fsize,"A coefficients: \n    {}".format(avals))
+            axs3.text(0.02, 0.97-5*fsize, "post gain factor: \n    {:.6f}".format(1./scaling))
+            axs3.tick_params(bottom=False, labelbottom=False, labelleft=False, left=False)
+            axs3.set_ylim([0,1])
+            plt.show()
+        sos_returned.append({"b": bvals, "a": avals, "gain_coeff": 1./scaling})
+    return sos_returned
 
 def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,rs=20,oversampling=2,fc=None):
     ftype = 'lowpass'
@@ -178,57 +325,6 @@ def get_saw(current_phase):
     waveformval = ((current_phase >> 16) & 0xFFFF) - 0x7FFF
     return waveformval
 
-def antialiasing_filter():
-    notenr=126
-    phaseincr_bitsize=32
-    sample_size=16
-    oversampling=4
-    sample_rate = 48000
-    n_waveforms=32
-    phaseincs = get_phase_increments(sample_rate, oversampling=oversampling, bitres=phaseincr_bitsize)
-    nplots = n_waveforms*int((1 << phaseincr_bitsize) /  phaseincs[notenr - 1])
-
-    a_vals, b_vals = design_and_plot_oversampling_lowpass_fir(True,True,oversampling)
-
-    oversampling_filter = AudioFilter(a_vals, b_vals, sample_size)
-    waveform_raw = []
-    waveform_filt = []
-    current_phase = 0
-    for c in range(nplots):
-        phase_bkp = current_phase
-        #current_phase += (phaseincs[notenr-1] & 0xFFFFFFFF)
-        #waveformval = get_saw(current_phase)
-        #waveform_raw.append(waveformval)
-        #waveform_filt.append(oversampling_filter.apply(waveformval))
-        os_buffer_raw = []
-        os_buffer_filt = []
-        for i in range(oversampling):
-            current_phase += (phaseincs[notenr - 1] & 0xFFFFFFFF)
-            waveformval = get_saw(current_phase)
-            waveform_raw.append(waveformval)
-        current_phase = phase_bkp
-        for i in range(oversampling):
-            current_phase += (phaseincs[notenr - 1] & 0xFFFFFFFF)
-            waveformval = get_saw(current_phase)
-            waveform_filt.append(oversampling_filter.apply(waveformval))
-
-    downsampled_raw=[]
-    downsampled_filtered=[]
-    for q in range(int(len(waveform_raw)/oversampling)):
-        downsampled_raw.append(np.average(waveform_raw[q*oversampling:(q+1)*oversampling]))
-        downsampled_filtered.append(np.average(waveform_filt[q*oversampling:(q+1)*oversampling]))
-
-    #downsampled_raw = waveform_raw[::oversampling]
-    #downsampled_filtered = waveform_filt[::oversampling]
-
-    plt.subplot(2,1,1)
-    plt.plot(waveform_raw,"r")
-    plt.plot(waveform_filt,"b")
-    plt.subplot(2,1,2)
-    plt.plot(downsampled_raw,"r")
-    plt.plot(downsampled_filtered,"b")
-    plt.show()
-
 
 def design_oversampling_comb_lp_filter(rs=3,oversampling=4,fs=48000):
     for c in range(oversampling-1):
@@ -245,8 +341,11 @@ if __name__ == "__main__":
     oversampling = 4
     phaseincr_bitsize=32
     rs=3
+    design_and_plot_iir_filter(True,rs=10,fc=170,type="cheby2",ftype="highpass")
+    #design_and_plot_iir_filter(True, to_integer=True, rs=10, fc=6000, scaling=1.0, type="butter", ftype="lowpass")
+    #design_and_plot_iir_filter(True, to_integer=True, rs=10, fc=[400, 1700], scaling=0.15, type="cheby2", ftype="bandstop")
     #design_oversampling_comb_lp_filter(rs,oversampling,sample_rate)
-    design_and_plot_oversampling_lowpass_cheby(True,oversampling=4,rs=1,fc=17333.18)  #first antialiasing filter
+    #design_and_plot_oversampling_lowpass_cheby(True,oversampling=4,rs=1,fc=17333.18)  #first antialiasing filter
     #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=37084.24) #second antialiasing filter
     #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=63238) # third antialiasing filter
     #design_and_plot_oversampling_lowpass_butter(True,oversampling=1,fc=6000)

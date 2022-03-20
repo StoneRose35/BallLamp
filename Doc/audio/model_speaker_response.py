@@ -134,12 +134,70 @@ def plot_freq_response(fname,axes=None,style=None):
 
     pass
 
+def plot_simple_model_cab_curve(axes=None,style="-k"):
+    hz = np.ones(512)
+    iir_lowpass_order = 2
+    iir_lowpass_cutoff = 6000
+    b, a = scipy.signal.butter(iir_lowpass_order, iir_lowpass_cutoff, btype="low", analog=False, output="ba",
+                                       fs=48000)
+    b_out, a_out = scipy.signal.butter(iir_lowpass_order, iir_lowpass_cutoff, btype="low", analog=False, output="ba",
+                                       fs=48000)
+    b_out = b_out * 32767.
+    a_out = a_out * 32767.
+    print("butterworth lowpass @{}Hz,\r\n\tb: {}\r\n\ta: {}".format(iir_lowpass_cutoff, b_out.astype("int32"),
+                                                                    a_out.astype("int32")))
+    wz, hzn = scipy.signal.freqz(b, a, fs=48000, worN=512)
+    hz = hz * hzn
 
+    iir_highpass_cutoff = 170
+    iir_highpass_order = 2
+    b, a = scipy.signal.butter(iir_highpass_order, iir_highpass_cutoff, btype="high", analog=False,
+                               output="ba", fs=48000)
+    b_out, a_out = scipy.signal.butter(iir_highpass_order, iir_highpass_cutoff, btype="high",
+                                       analog=False,
+                                       output="ba", fs=48000)
+    b_out = b_out * 32767.
+    a_out = a_out * 32767.
+    print("butterworth highpass @{}Hz \r\n\tb: {}\r\n\ta: {}".format(iir_highpass_cutoff,
+                                                                                        b_out.astype("int32"),
+                                                                                        a_out.astype("int32")))
+    wzb, hzn = scipy.signal.freqz(b, a, fs=48000, worN=512)
+    hz = hz * hzn
+
+    # midcut
+    midcut_freqs = [100, 700]
+    midcut_order = 1
+    midcut_atten = 10
+    midcut_fact=0.95
+    b,a = scipy.signal.cheby1(midcut_order,midcut_atten,midcut_freqs,btype="bandstop",analog=False,output="ba",fs=48000)
+    #b=-b
+    b[0]=(1.0-midcut_fact) + b[0]*midcut_fact
+    b[1]=b[1]*midcut_fact
+    b[2]=b[2]*midcut_fact
+    a[1]=a[1]*midcut_fact
+    a[2]=a[2]*midcut_fact
+    b_out = b* 32767.
+    a_out = a* 32767.
+    wzb, hzn = scipy.signal.freqz(b, a, fs=48000, worN=512)
+    #hzn = 1 - hzn*midcut_fact
+    print("chebychev type 1 midcut @{}Hz, ripple: {}\r\n\tb: {}\r\n\ta: {}".format(midcut_freqs, midcut_atten,
+                                                                                        b_out.astype("int32"),
+                                                                                        a_out.astype("int32")))
+
+    hz = hz * hzn
+    freqs = wz
+
+
+    if axes is None:
+        plt.plot(freqs, 20. * np.log10(abs(hz)), style)
+    else:
+        axes.plot(freqs, 20. * np.log10(abs(hz)), style)
 
 
 if __name__ == "__main__":
     fig, axxes = plt.subplots()
-    plot_model_cab_curve(axes=axxes,style=".-k")
+    #plot_model_cab_curve(axes=axxes,style=".-k")
+    plot_simple_model_cab_curve(axes=axxes,style=".-k")
     plot_freq_response("resources/TubePreamp2/DYN-7B/OD-E112-G12-65-DYN-7B-09-30-BRIGHT.wav",axxes,"-g")
     #plot_freq_response("resources/TubePreamp2/DYN-7B/OD-E112-G12-65-DYN-7B-09-30.wav", axxes, "-r")
 

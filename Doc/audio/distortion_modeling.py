@@ -3,6 +3,7 @@ import scipy.fft
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
+from numpy import uint, ushort
 
 
 class TransferFunction:
@@ -42,11 +43,7 @@ def totalfct(xa,ya,xb,yb,coeffs,x):
 def der_polyfct(x,coeffs):
     return 3*x*x*coeffs[0] + 2*x*coeffs[1] + coeffs[2]
 
-def calculate_transfer_fct(n_points=64,scalingfact=1.0):
-    xa = 0.5
-    ya = 0.85
-    xb = 0.6
-    yb = 0.97
+def calculate_transfer_fct(n_points=64,scalingfact=1.0,xa=0.5,ya=0.85,xb=0.6,yb=0.97):
 
     mat = np.array([[xa*xa*xa, xa*xa, xa, 1], [xb*xb*xb, xb*xb, xb, 1],
            [3*xb*xb, 2*xb, 1, 0], [3*xa*xa, 2*xa, 1, 0]])
@@ -81,6 +78,16 @@ if __name__ == "__main__":
     sine_freq = 1200.
     sine_periods = 64
 
+    transferCurve = TransferFunction(0.5,0.55,0.97,1.0)
+    xxes = np.linspace(-1,1,128)
+    yyes = []
+    for x in xxes:
+        yyes.append(transferCurve.compute(x)*32767)
+        print("0x{:02x}, ".format(ushort(yyes[-1])), end="")
+    plt.plot(xxes*32767,yyes)
+    plt.show()
+
+"""
     oversampling = 2
     distortionCurve = TransferFunction(0.5, 0.6, 0.85, 0.97)
 
@@ -126,3 +133,4 @@ if __name__ == "__main__":
 
 
     pass
+    """
