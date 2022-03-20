@@ -9,7 +9,7 @@
 #include "rotaryEncoder.h"
 #include "i2s.h"
 
-int16_t secondHalfOut;
+int16_t firstHalfOut;
 FirFilterType**core1FirData;
 extern volatile uint32_t task;
 extern volatile int16_t avgOutOld,avgInOld;
@@ -29,8 +29,8 @@ void isr_sio_irq_proc1_irq16() // only fires when a fir computation has to be ma
     if ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB))!= 0)
     {
         core1FirData = (FirFilterType**)*SIO_FIFO_RD;
-        secondHalfOut = processFirstHalf(*core1FirData);
-        *SIO_FIFO_WR = secondHalfOut;
+        firstHalfOut = processFirstHalf(*core1FirData);
+        *SIO_FIFO_WR = firstHalfOut;
         *SIO_FIFO_ST = (1 << 2);
     }
     else if (((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_ROE_LSB)) != 0) || ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_WOF_LSB)) != 0))

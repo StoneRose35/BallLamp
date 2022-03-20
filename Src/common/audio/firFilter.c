@@ -1,5 +1,7 @@
 #include "audio/firFilter.h"
+#ifdef RP2040_FEATHER
 #include "multicore.h"
+#endif
 
 void initfirFilter(FirFilterType*data)
 {
@@ -7,16 +9,6 @@ void initfirFilter(FirFilterType*data)
     data->delayPointer=0;
     for(uint8_t c=0;c<data->filterLength;c++)
     {
-        /*
-        if (c==0)
-        {
-            data->coefficients[c]=32767;
-        }
-        else
-        {
-            data->coefficients[c]=0;
-        }*/
-        //data->coefficients[c]=0;
         data->delayBuffer[c]=0;
     }
 }
@@ -31,6 +23,7 @@ int16_t firFilterProcessSample(int16_t sampleIn,FirFilterType*data)
 {
     volatile int16_t firstHalf,secondHalf;
     addSample(sampleIn,data);
+    #ifdef RP2040_FEATHER
     while ((*SIO_FIFO_ST & ( 1 << SIO_FIFO_ST_RDY_LSB)) == 0);
     // send pointer to data to core1 to indicate that a fir calculation has to be made
     *SIO_FIFO_WR = (uint32_t)&data;
@@ -38,6 +31,10 @@ int16_t firFilterProcessSample(int16_t sampleIn,FirFilterType*data)
     // wait for core1 to be finished, core 1 sends the result of the second half back
     while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
     firstHalf = (int16_t)(*SIO_FIFO_RD & 0xFFFF);
+    #else
+    secondHalf = processSecondHalf(data);
+    firstHalf = processFirstHalf(data);
+    #endif
     firstHalf += secondHalf;
     return firstHalf;
 }
