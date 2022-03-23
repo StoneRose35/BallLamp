@@ -42,7 +42,7 @@ int16_t waveShaperProcessSample(int16_t sampleIn,WaveShaperDataType* data)
     int16_t out;
     sampleUint = 0x7FFF + sampleIn;
     indx = ((((uint16_t)sampleUint) & 0xFE00) >> 9);
-    rem = sampleUint - (((uint16_t)sampleUint) & 0xFE00);
+    rem = sampleUint - (uint16_t)((sampleUint) & 0xFE00);
     if (indx < 127)
     {
         out = data->transferFunctionPoints[indx] + (((int16_t)rem*(data->transferFunctionPoints[indx+1]-data->transferFunctionPoints[indx])) >> 9);

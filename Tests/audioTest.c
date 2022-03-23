@@ -11,9 +11,10 @@ void impulseTest()
     int16_t cval;
     int16_t val_out;
     SecondOrderIirFilterType testFilter = {
-        .coeffB = {32255, -64510, 32255},
-        .coeffA = {-64502, 31751},
-        .w= {0,0,0} 
+        .coeffB = {1007, -2014, 1007},
+        .coeffA = {-2013,991},
+        .w= {0,0,0},
+        .bitRes=11
     };
 
     fid = fopen("audioout.txt","wt");
