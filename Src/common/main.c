@@ -300,6 +300,7 @@ int main(void)
 	ticEnd=0;
 	ticStart=0;
 	setNote(64);
+
     /* Loop forever */
 	for(;;)
 	{
@@ -324,7 +325,7 @@ int main(void)
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 				#else
 
-				// the input has to be rotated right by two pixels for some strange reasons ... to be fixed later
+				// the input has to be rotated right by three pixels for some strange reasons ... to be fixed later
 				// foldover distortion happens when no shifting is done
 
 				inputSample=*(audioBufferInputPtr + c*2);

@@ -21,8 +21,7 @@ void resetTime()
 uint32_t getTimeLW()
 {
     uint32_t timelw;
-    uint32_t timehw;
     timelw = *TIMER_TIMELR;
-    timehw = *TIMER_TIMEHR;
+    (void)*TIMER_TIMEHR;
     return timelw;
 }
