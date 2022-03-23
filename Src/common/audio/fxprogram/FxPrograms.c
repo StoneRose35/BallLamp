@@ -100,5 +100,5 @@ FxProgramType fxProgram1 = {
 };
 
 FxProgramType* fxPrograms[N_FX_PROGRAMS]={
-    &fxProgram1, &fxProgram4, &fxProgram2, &fxProgram3
+    &fxProgram1, &fxProgram4, &fxProgram2, &fxProgram3, &fxProgram5, &fxProgram6
 };

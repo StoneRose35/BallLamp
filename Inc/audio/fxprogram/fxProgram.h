@@ -7,8 +7,10 @@
 #include "audio/simpleChorus.h"
 #include "audio/oversamplingWaveshaper.h"
 #include "audio/gainstage.h"
+#include "audio/bitcrusher.h"
+#include "audio/delay.h"
 
-#define N_FX_PROGRAMS 4
+#define N_FX_PROGRAMS 6
 
 typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
@@ -50,11 +52,23 @@ typedef struct {
     uint8_t updateLock;
 } FxProgram4DataType;
 
+typedef struct 
+{
+    BitCrusherDataType bitcrusher;
+} FxProgram5DataType;
+
+typedef struct 
+{
+    DelayDataType delay;
+} FxProgram6DataType;
+
 
 FxProgramType fxProgram1;
 FxProgramType fxProgram2;
 FxProgramType fxProgram3;
 FxProgramType fxProgram4;
+FxProgramType fxProgram5;
+FxProgramType fxProgram6;
 
 FxProgramType * fxPrograms[N_FX_PROGRAMS];
 
