@@ -12,7 +12,7 @@ void fxProgram6Param1Callback(uint16_t val,void*data) // Delay Time
     int32_t wVal;
     wVal = val;
     wVal <<= 4;
-    pData->delay.delayInSamples=wVal;
+    pData->delay.delayInSamples = pData->delay.delayInSamples + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(wVal - pData->delay.delayInSamples)) >> 8);
 }
 
 void fxProgram6Param2Callback(uint16_t val,void*data) // Feedback

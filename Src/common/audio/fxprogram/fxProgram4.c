@@ -5,7 +5,6 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 {
     int32_t out;
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    pData->updateLock = 1;
 
     //pData->highpass_out = (((((1 << 15) + 31000) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((31000 *pData->highpass_old_out) >> 15);
     //pData->highpass_old_in = sampleIn;
@@ -17,7 +16,7 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 
     //out = waveShaperProcessSample(out,&pData->waveshaper1.waveshaper); //  OversamplingDistortionProcessSample(out,&pData->waveshaper1);
 
-    //out = out >> 2;
+    out = out >> 2;
     if (pData->cabSimOnOff == 1)
     {
         out = secondOrderIirFilterProcessSample(out,&pData->filter1);
@@ -25,15 +24,14 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
     else if (pData->cabSimOnOff == 2)
     {
         out = secondOrderIirFilterProcessSample(out,&pData->filter1);
-        out = secondOrderIirFilterProcessSample(out,&pData->filter2);
+        out = secondOrderIirFilterProcessSampleHiRes(out,&pData->filter2);
     }
     else if (pData->cabSimOnOff == 3)
     {
         out = secondOrderIirFilterProcessSample(out,&pData->filter1);
-        out = secondOrderIirFilterProcessSample(out,&pData->filter2);
-        out = secondOrderIirFilterProcessSample(out,&pData->filter3);
+        out = secondOrderIirFilterProcessSampleHiRes(out,&pData->filter2);
+        out = secondOrderIirFilterProcessSampleHiRes(out,&pData->filter3);
     }
-    pData->updateLock=0;
     return out;
 }
 
@@ -42,7 +40,8 @@ void fxProgram4Param1Callback(uint16_t val,void*data) // gain
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
 
-    pData->gainStage.gain=(val & (15 << 8))<<3;
+    //pData->gainStage.gain=(val & (15 << 8))<<3;
+    pData->gainStage.gain = pData->gainStage.gain + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*((val << 3) - pData->gainStage.gain)) >> 8);
 }
 
 void fxProgram4Param2Callback(uint16_t val,void*data) // offset
@@ -69,6 +68,7 @@ void fxProgram4Setup(void*data)
 
 FxProgram4DataType fxProgram4data = {
     /* butterworth lowpass @ 6000Hz */
+    
     .filter1 = {
         	.coeffB = {3199, 6398, 3199},
             .coeffA = {-30893, 10922},
@@ -76,32 +76,33 @@ FxProgram4DataType fxProgram4data = {
             .bitRes= 16
     },
     /*butterworth highpass @170Hz*/
+    /*
     .filter2 = {
         .coeffB = {1007, -2014, 1007},
         .coeffA = {-2013,991},
         .w= {0,0,0},
         .bitRes = 11 
-    },/*
+    },*/
     .filter2 = { // Hi-Res
         .coeffB = { 32255, -64510, 32255},
         .coeffA = {-64502, 31751},
         .w = {0,0,0},
         .bitRes=16
-    },*/
+    },
     /*Chebychev type 1 notch filter from 100 to 700 Hz*/
-    
+    /*
     .filter3 = {
         .coeffB = {1831, -3660, 1831},
         .coeffA = {-3660, 1615},
         .w= {0,0,0},
         .bitRes=12 
-    },/*
+    },*/
         .filter3 = { // Hi-Res
         .coeffB = { 29311,-58588, 29311},
         .coeffA = {-58588, 25856},
         .w= {0,0,0},
         .bitRes=16 
-    },*/
+    },
     .highpass_old_in=0,
     .highpass_old_out=0,
     .highpass_out=0,

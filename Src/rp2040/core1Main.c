@@ -22,7 +22,7 @@ uint8_t cpuLoadBfr;
 uint8_t bargraphBuffer[128];
 uint8_t switchValOld=0, switchVal=0;
 uint16_t adcChannelOld=0,adcChannel=0;
-#define UI_DMIN 8
+#define UI_DMIN 1
 
 void isr_sio_irq_proc1_irq16() // only fires when a fir computation has to be made
 {
@@ -86,7 +86,7 @@ void core1Main()
                 adcChannelOld=adcChannel;
             }
             task &= ~(1 << TASK_UPDATE_POTENTIOMETER_VALUES);
-
+            //*ADC_CS |= (1 << ADC_CS_START_MANY_LSB);
         }
         if ((task & (1 << TASK_UPDATE_AUDIO_UI)) == (1 << TASK_UPDATE_AUDIO_UI))
         {

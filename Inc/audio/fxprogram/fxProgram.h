@@ -12,6 +12,8 @@
 
 #define N_FX_PROGRAMS 6
 
+
+#define FXPROGRAM6_DELAY_TIME_LOWPASS_T 2
 typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
 typedef void(*setupCallback)(void*);
