@@ -36,33 +36,42 @@ void initI2S()
     first_instr_pos = instr_mem_cnt;
     // disable optional side-set, set wrap top and wrap bottom
 	*PIO1_SM0_EXECCTRL = (0 << PIO_SM0_EXECCTRL_SIDE_EN_LSB) 
-	| ( (i2s_write_2_wrap_target + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( (i2s_write_2_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
+	| ( (i2s_duplex_wrap_target + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_BOTTOM_LSB)
+	| ( (i2s_duplex_wrap + first_instr_pos) << PIO_SM0_EXECCTRL_WRAP_TOP_LSB);
 
-	//  pull after 2*16 bits have been read, disable autopull, join fifo
-	*PIO1_SM0_SHIFTCTRL = (32 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
-                           |(1 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB) 
+	//  autopush and autopull
+	// shift out to left and in from right 
+	*PIO1_SM0_SHIFTCTRL = (0 << PIO_SM0_SHIFTCTRL_PULL_THRESH_LSB) 
+                           | (1 << PIO_SM0_SHIFTCTRL_AUTOPULL_LSB) 
                            | (0 << PIO_SM0_SHIFTCTRL_FJOIN_TX_LSB) 
-						   | (0 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB);
+						   | (0 << PIO_SM0_SHIFTCTRL_OUT_SHIFTDIR_LSB)
+
+						   | (0 << PIO_SM0_SHIFTCTRL_PUSH_THRESH_LSB)
+						   | (1 << PIO_SM0_SHIFTCTRL_AUTOPUSH_LSB)
+						   | (0 << PIO_SM0_SHIFTCTRL_FJOIN_RX_LSB)
+						   | (0 << PIO_SM0_SHIFTCTRL_IN_SHIFTDIR_LSB)
+						   ;
 
 	// fill in instructions
 	// offset the jump instruction by position of the first command since the jump addresses
 	// are relative to the program
-	for(uint8_t c=0;c < i2s_write_2_program.length;c++){
-		*(PIO1_INSTR_MEM + instr_mem_cnt++) = (*(i2s_write_2_program.instructions + c) & 0xe000)==0 ?
-		 *(i2s_write_2_program.instructions + c) + first_instr_pos : *(i2s_write_2_program.instructions + c);
+	for(uint8_t c=0;c < i2s_duplex_program.length;c++){
+		*(PIO1_INSTR_MEM + instr_mem_cnt++) = (*(i2s_duplex_program.instructions + c) & 0xe000)==0 ?
+		 *(i2s_duplex_program.instructions + c) + first_instr_pos : *(i2s_duplex_program.instructions + c);
 	}
 
 	// data, bclk, and lrclk must be consecutive pins
 	// the set range spans over these 3 pins
 	// sideset starts at bclk
 	// out is data pin
+	// in is data in pin
 	*PIO1_SM0_PINCTRL = 
 	  (2 << PIO_SM0_PINCTRL_SIDESET_COUNT_LSB)
 	| (1 << PIO_SM0_PINCTRL_OUT_COUNT_LSB)
     | (I2S_DATA_PIN << PIO_SM0_PINCTRL_OUT_BASE_LSB)
 	| (I2S_BCK_PIN << PIO_SM0_PINCTRL_SIDESET_BASE_LSB)
 	| (I2S_DATA_PIN << PIO_SM0_PINCTRL_SET_BASE_LSB)
+	| (I2S_DATA_IN_PIN << PIO_SM0_PINCTRL_IN_BASE_LSB)
 	| (3 << PIO_SM0_PINCTRL_SET_COUNT_LSB)
     ;
 
@@ -70,9 +79,10 @@ void initI2S()
 	*I2S_BCK_PIN_CNTR = 7;
     *I2S_DATA_PIN_CNTR = 7;
     *I2S_WS_PIN_CNTR = 7;
+	*I2S_DATA_IN_PIN_CNTR = 7;
 
 	// set clock divider : 120Mhz/78 (.125)
-	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_INT << PIO_SM0_CLKDIV_INT_LSB) | (I2S_CLKDIV_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
+	*PIO1_SM0_CLKDIV = (I2S_CLKDIV_DBL_INT << PIO_SM0_CLKDIV_INT_LSB) | (I2S_CLKDIV_DBL_FRAC << PIO_SM0_CLKDIV_FRAC_LSB);
 
     // set pin directions to output
     *PIO1_SM0_INSTR = 0xE087;
@@ -81,9 +91,10 @@ void initI2S()
 	*PIO1_SM0_INSTR = 0xE020;
 
 	// jump to first instruction
-	*PIO1_SM0_INSTR = first_instr_pos+i2s_write_2_offset_is2_write_start;
+	*PIO1_SM0_INSTR = first_instr_pos+i2s_duplex_offset_is2_duplex_start;
 
 	// initialize DMA
+	// dac output
 	*DMA_CH2_WRITE_ADDR = (uint32_t)PIO1_SM0_TXF;
 	dbfrPtr = 0;
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
@@ -91,69 +102,23 @@ void initI2S()
 	*DMA_CH2_CTRL_TRIG = (8 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) 
 						| (1 << DMA_CH2_CTRL_TRIG_INCR_READ_LSB) 
 						| (2 << DMA_CH2_CTRL_TRIG_DATA_SIZE_LSB) // always read left and right at once
-						| (0 << DMA_CH2_CTRL_TRIG_EN_LSB);
+						| (1 << DMA_CH2_CTRL_TRIG_EN_LSB);
 
-	*DMA_INTE0 |= (1 << 2);
+	// adc input
+	*DMA_CH3_READ_ADDR = (uint32_t)PIO1_SM0_RXF;
+	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)i2sDoubleBufferIn;
+	*DMA_CH3_TRANS_COUNT = AUDIO_BUFFER_SIZE;
+	*DMA_CH3_CTRL_TRIG = (12 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) // pio1 DREQ_PIO1_RX0
+						| (1 << DMA_CH3_CTRL_TRIG_INCR_WRITE_LSB) 
+						| (2 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // always write left and right at once
+						| (1 << DMA_CH3_CTRL_TRIG_EN_LSB);
+
+	*DMA_INTE0 |= (1 << 3); // assert dma for channel 3 since the adc channel is always finished halb a bitclock cycle later
 
 	#ifndef I2S_INPUT
 	*PIO1_INTE |= (1 << PIO_IRQ0_INTE_SM0_LSB);
 	#endif
 
-#ifdef I2S_INPUT
-	// ***********************
-	//
-	// PIO1 STATE MACHINE 1
-	//
-	// ***********************
-    first_instr_pos = instr_mem_cnt;
-	// disable optional side-set, set wrap top and wrap bottom
-	*PIO1_SM1_EXECCTRL = (0 << PIO_SM1_EXECCTRL_SIDE_EN_LSB) 
-	| ( (i2s_read_2_wrap_target + first_instr_pos) << PIO_SM1_EXECCTRL_WRAP_BOTTOM_LSB)
-	| ( (i2s_read_2_wrap + first_instr_pos) << PIO_SM1_EXECCTRL_WRAP_TOP_LSB);
-
-	// fill in instructions
-	// offset the jump instruction by position of the first command since the jump addresses
-	// are relative to the program
-	for(uint8_t c=0;c < i2s_read_2_program.length;c++){
-		*(PIO1_INSTR_MEM + instr_mem_cnt++) = (*(i2s_read_2_program.instructions + c) & 0xe000)==0 ?
-		 *(i2s_read_2_program.instructions + c) + first_instr_pos : *(i2s_read_2_program.instructions + c);
-	}
-
-	*PIO1_SM1_SHIFTCTRL = (0 << PIO_SM1_SHIFTCTRL_PUSH_THRESH_LSB) 
-						| (1 << PIO_SM1_SHIFTCTRL_AUTOPUSH_LSB) 
-						| (0 << PIO_SM1_SHIFTCTRL_FJOIN_TX_LSB) 
-						| (0 << PIO_SM1_SHIFTCTRL_IN_SHIFTDIR_LSB);
-
-	*PIO1_SM1_PINCTRL = (I2S_DATA_IN_PIN << PIO_SM1_PINCTRL_IN_BASE_LSB) | 
-						(I2S_DEBUG_PIN << PIO_SM1_PINCTRL_SET_BASE_LSB) |
-						(I2S_DEBUG_PIN << PIO_SM1_PINCTRL_SIDESET_BASE_LSB) |
-						(1 << PIO_SM1_PINCTRL_SIDESET_COUNT_LSB) | 
-						(1 << PIO_SM1_PINCTRL_SET_COUNT_LSB)
-						;
-
-	*I2S_DATA_IN_PIN_CNTR = 7;
-	*I2S_DEBUG_PIN_CNTR = 7;
-
-	// set clock divider : 120Mhz/78 (.125)
-	*PIO1_SM1_CLKDIV = (I2S_CLKDIV_INT << PIO_SM1_CLKDIV_INT_LSB) | (I2S_CLKDIV_FRAC << PIO_SM1_CLKDIV_FRAC_LSB);
-
-	    // set pin directions to output
-    *PIO1_SM1_INSTR = 0xE081;
-
-	// jump to first instruction
-	*PIO1_SM1_INSTR = first_instr_pos;
-
-	// initialize DMA
-	*DMA_CH3_READ_ADDR = (uint32_t)PIO1_SM1_RXF;
-	dbfrPtr = 0;
-	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)i2sDoubleBufferIn;
-	*DMA_CH3_TRANS_COUNT = AUDIO_BUFFER_SIZE;
-	*DMA_CH3_CTRL_TRIG = (13 << DMA_CH2_CTRL_TRIG_TREQ_SEL_LSB) // pio1 DREQ_PIO1_RX1
-						| (1 << DMA_CH3_CTRL_TRIG_INCR_WRITE_LSB) 
-						| (2 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // always write left and right at once
-						| (0 << DMA_CH3_CTRL_TRIG_EN_LSB);
-
-	//*DMA_INTE0 |= (1 << 3);
 
 	// ***********************
 	//
@@ -173,6 +138,9 @@ void initI2S()
 		 *(square_oscillator_program.instructions + c) + first_instr_pos : *(square_oscillator_program.instructions + c);
 	}
 
+	// enable fast slew rate and disable schmitt trigger for faster clocking
+	*I2S_MCLK_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_SLEWFAST_LSB);
+	*I2S_MCLK_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_SCHMITT_LSB);
 	*I2S_MCLK_PIN_CNTR = 7;
 
 	// set clock divider : 120Mhz/(48000*256)
@@ -191,14 +159,18 @@ void initI2S()
 	// jump to first instruction
 	*PIO1_SM2_INSTR = first_instr_pos;
 
-#endif
-
+	
 	#ifndef I2S_INPUT
     // start PIO 1, state machine 0
 	*PIO1_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0));
 	#else
-		*PIO1_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0)) | (1 << (PIO_CTRL_SM_ENABLE_LSB+1))  | (1 << (PIO_CTRL_SM_ENABLE_LSB+2));
+		*PIO1_CTRL = ((1 << 2) << PIO_CTRL_CLKDIV_RESTART_LSB);
+		*PIO1_CTRL = ((1 << 0) << PIO_CTRL_CLKDIV_RESTART_LSB);
+
+		*PIO1_CTRL |= (1 << (PIO_CTRL_SM_ENABLE_LSB+0)) | (1 << (PIO_CTRL_SM_ENABLE_LSB+2));
+		*PIO1_CTRL |= ((1 << 0) << PIO_CTRL_SM_RESTART_LSB) | ((1 << 2) << PIO_CTRL_SM_RESTART_LSB);
 	#endif
+	audioState = (1 << AUDIO_STATE_ON);
 }
 
 void toggleAudioBuffer()
