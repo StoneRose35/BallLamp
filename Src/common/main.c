@@ -218,7 +218,7 @@ uint32_t wordout;
 uint32_t core1Handshake;
 volatile int16_t avgOut=0,avgOutOld=0,avgIn=0,avgInOld=0;
 uint16_t bufferCnt=0;
-volatile uint8_t fxProgramIdx = 1;
+volatile uint8_t fxProgramIdx = 5;
 volatile uint32_t ticStart,ticEnd,cpuLoad;
 #define UI_UPDATE_IN_SAMPLE_BUFFERS 300
 #define AVERAGING_LOWPASS_CUTOFF 10
@@ -276,7 +276,7 @@ int main(void)
 	//initCliApi();
 	initSsd1306Display();
 	initI2S();
-	enableAudioEngine(); // i2s adc and dac
+	//enableAudioEngine(); // i2s adc and dac
 	initDebugLed();
 	initRotaryEncoder();
 
@@ -331,9 +331,9 @@ int main(void)
 				inputSample=*(audioBufferInputPtr + c*2);
 				inputSampleOther=*(audioBufferInputPtr + c*2+1);
 				inputWord = ((uint16_t)inputSample << 16) | (0xFFFF & ((uint16_t)inputSampleOther));
-
-				rotatemaske = inputWord << (32-3);
-				inputWord = (inputWord >> 3) | rotatemaske;
+				#define ROTATOR 2
+				rotatemaske = inputWord << (32-ROTATOR);
+				inputWord = (inputWord >> ROTATOR) | rotatemaske;
 				inputSample =   0xFFFF & (inputWord >> 16);
 
 				#endif
