@@ -25,6 +25,7 @@
             "command": "/usr/bin/gcc-9",
             "args": [
                 "-I./../Inc",
+                "-I./inc",
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}", "./../Src/common/audio/*.c",
