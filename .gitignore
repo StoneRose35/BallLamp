@@ -16,6 +16,7 @@
 /Tests/piregulator.txt
 /Tests/audioTest
 /Tests/audioout.txt
+/Tests/processThroughFxProgram
 /Src/common/fatLib
 /tools/fattestsmall.img
 **/.idea
