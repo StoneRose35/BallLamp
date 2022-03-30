@@ -28,7 +28,7 @@
                 "-I./inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "./../Src/common/audio/*.c",
+                "${file}", "./../Src/common/audio/*.c","./../Src/common/audio/fxprogram/*.c","./wavReader.c",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],
