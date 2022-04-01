@@ -328,16 +328,17 @@ int main(void)
 				// the input has to be rotated right by three pixels for some strange reasons ... to be fixed later
 				// foldover distortion happens when no shifting is done
 
-				inputSample=*(audioBufferInputPtr + c*2);
-				inputSampleOther=*(audioBufferInputPtr + c*2+1);
-				inputWord = ((uint16_t)inputSample << 16) | (0xFFFF & ((uint16_t)inputSampleOther));
-				#define ROTATOR 2
-				rotatemaske = inputWord << (32-ROTATOR);
-				inputWord = (inputWord >> ROTATOR) | rotatemaske;
-				inputSample =   0xFFFF & (inputWord >> 16);
+				//inputSample=*(audioBufferInputPtr + c*2);
+				
+				//inputSampleOther=*(audioBufferInputPtr + c*2+1);
+				//inputWord = ((uint16_t)inputSample << 16) | (0xFFFF & ((uint16_t)inputSampleOther));
+				//#define ROTATOR 2
+				//rotatemaske = inputWord << (32-ROTATOR);
+				//inputWord = (inputWord >> ROTATOR) | rotatemaske;
+				//inputSample =   0xFFFF & (inputWord >> 16);
 
 				#endif
-				//inputSample = getNextSineValue();
+				inputSample = getNextSineValue();
 
 				if (inputSample < 0)
 				{
@@ -365,6 +366,7 @@ int main(void)
 				//carrybit= inputSample & 0x1;
 				//wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
 				//carrybitOld = carrybit; 
+				//inputSample = ((inputSample & 0xFF) << 8) || (inputSample >> 8);
 				*((uint32_t*)audioBufferPtr+c) = ((uint16_t)inputSample << 16) | (0xFFFF & (uint16_t)inputSample); //wordout; 
 
 			}

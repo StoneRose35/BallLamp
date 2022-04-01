@@ -68,7 +68,8 @@ void isr_dma_irq0_irq11()
 		{
 			audioState  |= (1 << AUDIO_STATE_INPUT_BUFFER_OVERRUN);
 		}
-		toggleAudioInputBuffer();
+		//toggleAudioInputBuffer();
+		retriggerInput();
 		task |= (1 << TASK_PROCESS_AUDIO_INPUT);
 	}
 	return;

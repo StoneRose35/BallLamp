@@ -113,7 +113,7 @@ void initI2S()
 						| (2 << DMA_CH3_CTRL_TRIG_DATA_SIZE_LSB) // always write left and right at once
 						| (1 << DMA_CH3_CTRL_TRIG_EN_LSB);
 
-	*DMA_INTE0 |= (1 << 3); // assert dma for channel 3 since the adc channel is always finished halb a bitclock cycle later
+	*DMA_INTE0 |= (1 << 3) | (1 << 2); // assert dma for channel 3 since the adc channel is always finished halb a bitclock cycle later
 
 	#ifndef I2S_INPUT
 	*PIO1_INTE |= (1 << PIO_IRQ0_INTE_SM0_LSB);
@@ -179,10 +179,12 @@ void toggleAudioBuffer()
 	dbfrPtr &= (AUDIO_BUFFER_SIZE*4*2-1);
 	*DMA_CH2_READ_ADDR = dbfrPtr + (uint32_t)i2sDoubleBuffer;
 	*DMA_CH2_TRANS_COUNT_TRIG = AUDIO_BUFFER_SIZE; // write to alias 1 to trigger dma on writing transmission count
-#ifdef I2S_INPUT
+}
+
+void retriggerInput()
+{
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)i2sDoubleBufferIn;
 	*DMA_CH3_TRANS_COUNT_TRIG = AUDIO_BUFFER_SIZE; // write to alias 1 to trigger dma on writing transmission count
-#endif
 }
 
 void enableAudioEngine()

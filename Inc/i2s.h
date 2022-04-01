@@ -17,7 +17,7 @@
 #define I2S_CLKDIV_INT 40 //39
 #define I2S_CLKDIV_FRAC 0 //16
 
-#define I2S_CLKDIV_DBL_INT 20 //19
+#define I2S_CLKDIV_DBL_INT 10 //19
 #define I2S_CLKDIV_DBL_FRAC 0//136
 
 #define I2S_CLKDIV_MCLK_INT 10//9
@@ -90,4 +90,5 @@ int16_t* getEditableAudioBuffer();
 #ifdef I2S_INPUT
 int16_t* getInputAudioBuffer();
 #endif
+void retriggerInput();
 #endif
