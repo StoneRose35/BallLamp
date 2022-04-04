@@ -5,7 +5,6 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 {
     int32_t out;
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    pData->updateLock = 1;
 
     //pData->highpass_out = (((((1 << 15) + 31000) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((31000 *pData->highpass_old_out) >> 15);
     //pData->highpass_old_in = sampleIn;
@@ -33,7 +32,6 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
         out = secondOrderIirFilterProcessSample(out,&pData->filter2);
         out = secondOrderIirFilterProcessSample(out,&pData->filter3);
     }
-    pData->updateLock=0;
     return out;
 }
 
