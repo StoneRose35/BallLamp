@@ -7,6 +7,8 @@ import cmath
 
 
 def int32(x):
+    if x > (1 << 31) or x < -(1 << 31):
+        raise OverflowError
     xint=x & 0xFFFFFFFF
     if xint > (1 << 31):
         xint = xint - (1 << 32)
@@ -36,18 +38,25 @@ class AudioFilter:
 def compute_td_energy_fraction(bd_orig,ad_orig,do_overflow,sample_size=16):
     bd = bd_orig
     ad = ad_orig
-    bvals = np.array(bd * ((1 << (sample_size - 1)) - 1)).astype(int)
-    avals = np.array(ad[1:] * ((1 << (sample_size - 1)) - 1)).astype(int)
-    testFilter = AudioFilter(avals, bvals,do_overflow=do_overflow,bit_res=sample_size)
+    bvals = np.array(bd * ((1 << (16 - 1)) - 1)).astype(int)
+    avals = np.array(ad[1:] * ((1 << (16 - 1)) - 1)).astype(int)
+    testFilter = AudioFilter(avals, bvals,do_overflow=do_overflow,bit_res=16)
     tdOutput = []
+    avgEnergy = 0
     for c in range(1024):
-        if c == 0:
-            inputVal = 32767
-        else:
-            inputVal = 0
-        tdOutput.append(testFilter.apply(inputVal))
+        inputVal = int((np.random.random() - 0.5) * (32767 >> (16 - sample_size)) * 2)
+        avgEnergy += inputVal*inputVal
+        #if c == 0:
+        #    inputVal = 32767 >> (16-sample_size)
+        #else:
+        #    inputVal = 0
+        try:
+            tdOutput.append(testFilter.apply(inputVal))
+        except OverflowError:
+            return 42.0
+    avgEnergy = np.sqrt(avgEnergy)
     energy = np.sqrt(np.sum(np.square(tdOutput)))
-    return energy/32767
+    return energy/avgEnergy
 
 
 def get_phase_increments(f_sampling=48000,oversampling=2,bitres=32):
@@ -106,18 +115,19 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
 
         if auto_sample_size is True:
             sample_size_dyn = 16
-            max_val = ((1 << (sample_size_dyn - 1)) - 1)
+            max_val = ((1 << (16 - 1)) - 1)
             bvals = np.array(bd * max_val).astype(int)
             avals = np.array(ad[1:] * max_val).astype(int)
             done = False
             while done is False:
-                energy_fraction = compute_td_energy_fraction(bd,ad,True,sample_size_dyn)
-                done = bool(energy_fraction < 1.1)
+                energy_fraction = compute_td_energy_fraction(bd,ad,do_overflow=do_overflow,sample_size=sample_size_dyn)
+                done = bool(energy_fraction < 1.01)
                 if done is False:
                     sample_size_dyn -= 1
+                print("sample size: {}, energy fraction: {}".format(sample_size_dyn,energy_fraction))
             sample_size = sample_size_dyn
 
-        max_val = ((1 << (sample_size - 1)) - 1)
+        max_val = ((1 << (16 - 1)) - 1)
 
         bvals = np.array(bd * max_val).astype(int)
         avals = np.array(ad[1:] * max_val).astype(int)
@@ -159,41 +169,42 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
 
             # time-domain test
             x_time_domain = np.linspace(0,1./fs*1000,1024)
-            testFilter = AudioFilter(avals,bvals,do_overflow=do_overflow,bit_res=sample_size)
+            testFilter = AudioFilter(avals,bvals,do_overflow=do_overflow,bit_res=16)
             tdOutput=[]
             for c in range(1024):
                 if c==0:
-                    inputVal=32767
+                    inputVal=32767 >> (16-sample_size)
                 else:
                     inputVal = 0
                 tdOutput.append(testFilter.apply(inputVal))
             axs2=fig.add_subplot(gs[2,0])
             axs2.plot(x_time_domain,tdOutput, ".-r", label="positive pulse")
-            testFilter = AudioFilter(avals,bvals,do_overflow=do_overflow,bit_res=sample_size)
+            testFilter = AudioFilter(avals,bvals,do_overflow=do_overflow,bit_res=16)
             tdOutput=[]
             for c in range(1024):
                 if c==0:
-                    inputVal=-32767
+                    inputVal=-32767 >> (16-sample_size)
                 else:
                     inputVal = 0
                 tdOutput.append(testFilter.apply(inputVal))
             axs2.plot(x_time_domain,tdOutput, ".-g", label="negative pulse")
-            axs2.set_ylim([-32768*1.007, 32768*1.007])
-            axs2.set_yticks(np.arange(start=-32768,stop=32768,step=32768/4))
+            axs2.set_ylim([-(32768 >> (16-sample_size))*1.007, (32768 >> (16-sample_size))*1.007])
+            axs2.set_yticks(np.arange(start=-(32768 >> (16-sample_size)),stop=(32768 >> (16-sample_size)),step=(32768 >> (16-sample_size))/4))
             axs2.set_title("Time Domain response")
             axs2.set_xlabel("Time [ms]")
             axs2.set_ylabel("Ampl. [Int16]")
             axs2.grid(color="gray", linestyle="--", which="both", axis="y")
             axs2.legend(loc="upper right")
 
+            testFilter = AudioFilter(avals, bvals, do_overflow=do_overflow, bit_res=16)
             tdOutput=[]
             for c in range(1024):
-                inputVal = int((np.random.random()-0.5)*max_val*2)
+                inputVal = int((np.random.random()-0.5)*(32767 >> (16-sample_size))*2)
                 tdOutput.append(testFilter.apply(inputVal))
             axs4 = fig.add_subplot(gs[2,1])
             axs4.plot(x_time_domain,tdOutput, ".-g", label="negative pulse")
-            axs4.set_ylim([-32768*1.007, 32768*1.007])
-            axs4.set_yticks(np.arange(start=-32768,stop=32768,step=32768/4))
+            axs4.set_ylim([-(32768 >> (16-sample_size))*1.007, (32768 >> (16-sample_size))*1.007])
+            axs4.set_yticks(np.arange(start=-(32768 >> (16-sample_size)),stop=(32768 >> (16-sample_size)),step=(32768 >> (16-sample_size))/4))
             axs4.set_title("Noise response")
             axs4.set_xlabel("Time [ms]")
             axs4.set_ylabel("Ampl. [Int16]")
@@ -349,14 +360,8 @@ if __name__ == "__main__":
     phaseincr_bitsize=32
     rs=3
     #design_and_plot_iir_filter(True,rs=10,fc=170,type="cheby2",ftype="highpass")
-    #design_and_plot_iir_filter(True, rs=10, fc=6000, do_overflow=False, type="butter", ftype="lowpass")
-    #design_and_plot_iir_filter(True, rs=10, fc=300, do_overflow=True,sample_size=12,scaling=1.0, type="cheby1", ftype="highpass")
+    design_and_plot_iir_filter(True, rs=6, fc=6000, do_overflow=True,sample_size=None, type="cheby1", ftype="lowpass")
 
-    #design_and_plot_iir_filter(True, rs=10, fc=170, do_overflow=False,sample_size=16, type="butter",ftype="highpass")
-    design_and_plot_iir_filter(True, rs=10, fc=[100,700],do_overflow=False,sample_size=16, type="cheby1", ftype="bandstop")
-
-    #design_and_plot_iir_filter(True, to_integer=True, rs=10, fc=6000, scaling=1.0, type="butter", ftype="lowpass")
-    #design_and_plot_iir_filter(True, to_integer=True, rs=10, fc=[400, 1700], scaling=0.15, type="cheby2", ftype="bandstop")
     #design_oversampling_comb_lp_filter(rs,oversampling,sample_rate)
     #design_and_plot_oversampling_lowpass_cheby(True,oversampling=4,rs=1,fc=17333.18)  #first antialiasing filter
     #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=37084.24) #second antialiasing filter
