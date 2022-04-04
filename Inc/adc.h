@@ -39,7 +39,9 @@ void startConversion();
 void core1IrqSync();
 
 void enableAudioInput(uint8_t freeRunning);
+#ifndef I2S_INPUT
 void toggleAudioInputBuffer();
+#endif
 uint16_t * getReadableAudioBuffer();
 
 void initRoundRobinReading();

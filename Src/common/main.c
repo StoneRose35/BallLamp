@@ -306,7 +306,7 @@ int main(void)
 	{
 
 		//cliApiTask(task);
-		if ((task & (1 << TASK_PROCESS_AUDIO))!= 0)
+		if (((task & (1 << TASK_PROCESS_AUDIO))!= 0) && ((task & (1 << TASK_PROCESS_AUDIO_INPUT))!= 0))
 		{
 			ticStart = getTimeLW();
 
@@ -318,27 +318,16 @@ int main(void)
 			audioBufferInputPtr = getInputAudioBuffer();
 			#endif
 
-			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c++)
+			for (uint8_t c=0;c<AUDIO_BUFFER_SIZE;c++) // count in frame of 4 bytes or two  16bit samples
 			{
 				// convert raw input to signed 16 bit
 				#ifndef I2S_INPUT
 				inputSample = (*(audioBufferInputPtr + c) << 4) - 0x7FFF;
 				#else
-
-				// the input has to be rotated right by three pixels for some strange reasons ... to be fixed later
-				// foldover distortion happens when no shifting is done
-
-				//inputSample=*(audioBufferInputPtr + c*2);
-				
-				//inputSampleOther=*(audioBufferInputPtr + c*2+1);
-				//inputWord = ((uint16_t)inputSample << 16) | (0xFFFF & ((uint16_t)inputSampleOther));
-				//#define ROTATOR 2
-				//rotatemaske = inputWord << (32-ROTATOR);
-				//inputWord = (inputWord >> ROTATOR) | rotatemaske;
-				//inputSample =   0xFFFF & (inputWord >> 16);
-
+				inputSample=*(audioBufferInputPtr + c*2);
+			
 				#endif
-				inputSample = getNextSineValue();
+				//inputSample = getNextSineValue();
 
 				if (inputSample < 0)
 				{
@@ -363,11 +352,7 @@ int main(void)
 				}
 				avgOutOld = ((AVERAGING_LOWPASS_CUTOFF*avgOut) >> 15) + (((32767-AVERAGING_LOWPASS_CUTOFF)*avgOutOld) >> 15);
 
-				//carrybit= inputSample & 0x1;
-				//wordout = (carrybitOld << 31) | (inputSample << 15) | (0x7FFF & (inputSample >> 1)) ;
-				//carrybitOld = carrybit; 
-				//inputSample = ((inputSample & 0xFF) << 8) || (inputSample >> 8);
-				*((uint32_t*)audioBufferPtr+c) = ((uint16_t)inputSample << 16) | (0xFFFF & (uint16_t)inputSample); //wordout; 
+				*((uint32_t*)audioBufferPtr+c) = ((uint16_t)inputSample << 16) | (0xFFFF & (uint16_t)inputSample); 
 
 			}
 			task &= ~((1 << TASK_PROCESS_AUDIO) | (1 << TASK_PROCESS_AUDIO_INPUT));
