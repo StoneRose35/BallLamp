@@ -12,7 +12,7 @@ void setBitMask(uint8_t resolution,BitCrusherDataType*data)
     for (uint8_t c=0;c<(16-resolution);c++)
     {
         data->bitmask <<=1;
-        data->bitmask &= 1;
+        data->bitmask += 1;
     }
     data->bitmask = ~(data->bitmask);
 }

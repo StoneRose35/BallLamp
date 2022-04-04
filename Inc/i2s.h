@@ -4,8 +4,6 @@
 
 #define F_SAMPLING 48000
 
-#define I2S_INPUT
-
 #define I2S_WS_PIN 12
 #define I2S_BCK_PIN 11
 #define I2S_DATA_PIN 10
@@ -14,14 +12,14 @@
 #define I2S_DEBUG_PIN 6
 
 // 120MHz / 78.125 = 48kHz*2*16
-#define I2S_CLKDIV_INT 39
-#define I2S_CLKDIV_FRAC 16
+#define I2S_CLKDIV_INT 40 //39
+#define I2S_CLKDIV_FRAC 0 //16
 
-#define I2S_CLKDIV_DBL_INT 19
-#define I2S_CLKDIV_DBL_FRAC 136
+#define I2S_CLKDIV_DBL_INT 10 //19
+#define I2S_CLKDIV_DBL_FRAC 0//136
 
-#define I2S_CLKDIV_MCLK_INT 4
-#define I2S_CLKDIV_MCLK_FRAC 226
+#define I2S_CLKDIV_MCLK_INT 5//9
+#define I2S_CLKDIV_MCLK_FRAC 0 //196
 
 #define AUDIO_BUFFER_SIZE 16 // in stereo 16bit samples, thus size of one audio buffer in bytes is this value*4
 
@@ -89,5 +87,7 @@ void toggleAudioBuffer();
 int16_t* getEditableAudioBuffer();
 #ifdef I2S_INPUT
 int16_t* getInputAudioBuffer();
+void toggleAudioInputBuffer();
 #endif
+void retriggerInput();
 #endif

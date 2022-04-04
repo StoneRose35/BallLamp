@@ -19,7 +19,15 @@ int16_t secondOrderIirFilterProcessSampleHiRes(int16_t sampleIn,SecondOrderIirFi
     qprod = ((int64_t)data->coeffB[0]*(int64_t)data->w[0]) >> 15;
     qprod += ((int64_t)data->coeffB[1]*(int64_t)data->w[1]) >> 15;
     qprod += ((int64_t)data->coeffB[2]*(int64_t)data->w[2]) >> 15;
-    out = (int16_t)qprod;
+    if (qprod > 32767)
+    {
+        qprod = 32767;
+    }
+    else if (qprod < -32767)
+    {
+        qprod = -32767;
+    }
+    out = (int32_t)qprod;
     data->w[2] = data->w[1];
     data->w[1] = data->w[0];
 
@@ -39,6 +47,14 @@ int16_t secondOrderIirFilterProcessSample(int16_t sampleIn,SecondOrderIirFilterT
         + (((int32_t)data->coeffB[2]*(int32_t)data->w[2]) >> (data->bitRes -1));
     data->w[2] = data->w[1];
     data->w[1] = data->w[0];
-    sampleIn <<= (16 - data->bitRes);
+    out <<= (16 - data->bitRes);
+    if (out > 32767)
+    {
+        out = 32767;
+    }
+    else if (out < -32767)
+    {
+        out = -32767;
+    }
     return (int16_t)(out & 0xFFFF);
 }

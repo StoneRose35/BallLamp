@@ -164,6 +164,7 @@ void startConversion()
     *ADC_CS |= (1 << ADC_CS_START_ONCE_LSB); 
 }
 
+#ifndef I2S_INPUT
 void toggleAudioInputBuffer()
 {
     dbfrPtr += AUDIO_INPUT_BUFFER_SIZE*2;
@@ -171,6 +172,7 @@ void toggleAudioInputBuffer()
 	*DMA_CH3_WRITE_ADDR = dbfrPtr + (uint32_t)audioInDoubleBuffer;
     *DMA_CH3_TRANS_COUNT_TRIG = AUDIO_INPUT_BUFFER_SIZE; // write to alias 1 to trigger dma on writing transmission count
 }
+#endif
 
 uint16_t* getReadableAudioBuffer()
 {
