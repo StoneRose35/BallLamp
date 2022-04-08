@@ -4,10 +4,15 @@ import scipy.interpolate
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal
+import scipy.optimize
+import audio.filter_calculations
 
 def get_ir(fname,sampling_rate=48000):
     wavdata = scipy.io.wavfile.read(fname)
-    rawwav=wavdata[1]
+    if len(wavdata[1][0]) > 1:
+        rawwav = np.array(list(map(lambda x: x[0],wavdata[1])))
+    else:
+        rawwav = wavdata[1]
     powertwo=2
     dt = 1./wavdata[0]
     dt_expected=1./sampling_rate
@@ -111,7 +116,10 @@ def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=
 
 def plot_freq_response(fname,axes=None,style=None):
     wavdata =scipy.io.wavfile.read(fname)
-    rawwav = wavdata[1]
+    if len(wavdata[1][0]) > 1:
+        rawwav = np.array(list(map(lambda x: x[0],wavdata[1])))
+    else:
+        rawwav = wavdata[1]
     powertwo=2
     dt = 1./wavdata[0]
     while (1 << powertwo) < rawwav.size:
@@ -131,13 +139,31 @@ def plot_freq_response(fname,axes=None,style=None):
     else:
         axes.plot(faxis[:int(paddedsize/2)],logspec - maxlog,style)
         axes.set_xscale("log")
+    pass
 
+def plot_ir(fname,axes=None,style=None):
+    wavdata =scipy.io.wavfile.read(fname)
+    if len(wavdata[1][0]) > 1:
+        rawwav = np.array(list(map(lambda x: x[0],wavdata[1])))
+    else:
+        rawwav = wavdata[1]
+
+    dt = 1./wavdata[0]
+    taxis = np.linspace(0,dt*rawwav.size,rawwav.size)
+    if style is None:
+        style = "-k"
+    if axes is None:
+        plt.plot(taxis,rawwav,style)
+        plt.show()
+    else:
+        axes.plot(taxis,rawwav,style)
+        #axes.set_xscale("log")
     pass
 
 def plot_simple_model_cab_curve(axes=None,style="-k"):
     hz = np.ones(512)
     iir_lowpass_order = 2
-    iir_lowpass_cutoff = 6000
+    iir_lowpass_cutoff = 4200
     b, a = scipy.signal.butter(iir_lowpass_order, iir_lowpass_cutoff, btype="low", analog=False, output="ba",
                                        fs=48000)
     b_out, a_out = scipy.signal.butter(iir_lowpass_order, iir_lowpass_cutoff, btype="low", analog=False, output="ba",
@@ -149,7 +175,7 @@ def plot_simple_model_cab_curve(axes=None,style="-k"):
     wz, hzn = scipy.signal.freqz(b, a, fs=48000, worN=512)
     hz = hz * hzn
 
-    iir_highpass_cutoff = 170
+    iir_highpass_cutoff = 80
     iir_highpass_order = 2
     b, a = scipy.signal.butter(iir_highpass_order, iir_highpass_cutoff, btype="high", analog=False,
                                output="ba", fs=48000)
@@ -165,10 +191,10 @@ def plot_simple_model_cab_curve(axes=None,style="-k"):
     hz = hz * hzn
 
     # midcut
-    midcut_freqs = [100, 700]
+    midcut_freqs = [80, 200]
     midcut_order = 1
     midcut_atten = 10
-    midcut_fact=0.95
+    midcut_fact=0.98
     b,a = scipy.signal.cheby1(midcut_order,midcut_atten,midcut_freqs,btype="bandstop",analog=False,output="ba",fs=48000)
     #b=-b
     b[0]=(1.0-midcut_fact) + b[0]*midcut_fact
@@ -193,13 +219,180 @@ def plot_simple_model_cab_curve(axes=None,style="-k"):
     else:
         axes.plot(freqs, 20. * np.log10(abs(hz)), style)
 
+def get_ir_spec(ir_file_name):
+    ir = get_ir(ir_file_name, 48000)
+    #dt = 1./48000.
+    halflen = int(len(ir)/2.)
+
+    ir_spec = scipy.fft.fft(ir)
+    ir_spec = ir_spec[:halflen]
+    ir_spec = ir_spec/max(abs(ir_spec))
+    return ir_spec
+
+def frequency_response_diff(sos,ir_spec,do_plot=False):
+    halflen = len(ir_spec)
+    h_tot = np.ones(halflen)
+    w=np.linspace(0, 48000./2., halflen)
+    for idx in range(int(len(sos)/6)):
+        b = sos[idx:idx+3]
+        a = sos[idx+3:idx+6]
+        w, h = scipy.signal.freqz(b,a, worN=halflen,fs=48000)
+        h_tot = h_tot*h
+    if do_plot is True:
+        fig, axxes = plt.subplots(2,1)
+        axxes[0].plot(w, 20.*np.log10(abs(ir_spec)), "-b")
+        axxes[0].plot(w, 20.*np.log10(abs(h_tot)), ".-r")
+
+        axxes[1].plot(w,np.unwrap(np.arctan2(np.real(ir_spec),np.imag(ir_spec))),"-b")
+        axxes[1].plot(w,np.unwrap(np.arctan2(np.real(h_tot),np.imag(h_tot))),".-r")
+        plt.show()
+    respdiff = map(lambda x, y: abs(x-y), ir_spec, h_tot)
+    respdiff = sum(respdiff)
+    return respdiff
+
+class IrOptimizer:
+    def __init__(self,n_stages):
+        self.optim_data = []
+        self.bounds=[]
+        self.bound_limit = 2.0
+        for q in range(n_stages):
+            self.optim_data += [1., 0., 0.,0. ,0.]
+            self.bounds += [(-self.bound_limit,self.bound_limit),
+                            (-self.bound_limit,self.bound_limit),
+                            (-self.bound_limit,self.bound_limit),
+                            (-self.bound_limit,self.bound_limit),
+                            (-self.bound_limit,self.bound_limit)]
+        self.optim_data = np.array(self.optim_data)
+        self.ir_spec = []
+        self.ir_spec_full =[]
+        self.ir = []
+        self.iteration_cntr = 0
+
+    def load_ir(self,ir_file_name):
+        ir = get_ir(ir_file_name, 48000)
+        # dt = 1./48000.
+        halflen = int(len(ir) / 2.)
+
+        ir_spec = scipy.fft.fft(ir)
+        self.ir_spec_full = ir_spec
+        ir_spec = ir_spec[:halflen]
+        ir_spec = ir_spec / max(abs(ir_spec))
+        self.ir_spec = ir_spec
+        self.ir = ir
+
+    def get_diff(self,opt_data):
+        halflen = len(self.ir_spec)
+        h_tot = np.ones(halflen)
+        w = np.linspace(0, 48000. / 2., halflen)
+        delta_gain = 0
+        for idx in range(int(len(opt_data) / 5)):
+            b = opt_data[idx*5:idx*5 + 3]
+            a = np.array([1.])
+            a = np.append(a,opt_data[idx*5+3:idx*5 + 5])
+            w, h = scipy.signal.freqz(b, a, worN=halflen, fs=48000)
+            h_tot = h_tot * h
+            z, p, k = scipy.signal.tf2zpk(b, a)
+            delta_gain += abs(1.-k)*4.
+        #respdiff = map(lambda x, y: abs(x - y), self.ir_spec, h_tot)
+        respdiff = map(lambda x, y: abs(abs(x) - abs(y)), self.ir_spec, h_tot)
+        respdiff = sum(respdiff) + delta_gain
+
+        return respdiff
+
+    def get_modeled_spectrum(self):
+        halflen = len(self.ir_spec)
+        h_tot = np.ones(halflen)
+        w = np.linspace(0, 48000. / 2., halflen)
+        self.iteration_cntr += 1
+        for idx in range(int(len(self.optim_data) / 5)):
+            b = self.optim_data[idx*5:idx*5 + 3]
+            a = np.array([1.])
+            a = np.append(a,self.optim_data[idx*5+3:idx*5 + 5])
+            w, h = scipy.signal.freqz(b, a, worN=halflen, fs=48000)
+            h_tot = h_tot * h
+        return np.concatenate((h_tot,np.flip(np.conj(h_tot))))
+
+    def iterator_callback(self,current_vectr,do_plot=False):
+        halflen = len(self.ir_spec)
+        h_tot = np.ones(halflen)
+        w = np.linspace(0, 48000. / 2., halflen)
+        self.iteration_cntr += 1
+        for idx in range(int(len(current_vectr) / 5)):
+            b = current_vectr[idx*5:idx*5 + 3]
+            a = np.array([1.])
+            a = np.append(a,current_vectr[idx*5+3:idx*5 + 5])
+            w, h = scipy.signal.freqz(b, a, worN=halflen, fs=48000)
+            h_tot = h_tot * h
+
+        respdiff = map(lambda x, y: abs(x - y), self.ir_spec, h_tot)
+        respdiff = sum(respdiff)
+        print("****** Iteration {} ******".format(self.iteration_cntr))
+        for c in range(int(len(current_vectr)/5)):
+            print("\tFilter {}".format(c+1))
+            print("\t  b: [{:.6f}, {:.6f}, {:.6f}]".format(current_vectr[c],current_vectr[c+1],current_vectr[c+2]))
+            print("\t  a: [{:.6f}, {:.6f}]".format(current_vectr[c+3],current_vectr[c+4]))
+        print("difference: {:.3f}".format(respdiff))
+        print("\r\n")
+        if do_plot is True:
+            fig, axxes = plt.subplots(2, 1)
+            axxes[0].plot(w, 20. * np.log10(abs(self.ir_spec)), "-b")
+            axxes[0].plot(w, 20. * np.log10(abs(h_tot)), ".-r")
+            axxes[0].set_xscale("log")
+
+            axxes[1].plot(w, np.unwrap(np.arctan2(np.real(self.ir_spec), np.imag(self.ir_spec))), "-b")
+            axxes[1].plot(w, np.unwrap(np.arctan2(np.real(h_tot), np.imag(h_tot))), ".-r")
+            axxes[1].set_xscale("log")
+            plt.show()
+
+    def get_sos(self):
+        soss= []
+        for idx in range(int(len(self.optim_data)/5)):
+            sos = list(self.optim_data[idx*5:idx*5 + 3])
+            sos.append(1.)
+            sos += list(self.optim_data[idx*5+3:idx*5 + 5])
+            soss.append(np.array(sos))
+        return soss
 
 if __name__ == "__main__":
-    fig, axxes = plt.subplots()
-    #plot_model_cab_curve(axes=axxes,style=".-k")
-    plot_simple_model_cab_curve(axes=axxes,style=".-k")
-    plot_freq_response("resources/TubePreamp2/DYN-7B/OD-E112-G12-65-DYN-7B-09-30-BRIGHT.wav",axxes,"-g")
-    #plot_freq_response("resources/TubePreamp2/DYN-7B/OD-E112-G12-65-DYN-7B-09-30.wav", axxes, "-r")
+    #fig, axxes = plt.subplots()
 
-    plt.ylim([-60,0])
+    #init_filter_data = np.array([[[1.,0.,0.],[1.,0.,0.]],[[1.,0.,0.],[1.,0.,0.]],[[1.,0.,0.],[1.,0.,0.]]])
+
+    #optimizer.load_ir("resources/soundwoofer/Vox AC15C1 SM57 1.wav")
+    #optim_filter_data = init_filter_data.flatten()
+    #ir_spec = get_ir_spec("resources/soundwoofer/Fender Frontman 212 AKG D112.wav")
+    #frequency_response_diff(optim_filter_data, ir_spec, True)
+
+    ir_files = ["resources/soundwoofer/Hiwatt Maxwatt M412 SM57 2.wav", "resources/soundwoofer/Fender Frontman 212 AKG D112.wav", "resources/soundwoofer/Vox AC15C1 SM57 1.wav"]
+    optimizer = IrOptimizer(3)
+    optimizer.load_ir(ir_files[1])
+
+    shortened_ir=optimizer.ir
+    shortened_ir[64:]=0
+    spec_shorted = scipy.fft.fft(shortened_ir)
+    remaining_spec = np.array(optimizer.ir_spec_full)/spec_shorted
+    halflen = int(len(spec_shorted)/2)
+    plt.plot(20.*np.log10(abs(np.array(optimizer.ir_spec_full[:halflen]))),"-b")
+    plt.plot(20.*np.log10(abs(np.array(spec_shorted[:halflen]))),"-g")
+    plt.xscale("log")
     plt.show()
+
+    #plt.plot(20.*np.log10(abs(remaining_spec)))
+    #plt.show()
+    #halflen = int(len(remaining_spec) / 2.)
+    #optimizer.ir_spec = remaining_spec[:halflen]
+    #optimizer.ir_spec_full = remaining_spec
+
+    res = scipy.optimize.minimize(optimizer.get_diff,optimizer.optim_data,method='Nelder-Mead',bounds=optimizer.bounds,callback=optimizer.iterator_callback)
+    optimizer.iterator_callback(res.x,True)
+    optimizer.optim_data = res.x
+    best_sos = optimizer.get_sos()
+    audio.filter_calculations.plot_iir_filter(best_sos,do_plot=True,fs=48000,do_overflow=True,sample_size=None,ftype="Custom",type="Custom")
+
+
+
+
+    #plot_model_cab_curve(axes=axxes,style=".-k")
+    #plot_simple_model_cab_curve(axes=axxes,style=".-k")
+
+    #plt.ylim([-60,0])

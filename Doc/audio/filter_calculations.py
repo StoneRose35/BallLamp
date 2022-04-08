@@ -1,4 +1,5 @@
 import numpy as np
+import scipy.signal
 import scipy.signal as signal
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
@@ -86,8 +87,7 @@ def get_sine_table():
         sinetable.append(int(math.cos(c/nvals*math.pi*2)*((1 << (bitres-1)) - 1)))
     return sinetable
 
-
-def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
+def design_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
     if fc is None:
         fc = fs/2
     if ftype == "highpass" or ftype=="lowpass":
@@ -106,7 +106,11 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
         ba = signal.butter(order, fc, analog=False, btype=ftype, output='ba', fs=fs)
     else:
         sos= [[1.,0.,0.], [1.,0.,0.]]
+    return sos
 
+def plot_iir_filter(sos,do_plot=True,fs=48000,do_overflow=True,sample_size=16,scaling=None,fc=None,ftype=None,type=None):
+
+    auto_sample_size = sample_size is None
     cnt=0
     sos_returned = []
     for second_order_filter in sos:
@@ -121,7 +125,7 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
             done = False
             while done is False:
                 energy_fraction = compute_td_energy_fraction(bd,ad,do_overflow=do_overflow,sample_size=sample_size_dyn)
-                done = bool(energy_fraction < 1.01)
+                done = bool(energy_fraction < 2.01)
                 if done is False:
                     sample_size_dyn -= 1
                 print("sample size: {}, energy fraction: {}".format(sample_size_dyn,energy_fraction))
@@ -134,9 +138,14 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
         # pole calculation
         p1 = (-float(avals[0]) + cmath.sqrt(float(avals[0])*float(avals[0]) - 4*float(max_val)*float(avals[1])))/(2.*float(max_val))
         p2 = (-float(avals[0]) - cmath.sqrt(float(avals[0]) * float(avals[0]) - 4 * float(max_val) * float(avals[1]))) /(2.*float(max_val))
+        z1 = (-float(bvals[1]) + cmath.sqrt(float(bvals[1])*float(bvals[1]) - 4*float(bvals[0])*float(bvals[2])))/(2.*float(max_val))
+        z2 = (-float(bvals[1]) - cmath.sqrt(float(bvals[1]) * float(bvals[1]) - 4 * float(bvals[0]) * float(bvals[2]))) /(2.*float(max_val))
         print("pole 1 at {:.3f}/{:.3f}, absolute value: {:.3f}".format(np.real(p1),np.imag(p1),abs(p1)))
         print("pole 2 at {:.3f}/{:.3f}, absolute value: {:.3f}".format(np.real(p2), np.imag(p2), abs(p2)))
-
+        print("zero 1 at {:.3f}/{:.3f}".format(np.real(z1),np.imag(z1)))
+        print("zero 2 at {:.3f}/{:.3f}".format(np.real(z2), np.imag(z2)))
+        z,p,k = scipy.signal.tf2zpk(bd,ad)
+        print("gain: {:.3f}".format(k))
         if do_plot is True:
             print("B coefficients: {}".format(bvals))
             print("A coefficients: {}".format(avals))
@@ -210,7 +219,7 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
             axs4.set_ylabel("Ampl. [Int16]")
             axs4.grid(color="gray", linestyle="--", which="both", axis="y")
 
-            axs3 = fig.add_subplot(gs[:-1,1])
+            axs3 = fig.add_subplot(gs[0,1])
             if type == "cheby1":
                 filter_type_displ = "Chebychev Type I, "
             elif type == "cheby2":
@@ -218,24 +227,49 @@ def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=T
             elif type == "butter":
                 filter_type_displ = "Butterworth, "
             else:
-                filter_type_displ = "Unknown, "
+                filter_type_displ = "Custom, "
+                rs= 0.0
             filter_type_displ += ftype
             cnt+=1
-            fsize=0.08
-            axs3.text(0.02,0.97-0*fsize,"Second-Order Section {}/{}".format(cnt,len(sos)))
-            axs3.text(0.02,0.97-1*fsize,"Filter Type: \n    " + filter_type_displ)
+            fsize=1.
+            font_size=8.
+            axs3.text(0.02,16-1*fsize,"Second-Order Section {}/{}".format(cnt,len(sos)),fontsize=font_size)
+            axs3.text(0.02,16-3*fsize,"Filter Type: \n    " + filter_type_displ,fontsize=font_size)
             freq_atten_displ = "Cutoff / Attenuation: \n    {}Hz".format(fc)
             if type!="butter":
                 freq_atten_displ += ", Attenuation: {}dB".format(rs)
-            axs3.text(0.02, 0.97 - 2 * fsize, freq_atten_displ)
-            axs3.text(0.02,0.97-3*fsize,"B coefficients: \n    {}".format(bvals))
-            axs3.text(0.02,0.97-4*fsize,"A coefficients: \n    {}".format(avals))
-            axs3.text(0.02, 0.97-5*fsize, "bit resolution: \n    {}".format(sample_size))
+            axs3.text(0.02, 16 - 5 * fsize, freq_atten_displ,fontsize=font_size)
+            axs3.text(0.02,16-7*fsize,"B coefficients: \n    {}".format(bvals),fontsize=font_size)
+            axs3.text(0.02,16-9*fsize,"A coefficients: \n    {}".format(avals),fontsize=font_size)
+            axs3.text(0.02, 16-11*fsize, "bit resolution: \n    {}".format(sample_size),fontsize=font_size)
+            axs3.text(0.02, 16-13*fsize, "gain: \n    {:.6f}".format(k),fontsize=font_size)
             axs3.tick_params(bottom=False, labelbottom=False, labelleft=False, left=False)
-            axs3.set_ylim([0,1])
+            axs3.set_ylim([0,16])
+
+
+            axs6=fig.add_subplot(gs[1,1])
+            circle_angles=np.linspace(0,2.*np.pi,512)
+            circle_x=np.sin(circle_angles)
+            circle_y=np.cos(circle_angles)
+            axs6.plot(circle_x,circle_y,"-b")
+            axs6.plot(np.real([z1,z2]),np.imag([z1,z2]),"ob",fillstyle='none',label="Zeros")
+            axs6.plot(np.real([p1,p2]),np.imag([p1,p2]),"+b",label="Poles")
+            axs6.set_title("Poles / Zeros")
+            axs6.legend(loc="upper right")
+            axs6.set_xticks([-1., -0.5, 0., 0.5, 1])
+            axs6.set_yticks([-1., -0.5, 0., 0.5, 1])
+            axs6.grid(color="gray", linestyle="--", which="both")
+            axs6.axis('equal')
+
+
             plt.show()
+
         sos_returned.append({"b": bvals, "a": avals, "sample_bit_size": sample_size})
     return sos_returned
+
+def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
+    sos = design_iir_filter(rs=20,fc=None,fs=48000,sample_size=16,scaling=None,type="cheby2",ftype="lowpass")
+    plot_iir_filter(sos,do_plot=do_plot,fs=fs,do_overflow=do_overflow,sample_size=sample_size,scaling=scaling,fc=fc, ftype=ftype,type=type)
 
 def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,rs=20,oversampling=2,fc=None):
     ftype = 'lowpass'
