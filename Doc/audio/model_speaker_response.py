@@ -329,8 +329,8 @@ class IrOptimizer:
         print("****** Iteration {} ******".format(self.iteration_cntr))
         for c in range(int(len(current_vectr)/5)):
             print("\tFilter {}".format(c+1))
-            print("\t  b: [{:.6f}, {:.6f}, {:.6f}]".format(current_vectr[c],current_vectr[c+1],current_vectr[c+2]))
-            print("\t  a: [{:.6f}, {:.6f}]".format(current_vectr[c+3],current_vectr[c+4]))
+            print("\t  b: [{:.6f}, {:.6f}, {:.6f}]".format(current_vectr[c*5],current_vectr[c*5+1],current_vectr[c*5+2]))
+            print("\t  a: [{:.6f}, {:.6f}]".format(current_vectr[c*5+3],current_vectr[c*5+4]))
         print("difference: {:.3f}".format(respdiff))
         print("\r\n")
         if do_plot is True:
@@ -365,11 +365,17 @@ if __name__ == "__main__":
 
     ir_files = ["resources/soundwoofer/Hiwatt Maxwatt M412 SM57 2.wav", "resources/soundwoofer/Fender Frontman 212 AKG D112.wav", "resources/soundwoofer/Vox AC15C1 SM57 1.wav"]
     optimizer = IrOptimizer(3)
-    optimizer.load_ir(ir_files[1])
+    optimizer.load_ir(ir_files[2])
 
-    shortened_ir=optimizer.ir
-    shortened_ir[64:]=0
+    shortened_ir = optimizer.ir
+    shortened_ir[64:] = 0
+    shortened_ir = np.array(shortened_ir)
     spec_shorted = scipy.fft.fft(shortened_ir)
+    print("FIR Coefficients")
+    shortened_ir = renorm_ir(shortened_ir)
+    #max_ir = np.max(abs(shortened_ir))
+    for cc in range(64):
+        print("{}, ".format(int(shortened_ir[cc]*32767)), end="")
     remaining_spec = np.array(optimizer.ir_spec_full)/spec_shorted
     halflen = int(len(spec_shorted)/2)
     plt.plot(20.*np.log10(abs(np.array(optimizer.ir_spec_full[:halflen]))),"-b")
@@ -383,7 +389,8 @@ if __name__ == "__main__":
     #optimizer.ir_spec = remaining_spec[:halflen]
     #optimizer.ir_spec_full = remaining_spec
 
-    res = scipy.optimize.minimize(optimizer.get_diff,optimizer.optim_data,method='Nelder-Mead',bounds=optimizer.bounds,callback=optimizer.iterator_callback)
+    res = scipy.optimize.minimize(optimizer.get_diff,optimizer.optim_data,method='Nelder-Mead',
+                                  bounds=optimizer.bounds,callback=optimizer.iterator_callback,options = {"fatol":0.000001,'xatol': 0.000001})
     optimizer.iterator_callback(res.x,True)
     optimizer.optim_data = res.x
     best_sos = optimizer.get_sos()

@@ -218,7 +218,7 @@ uint32_t wordout;
 uint32_t core1Handshake;
 volatile int16_t avgOut=0,avgOutOld=0,avgIn=0,avgInOld=0;
 uint16_t bufferCnt=0;
-volatile uint8_t fxProgramIdx = 5;
+volatile uint8_t fxProgramIdx = 1;
 volatile uint32_t ticStart,ticEnd,cpuLoad;
 #define UI_UPDATE_IN_SAMPLE_BUFFERS 300
 #define AVERAGING_LOWPASS_CUTOFF 10
@@ -296,7 +296,12 @@ int main(void)
 		fxPrograms[c]->setup(fxPrograms[c]->data);
 	}
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
-
+	ssd1306WriteText("P1:",0,4);
+	ssd1306WriteText("P2:",0,5);
+	ssd1306WriteText("P3:",0,6);
+	ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,4);
+	ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,5);
+	ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,6);
 	ticEnd=0;
 	ticStart=0;
 	setNote(64);

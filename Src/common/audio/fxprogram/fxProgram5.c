@@ -39,8 +39,11 @@ FxProgramType fxProgram5 = {
     .name = "Bitcrusher          ",
     .processSample = &fxProgram5processSample,
     .param1Callback = &fxProgram5Param1Callback,
+    .param1Name = "Bit Reduction  ",
     .param2Callback = &fxProgram5Param2Callback,
+    .param1Name = "               ",
     .param3Callback = &fxProgram5Param3Callback,
+    .param1Name = "               ",
     .setup = &fxProgram5Setup,
     .data = (void*)&fxProgram5data
 };

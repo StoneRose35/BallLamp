@@ -19,7 +19,10 @@ typedef void(*paramChangeCallback)(uint16_t,void*);
 typedef void(*setupCallback)(void*);
 
 typedef struct {
-    char name[24];
+    const char name[24];
+    const char param1Name[16];
+    const char param2Name[16];
+    const char param3Name[16];    
     paramChangeCallback param1Callback;
     paramChangeCallback param2Callback;
     paramChangeCallback param3Callback;
@@ -31,7 +34,7 @@ typedef struct {
 typedef struct {
     int16_t highpassCutoff;
     uint8_t nWaveshapers;
-    uint8_t cabSimOnOff;
+    uint8_t cabSimType;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
     WaveShaperDataType waveshaper1;
     FirFilterType filter3;
@@ -45,13 +48,28 @@ typedef struct {
 
 typedef struct {
     gainStageData gainStage;
-    uint8_t cabSimOnOff;
+    uint8_t cabSimType;
+    uint8_t nWaveshapers;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
+    const char cabNames[6][24];
+    FirFilterType hiwattFir;
     OversamplingWaveshaperDataType waveshaper1;
-    SecondOrderIirFilterType filter1;
-    SecondOrderIirFilterType filter2;
-    SecondOrderIirFilterType filter3;
-    uint8_t updateLock;
+    SecondOrderIirFilterType hiwattIir1;
+    SecondOrderIirFilterType hiwattIir2;
+    SecondOrderIirFilterType hiwattIir3;
+    
+    FirFilterType frontmanFir;
+    SecondOrderIirFilterType frontmanIir1;
+    SecondOrderIirFilterType frontmanIir2;
+    SecondOrderIirFilterType frontmanIir3;
+
+    FirFilterType voxAC15Fir;
+    SecondOrderIirFilterType voxAC15Iir1;
+    SecondOrderIirFilterType voxAC15Iir2;
+    SecondOrderIirFilterType voxAC15Iir3;
+    
+
+    //uint8_t updateLock;
 } FxProgram4DataType;
 
 typedef struct 

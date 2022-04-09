@@ -46,8 +46,11 @@ FxProgramType fxProgram6 = {
     .name = "Delay               ",
     .processSample = &fxProgram6processSample,
     .param1Callback = &fxProgram6Param1Callback,
+    .param1Name = "Time           ",
     .param2Callback = &fxProgram6Param2Callback,
+    .param1Name = "Feedback       ",
     .param3Callback = &fxProgram6Param3Callback,
+    .param1Name = "Mix            ",
     .setup = &fxProgram6Setup,
     .data = (void*)&fxProgram6data
 };

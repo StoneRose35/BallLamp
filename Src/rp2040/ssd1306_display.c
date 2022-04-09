@@ -127,7 +127,7 @@ void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
 
 }
 
-void ssd1306WriteText(char * str,uint8_t posH,uint8_t posV)
+void ssd1306WriteText(const char * str,uint8_t posH,uint8_t posV)
 {
     uint8_t cnt = 0;
     uint8_t hCurrent=posH;

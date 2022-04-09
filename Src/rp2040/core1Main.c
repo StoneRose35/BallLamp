@@ -132,6 +132,7 @@ void core1Main()
             }
             ssd1306DisplayByteArray(3,0,bargraphBuffer,128);
 
+/*
             if ((audioState & (1 << AUDIO_STATE_BUFFER_UNDERRUN)) != 0)
             {
                 ssd1306WriteText("BUFFER UNDERRUN!!",0,7);
@@ -140,7 +141,7 @@ void core1Main()
             {
                 ssd1306WriteText("                 ",0,7);
             }
-
+*/
             task &= ~(1 << TASK_UPDATE_AUDIO_UI);
         }
         switchVal = getSwitchValue();
@@ -152,6 +153,10 @@ void core1Main()
                 fxProgramIdx = 0;
             }
             ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
+            ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,4);
+            ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
+            ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
+            ssd1306WriteText("                   ",0,7);
         }
         switchValOld = getSwitchValue();
         /*

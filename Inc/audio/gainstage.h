@@ -4,7 +4,7 @@
 
 typedef struct
 {
-    int16_t gain; // 512 is unity gain
+    int16_t gain; // 256 is unity gain
     int16_t offset; // full range
     /* data */
 } gainStageData;

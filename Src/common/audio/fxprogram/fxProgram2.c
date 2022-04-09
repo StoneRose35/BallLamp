@@ -50,8 +50,11 @@ FxProgramType fxProgram2 = {
     .name = "Vibrato/Chorus      ",
     .processSample = &fxProgram2processSample,
     .param1Callback = &fxProgram2Param1Callback,
+    .param1Name = "Frequency      ",
     .param2Callback = &fxProgram2Param2Callback,
+    .param2Name = "Depth          ",
     .param3Callback = &fxProgram2Param3Callback,
+    .param3Name = "Mix            ",
     .setup = &fxProgram2Setup,
     .data = (void*)&fxProgram2data
 };

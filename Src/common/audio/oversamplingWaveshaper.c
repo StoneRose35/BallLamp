@@ -10,6 +10,7 @@
 
 void initOversamplingWaveshaper(OversamplingWaveshaperDataType*data)
 {
+    /*
     data->oversamplingFilter1.coeffA[0]=-32767;
     data->oversamplingFilter1.coeffA[1]=15967;
     data->oversamplingFilter1.coeffB[0]=15514;
@@ -36,7 +37,7 @@ void initOversamplingWaveshaper(OversamplingWaveshaperDataType*data)
     data->oversamplingFilter2.w[0]=0;
     data->oversamplingFilter2.w[1]=0;
     data->oversamplingFilter2.w[2]=0;
-
+*/
     initWaveShaper(&data->waveshaper,&waveShaperDefaultOverdrive);
 }
 

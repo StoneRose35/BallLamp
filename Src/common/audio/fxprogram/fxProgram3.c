@@ -29,8 +29,11 @@ FxProgramType fxProgram3 = {
     .name = "Off                 ",
     .processSample = &fxProgram3processSample,
     .param1Callback = &fxProgram3Param1Callback,
+    .param1Name = "               ",
     .param2Callback = &fxProgram3Param2Callback,
+    .param2Name = "               ",
     .param3Callback = &fxProgram3Param3Callback,
+    .param3Name = "               ",
     .setup = &fxProgram3Setup,
     .data = (void*)0
 };

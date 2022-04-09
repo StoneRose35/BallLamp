@@ -3,7 +3,7 @@
 #include <stdint.h>
 typedef struct 
 {
-    int16_t coefficients[64];
+    const int16_t coefficients[64];
     int16_t delayBuffer[64];
     uint8_t filterLength;
     uint8_t delayPointer;

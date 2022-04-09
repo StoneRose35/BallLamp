@@ -18,7 +18,7 @@ int16_t fxProgram1processSample(int16_t sampleIn,void*data)
     }
 
     out = out >> 2;
-    if (pData->cabSimOnOff == 1)
+    if (pData->cabSimType == 1)
     {
         out = secondOrderIirFilterProcessSample(out,&pData->filter1);
         out >>= 1;
@@ -61,14 +61,14 @@ void fxProgram1Param3Callback(uint16_t val,void*data) // cab sim on/off
     FxProgram1DataType* pData = (FxProgram1DataType*)data;
     val >>= 11;
     //while(pData->updateLock > 0);
-    pData->cabSimOnOff = val;
+    pData->cabSimType = val;
 }
 
 void fxProgram1Setup(void*data)
 {
     FxProgram1DataType* pData = (FxProgram1DataType*)data;
     initfirFilter(&pData->filter3);
-    initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
+    initWaveShaper(&pData->waveshaper1,&waveShaperDistortion);
 }
 
 FxProgram1DataType fxProgram1data = {
@@ -87,14 +87,17 @@ FxProgram1DataType fxProgram1data = {
     .highpass_out=0,
     .highpassCutoff = 31000,
     .nWaveshapers = 1,
-    .cabSimOnOff = 1
+    .cabSimType = 1
 };
 FxProgramType fxProgram1 = {
     .name = "Amp-Simulator       ",
     .processSample = &fxProgram1processSample,
     .param1Callback = &fxProgram1Param1Callback,
+    .param1Name = "Hi-Cut         ",
     .param2Callback = &fxProgram1Param2Callback,
+    .param2Name = "Gain/Stages    ",
     .param3Callback = &fxProgram1Param3Callback,
+    .param3Name = "Cab Off/On     ",
     .setup = &fxProgram1Setup,
     .data = (void*)&fxProgram1data
 };
