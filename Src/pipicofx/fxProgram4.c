@@ -180,7 +180,13 @@ FxProgram4DataType fxProgram4data = {
         "Vox AC15        (I)"  
     },
     .gainStage.gain=512,
-    .cabSimType = 1
+    .cabSimType = 1,
+    .waveshaper1 = {
+        .oversamplingFilter = {
+            .coeffB = {3199, 6398, 3199},
+            .coeffA = {-30893, 10922}
+        }
+    }
 };
 
 FxProgramType fxProgram4 = {
