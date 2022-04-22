@@ -23,7 +23,7 @@ all: clean_objs bs2_code_size $(PROJECT).uf2
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 AUDIO_OBJS := $(patsubst Src/common/audio/%.c,out/%.o,$(wildcard Src/common/audio/*.c))
-AUDIO_FX_OBJS := $(patsubst Src/common/audio/fxprogram/%.c,out/%.o,$(wildcard Src/common/audio/fxprogram/*.c))
+AUDIO_FX_OBJS := $(patsubst Src/pipicofx/%.c,out/%.o,$(wildcard Src/pipicofx/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
 SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
 ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
@@ -113,7 +113,7 @@ out/%.o: Src/common/audio/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 # audio fx libs
-out/%.o: Src/common/audio/fxprogram/%.c
+out/%.o: Src/pipicofx/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 # rp2040 specific libs

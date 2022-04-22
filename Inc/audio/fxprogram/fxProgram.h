@@ -34,12 +34,11 @@ typedef struct {
 typedef struct {
     int16_t highpassCutoff;
     uint8_t nWaveshapers;
-    uint8_t cabSimType;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
     WaveShaperDataType waveshaper1;
     FirFilterType filter3;
     SecondOrderIirFilterType filter1;
-    uint8_t updateLock;
+    DelayDataType * delay;
 } FxProgram1DataType;
 
 typedef struct {
@@ -79,7 +78,7 @@ typedef struct
 
 typedef struct 
 {
-    DelayDataType delay;
+    DelayDataType * delay;
 } FxProgram6DataType;
 
 
