@@ -27,10 +27,13 @@ typedef int32_t(*f_f2i_conv)(float a);
 typedef float(*f_i2f_conv)(int32_t a);
 void initFloatFunctions();
 
-float fadd(float a,float b);
-float fsub(float a,float b);
-float fmul(float a,float b);
-float fdiv(float a,float b);
+float __aeabi_fadd(float a,float b);
+float __aeabi_fsub(float a,float b);
+float __aeabi_frsub(float a,float b);
+float __aeabi_fmul(float a,float b);
+float __aeabi_fdiv(float a,float b);
+
+
 float fsqrt(float a);
 float fcos(float a);
 float fsin(float a);

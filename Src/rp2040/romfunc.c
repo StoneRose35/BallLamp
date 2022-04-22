@@ -73,7 +73,7 @@ void flash_range_program(uint32_t addr,const uint8_t * data, uint32_t cnt)
  * @param b 
  * @return float 
  */
-float fadd(float a,float b)
+float __aeabi_fadd(float a,float b)
 {
     if (_fadd == 0)
     {
@@ -89,13 +89,23 @@ float fadd(float a,float b)
  * @param b 
  * @return float 
  */
-float fsub(float a,float b)
+float __aeabi_fsub(float a,float b)
 {
     if (_fsub == 0)
     {
         initFloatFunctions();
     }
     return _fsub(a,b);
+}
+
+
+float __aeabi_frsub(float a,float b)
+{
+    if (_fsub == 0)
+    {
+        initFloatFunctions();
+    }
+    return _fsub(b,a);
 }
 
 /**
@@ -105,7 +115,7 @@ float fsub(float a,float b)
  * @param b 
  * @return float 
  */
-float fmul(float a,float b)
+float __aeabi_fmul(float a,float b)
 {
     if (_fmul == 0)
     {
@@ -121,7 +131,7 @@ float fmul(float a,float b)
  * @param b 
  * @return float 
  */
-float fdiv(float a,float b)
+float __aeabi_fdiv(float a,float b)
 {
     if (_fdiv == 0)
     {
@@ -200,6 +210,12 @@ float int2float(int32_t a)
     }
     return _i2f(a);
 }
+
+float fatan2(float a, float b)
+{
+    return 0.0;
+}
+
 
 char * getCopyright()
 {

@@ -13,7 +13,7 @@ OPT=-O3
 PAD_CKECKSUM=./tools/pad_checksum
 DEFINES=-DRP2040_FEATHER -DITSYBITSY -DI2S_INPUT
 CARGS=-fno-builtin -g $(DEFINES) -mcpu=cortex-m0plus -mthumb -ffunction-sections -fdata-sections -std=gnu11 -Wall -I./Inc/RpiPico -I./Inc -I./Inc/gen
-LARGS=-g -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./rp2040_feather.ld -Xlinker -Map="./out/$(PROJECT).map" -Xlinker --gc-sections -static --specs="nano.specs" -Wl,--start-group -lc -lm -Wl,--end-group
+LARGS=-g -nostdlib -Xlinker -print-memory-usage -mcpu=cortex-m0plus -mthumb -T./rp2040_feather.ld -Xlinker -Map="./out/$(PROJECT).map" -Xlinker --gc-sections -static --specs="nano.specs" -Wl,--start-group -lc -lm -Wl,--end-group
 LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 BOOTLOADER=bs2_fast_qspi2
@@ -21,6 +21,7 @@ BOOTLOADER=bs2_fast_qspi2
 all: clean_objs bs2_code_size $(PROJECT).uf2 
 
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
+RP2040_OBJS_ASM := $(patsubst Src/rp2040/%.S,out/%.o,$(wildcard Src/rp2040/*.S))
 COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 AUDIO_OBJS := $(patsubst Src/common/audio/%.c,out/%.o,$(wildcard Src/common/audio/*.c))
 AUDIO_FX_OBJS := $(patsubst Src/pipicofx/%.c,out/%.o,$(wildcard Src/pipicofx/*.c))
@@ -29,7 +30,7 @@ SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c
 ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
 
 
-all_rp2040: $(RP2040_OBJS) 
+all_rp2040: $(RP2040_OBJS) $(RP2040_OBJS_ASM)
 all_common: $(COMMON_OBJS)
 all_audio: $(AUDIO_OBJS) $(AUDIO_FX_OBJS)
 all_apps: $(APPS_OBJS)
@@ -118,6 +119,10 @@ out/%.o: Src/pipicofx/%.c
 
 # rp2040 specific libs
 out/%.o: Src/rp2040/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
+# rp2040 specific assembly libs
+out/%.o: Src/rp2040/%.S
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
 # application layer
