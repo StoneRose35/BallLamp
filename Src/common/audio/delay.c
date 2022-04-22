@@ -1,6 +1,14 @@
 #include "audio/delay.h"
 
  
+ DelayDataType singletonDelay;
+
+DelayDataType * getDelayData()
+{
+    return &singletonDelay;
+}
+
+
 void initDelay(DelayDataType*data)
 {
     for (uint32_t c=0;c<DELAY_LINE_LENGTH;c++)

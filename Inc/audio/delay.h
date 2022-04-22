@@ -20,5 +20,7 @@ void initDelay(DelayDataType*data);
 
 int16_t delayLineProcessSample(int16_t sampleIn,DelayDataType*data);
 
+DelayDataType * getDelayData();
+
 
 #endif
