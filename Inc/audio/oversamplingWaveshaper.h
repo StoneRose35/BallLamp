@@ -6,10 +6,9 @@
 
 
 typedef struct {
+    int16_t oldValue;
     WaveShaperDataType waveshaper;
-    SecondOrderIirFilterType oversamplingFilter1;
-    SecondOrderIirFilterType oversamplingFilter2;
-    SecondOrderIirFilterType oversamplingFilter3;
+    SecondOrderIirFilterType oversamplingFilter;
 
 } OversamplingWaveshaperDataType;
 
