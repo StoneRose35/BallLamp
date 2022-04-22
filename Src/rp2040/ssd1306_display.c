@@ -1,7 +1,7 @@
 /**
  * @file ssd1306_display.c
  * @author philipp fuerholz
- * @brief driver for a 120*64 oled display driven by a ssd1306 interface using 4-pin spi
+ * @brief driver for a 128*64 oled display driven by a ssd1306 interface using 4-pin spi
  * @version 0.1
  * @date 2022-03-10
  * 
@@ -42,10 +42,10 @@ void initSsd1306Display()
     *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
     waitSysticks(1);
     // reset low
-    *(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
+    //*(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
     waitSysticks(1);
     // reset high
-    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
+    //*(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
     waitSysticks(1);
 
     // send display on command
@@ -108,6 +108,54 @@ void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint8_t arrayL
         *SSPDR = *(arr + c);
         while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
     }
+}
+
+/**
+ * @brief displays an image defines as a row-first array
+ * 
+ * @param px x value of the top left position (0 to 127)
+ * @param py y values of the top left position (0 to 7)
+ * @param sx x size of the image
+ * @param sy y size of the image in pages (8 bit)
+ * @param img the image data, the number of bytes must be sx*sy
+ */
+void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * img)
+{
+
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+
+    // set vertical addressing mode
+    *SSPDR = 0x20;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    *SSPDR = 0x02;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+
+    // set column address
+    *SSPDR = 0x21;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    *SSPDR =px;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );    
+    *SSPDR =px+sx;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );  
+
+    // set page address
+    *SSPDR = 0x22;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    *SSPDR =py;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );    
+    *SSPDR =py+sy;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );        
+
+    uint16_t c=0;
+    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    while(c<sx*sy)
+    {
+        *SSPDR = *(img + c);
+        c++;
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    }
+
+    setCursor(py,px);
 }
 
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)

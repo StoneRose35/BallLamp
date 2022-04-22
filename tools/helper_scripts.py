@@ -24,6 +24,23 @@ static const struct ST7735ImageStruct {0}_streamimg = {{
 #endif
 """
 
+c_template_bw = """
+#ifndef _{4}_H_
+#define _{4}_H_
+#include "graphics/bwgraphics.h"
+
+static uint8_t {0}_bwdata[]= {{
+{1}
+}};
+
+static const struct BwImageStruct {0}_streamimg = {{
+    .data = {0}_bwdata,
+    .sx = {2},
+    .sy = {3}
+}};
+#endif
+"""
+
 c_template_font = """
 static const uint8_t {}[{}][{}]={{
 {}
@@ -50,6 +67,12 @@ def el_to_byte(el):
     msb, lsb = st7735_encode_color(rval, gval, bval)
     return hex(msb) + ", " + hex(lsb)
 
+def el_to_bw_pixels(el):
+    if el[0] > 0 or el[1] > 0 or el[2] > 0:
+        return 1
+    else:
+        return 0
+    
 
 def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
     img = mpimg.imread(fname)
@@ -67,6 +90,33 @@ def imageToCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
         bytearray += colbytes
 
     fcontent = c_template.format(imgname, bytearray, int(img.shape[0]), int(img.shape[1]),imgname.upper())
+    fp.write(fcontent)
+    fp.close()
+    
+def imageToBWCStream(fname="Rheinisch-Kaltblut-Gespann.png",outfolder=""):
+    img = mpimg.imread(fname)
+    imgname = fname.split(os.path.sep)[-1].split(".")[0]
+    if (len(outfolder) > 0):
+        fp = open(os.path.join(outfolder, imgname + ".h"), "wt")
+    else:
+        fp = open(imgname + ".h", "wt")
+    bytearray = ""
+    c = 0
+    rownr_old=0
+    nrows = int(img.shape[0]/8)
+    pixeldata = np.zeros(int(img.shape[0]/8)*img.shape[1],dtype="uint8")
+    for row in range(img.shape[0]):
+        rownr = int(np.floor(c/8))
+        bwbits = list(map(el_to_bw_pixels, img[row]))
+
+        bitpos = c - rownr*8
+        for p in range(img.shape[1]):
+            idx = p*nrows + rownr
+            pixeldata[idx] |= (bwbits[p] << bitpos)
+        c += 1
+    for el in pixeldata:
+        bytearray += hex(el) + ", "
+    fcontent = c_template_bw.format(imgname, bytearray, int(img.shape[1]), int(img.shape[0]),imgname.upper())
     fp.write(fcontent)
     fp.close()
 
@@ -169,10 +219,11 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-calcSysFreqs",help="calculate oscillator frequencies",action="store_true")
     parser.add_argument("-generateAssets",help="generate images and font asset headers",action="store_true")
-    parser.add_argument("-convertImg",help="convert specific image to c header")
+    parser.add_argument("-convertImg",help="convert specific image to c header as 16bit color image (for ST7735)")
+    parser.add_argument("-convertBwImg",help="convert specific image to c header as black/white image (for SSD1306)")
 
     args = parser.parse_args()
-    if args.calcSysFreqs is False and args.generateAssets is False and args.convertImg is None:
+    if args.calcSysFreqs is False and args.generateAssets is False and args.convertImg is None and args.convertBwImg is None:
         parser.print_help()
     else:
         if args.calcSysFreqs is True:
@@ -189,7 +240,11 @@ if __name__ == "__main__":
             # dircontent = os.listdir(asset_path)
             full_path = args.convertImg # os.path.join(asset_path,args.convertImg)
             if os.path.isfile(full_path) and full_path.lower().endswith("png"):
-                imageToCStream(full_path, "Inc/images")
+                imageToCStream(full_path, "../Inc/images")
+        elif args.convertBwImg is not None:
+            full_path = args.convertBwImg # os.path.join(asset_path,args.convertImg)
+            if os.path.isfile(full_path) and full_path.lower().endswith("png"):
+                imageToBWCStream(full_path, "../Inc/images")
 
 
 
