@@ -23,7 +23,8 @@ void flash_range_program(uint32_t addr, const uint8_t *data, uint32_t count);
 typedef  float (*f_proc_fct)(float a,float b);
 typedef float(*f_proc_fct_conv)(uint32_t a);
 typedef float(*f_proc_single)(float a);
-
+typedef int32_t(*f_f2i_conv)(float a);
+typedef float(*f_i2f_conv)(int32_t a);
 void initFloatFunctions();
 
 float fadd(float a,float b);
@@ -36,6 +37,9 @@ float fsin(float a);
 float ftan(float a);
 float fexp(float a);
 float fln(float a);
+int32_t float2int(float a);
+float int2float(int32_t a);
+
 char * getCopyright();
 void getBootRomInfo(BootRomInfoType** bootRomInfo);
 

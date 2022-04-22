@@ -12,6 +12,8 @@ volatile f_proc_single _ftan=0;
 volatile f_proc_single _fexp=0;
 volatile f_proc_single _fln=0;
 volatile f_proc_fct_conv uint32ToFloat=0;
+volatile f_f2i_conv _f2i;
+volatile f_i2f_conv _i2f;
 
 void initFloatFunctions()
 {
@@ -179,6 +181,24 @@ float fln(float a)
         initFloatFunctions();
     }
     return _fln(a);
+}
+
+int32_t float2int(float a)
+{
+    if (_f2i == 0)
+    {
+        initFloatFunctions();
+    }
+    return _f2i(a);
+}
+
+float int2float(int32_t a)
+{
+    if (_i2f == 0)
+    {
+        initFloatFunctions();
+    }
+    return _i2f(a);
 }
 
 char * getCopyright()
