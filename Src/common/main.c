@@ -215,7 +215,7 @@ volatile int16_t avgOut=0,avgOutOld=0,avgIn=0,avgInOld=0;
 uint16_t bufferCnt=0;
 volatile uint8_t fxProgramIdx = 1;
 volatile uint32_t ticStart,ticEnd,cpuLoad;
-
+const uint8_t switchesPins[2]={22,23};
 #define UI_UPDATE_IN_SAMPLE_BUFFERS 300
 #define AVERAGING_LOWPASS_CUTOFF 10
 
@@ -274,7 +274,7 @@ int main(void)
 	initI2S();
 	//enableAudioEngine(); // i2s adc and dac
 	initDebugLed();
-	initRotaryEncoder();
+	initRotaryEncoder(switchesPins,2);
 
 
 	/*

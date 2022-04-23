@@ -99,7 +99,7 @@ void ssd1306ClearDisplay()
  * @param arr the data array (lsb is on top)
  * @param arrayLength the length of the array
  */
-void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint8_t arrayLength)
+void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint16_t arrayLength)
 {
     setCursor(row,col);
     *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data

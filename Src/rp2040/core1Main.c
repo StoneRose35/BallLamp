@@ -5,6 +5,7 @@
 #include "ssd1306_display.h"
 #include "audio/firFilter.h"
 #include "audio/fxprogram/fxProgram.h"
+#include "pipicofx/pipicofxui.h"
 #include "adc.h"
 #include "rotaryEncoder.h"
 #include "i2s.h"
@@ -20,7 +21,9 @@ int16_t avgOldOutBfr;
 int16_t avgOldInBfr;
 uint8_t cpuLoadBfr;
 uint8_t bargraphBuffer[128];
-uint8_t switchValOld=0, switchVal=0;
+uint8_t switchValsOld[2]={0,0};
+uint8_t switchVals[2]={0,0};
+PiPicoFxUiType uiControllerData;
 uint16_t adcChannelOld=0,adcChannel=0;
 #define UI_DMIN 1
 
@@ -93,6 +96,7 @@ void core1Main()
             avgOldInBfr = avgInOld >> 8;
             avgOldOutBfr = avgOutOld >> 8;
             cpuLoadBfr = (cpuLoad >> 1);
+            /*
             for (uint8_t c=0;c<128;c++)
             {
                 if (c<=avgOldInBfr)
@@ -131,6 +135,7 @@ void core1Main()
                 }
             }
             ssd1306DisplayByteArray(3,0,bargraphBuffer,128);
+            */
 
 /*
             if ((audioState & (1 << AUDIO_STATE_BUFFER_UNDERRUN)) != 0)
@@ -144,10 +149,11 @@ void core1Main()
 */
             task &= ~(1 << TASK_UPDATE_AUDIO_UI);
         }
-        switchVal = getSwitchValue();
-        if (switchVal == 0 && switchValOld == 1)
+        switchVals[0] = getSwitchValue(0);
+        if (switchVals[0] == 0 && switchValsOld[0] == 1)
         {
-            fxProgramIdx++;
+            button1Callback(&uiControllerData);
+            /*fxProgramIdx++;
             if(fxProgramIdx == N_FX_PROGRAMS)
             {
                 fxProgramIdx = 0;
@@ -157,8 +163,16 @@ void core1Main()
             ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
             ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
             ssd1306WriteText("                   ",0,7);
+            */
         }
-        switchValOld = getSwitchValue();
+        switchValsOld[0] = getSwitchValue(0);
+
+                switchVals[0] = getSwitchValue(0);
+        if (switchVals[1] == 0 && switchValsOld[1] == 1)
+        {
+            button2Callback(&uiControllerData);
+        }
+        switchValsOld[1] = getSwitchValue(1);
         /*
         if ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) == (1 << SIO_FIFO_ST_VLD_LSB))
         {

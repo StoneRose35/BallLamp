@@ -17,19 +17,34 @@
 typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
 typedef void(*setupCallback)(void*);
+typedef void*(*getParameterValueFct)(void*);
+typedef char*(*getParameterDisplayFct)(void*);
+
+typedef struct {
+    const char name[16];
+    uint8_t control; // 0-2: Potentiometers, 255: no control binding
+    int16_t rawValue;
+    int16_t maxValue;
+    int16_t minValue;
+    getParameterValueFct getParameterValue; // returns the converted parameter value, data type depends on the implementation
+    getParameterDisplayFct getParameterDisplay; // returns the display value as a string of a Parameter
+} FxProgramParameterType;
 
 typedef struct {
     const char name[24];
     const char param1Name[16];
     const char param2Name[16];
     const char param3Name[16];    
+    FxProgramParameterType parameters[8];
     paramChangeCallback param1Callback;
     paramChangeCallback param2Callback;
     paramChangeCallback param3Callback;
     processSampleCallback processSample;
     setupCallback setup;
+    uint8_t nParameters;
     void * data;
 } FxProgramType;
+
 
 typedef struct {
     int16_t highpassCutoff;

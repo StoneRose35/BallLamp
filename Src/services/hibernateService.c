@@ -16,7 +16,7 @@ uint8_t initHibernateService()
 {
     hibernateServiceData.lastActionTick = getTickValue();
     hibernateServiceData.lastEncoderVal = getEncoderValue();
-    hibernateServiceData.lastSwitchVal = getSwitchValue();
+    hibernateServiceData.lastSwitchVal = getSwitchValue(0);
     hibernateServiceData.lastBrightnessValue = getBrightness();
     return 0;
 }
@@ -35,12 +35,12 @@ uint8_t  hibernateServiceLoop()
     }
     else if (hibernateServiceData.hibernateState == 1)
     {
-        if (getSwitchValue() != hibernateServiceData.lastSwitchVal || getEncoderValue() != hibernateServiceData.lastEncoderVal)
+        if (getSwitchValue(0) != hibernateServiceData.lastSwitchVal || getEncoderValue() != hibernateServiceData.lastEncoderVal)
         {
             displayOn();
             setBrightness(hibernateServiceData.lastBrightnessValue);
             hibernateServiceData.hibernateState = HIBERNATE_AWAKE;
-            hibernateServiceData.lastSwitchVal = getSwitchValue();
+            hibernateServiceData.lastSwitchVal = getSwitchValue(0);
             hibernateServiceData.lastEncoderVal = getEncoderValue();
             return HIBERNATE_WAKEUP;
         }

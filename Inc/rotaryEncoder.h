@@ -36,11 +36,11 @@
 #ifdef STM32
 #endif
 
-void initRotaryEncoder();
+void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches);
 
 uint32_t getEncoderValue();
 
-uint8_t getSwitchValue();
+uint8_t getSwitchValue(uint8_t);
 
 #endif
 
