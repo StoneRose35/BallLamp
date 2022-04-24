@@ -195,6 +195,7 @@
 #include "multicore.h"
 #include "core1Main.h"
 #include "audio/fxprogram/fxProgram.h"
+#include "pipicofx/pipicofxui.h"
 
 volatile uint32_t task=0;
 volatile uint8_t context;
@@ -286,11 +287,14 @@ int main(void)
 	initRoundRobinReading(); // internal adc for reading parameters
 
 	//printf("Microsys v1.0 running\r\n");
+	piPicoFxUiSetup();
 	ssd1306ClearDisplay();
 	for (uint8_t c=0;c<N_FX_PROGRAMS;c++)
 	{
 		fxPrograms[c]->setup(fxPrograms[c]->data);
 	}
+	drawUi(&piPicoUiController);
+	/*
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
 	ssd1306WriteText("P1:",0,4);
 	ssd1306WriteText("P2:",0,5);
@@ -298,6 +302,7 @@ int main(void)
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,4);
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
+	*/
 	ticEnd=0;
 	ticStart=0;
 	setNote(64);
@@ -340,7 +345,7 @@ int main(void)
 				}
 				avgInOld = ((AVERAGING_LOWPASS_CUTOFF*avgIn) >> 15) + (((32767-AVERAGING_LOWPASS_CUTOFF)*avgInOld) >> 15);
 
-				inputSample = fxPrograms[fxProgramIdx]->processSample(inputSample,fxPrograms[fxProgramIdx]->data);
+				inputSample = piPicoUiController.currentProgram->processSample(inputSample,piPicoUiController.currentProgram->data);//fxPrograms[fxProgramIdx]->processSample(inputSample,fxPrograms[fxProgramIdx]->data);
 
 
 				if (inputSample < 0)

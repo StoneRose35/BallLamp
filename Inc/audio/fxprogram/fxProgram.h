@@ -10,6 +10,9 @@
 #include "audio/bitcrusher.h"
 #include "audio/delay.h"
 
+#define PARAMETER_NAME_MAXLEN 16
+#define FXPROGRAM_NAME_MAXLEN 24
+#define FXPROGRAM_MAX_PARAMETERS 8
 #define N_FX_PROGRAMS 6
 
 
@@ -18,27 +21,22 @@ typedef int16_t(*processSampleCallback)(int16_t,void*);
 typedef void(*paramChangeCallback)(uint16_t,void*);
 typedef void(*setupCallback)(void*);
 typedef void*(*getParameterValueFct)(void*);
-typedef char*(*getParameterDisplayFct)(void*);
+typedef void(*getParameterDisplayFct)(void*,char*);
 
 typedef struct {
-    const char name[16];
+    const char name[PARAMETER_NAME_MAXLEN];
     uint8_t control; // 0-2: Potentiometers, 255: no control binding
     int16_t rawValue;
     int16_t maxValue;
     int16_t minValue;
     getParameterValueFct getParameterValue; // returns the converted parameter value, data type depends on the implementation
     getParameterDisplayFct getParameterDisplay; // returns the display value as a string of a Parameter
+    paramChangeCallback setParameter; // sets the parameter in a meaningful way in the individual program
 } FxProgramParameterType;
 
 typedef struct {
-    const char name[24];
-    const char param1Name[16];
-    const char param2Name[16];
-    const char param3Name[16];    
-    FxProgramParameterType parameters[8];
-    paramChangeCallback param1Callback;
-    paramChangeCallback param2Callback;
-    paramChangeCallback param3Callback;
+    const char name[FXPROGRAM_NAME_MAXLEN];
+    FxProgramParameterType parameters[FXPROGRAM_MAX_PARAMETERS];
     processSampleCallback processSample;
     setupCallback setup;
     uint8_t nParameters;
@@ -103,6 +101,7 @@ FxProgramType fxProgram3;
 FxProgramType fxProgram4;
 FxProgramType fxProgram5;
 FxProgramType fxProgram6;
+
 
 FxProgramType * fxPrograms[N_FX_PROGRAMS];
 

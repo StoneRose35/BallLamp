@@ -56,36 +56,36 @@ void core1Main()
             adcChannel = getChannel0Value();
             if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param1Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob0Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
             else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param1Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob0Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
 
             adcChannel = getChannel1Value();
             if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param2Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob1Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
             else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param2Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob1Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
 
             adcChannel = getChannel2Value();
             if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param3Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob2Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
             else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
             {
-                fxPrograms[fxProgramIdx]->param3Callback(adcChannel,fxPrograms[fxProgramIdx]->data);
+                knob2Callback(adcChannel,piPicoUiController.currentProgram->data);
                 adcChannelOld=adcChannel;
             }
             task &= ~(1 << TASK_UPDATE_POTENTIOMETER_VALUES);

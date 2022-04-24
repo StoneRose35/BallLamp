@@ -21,7 +21,6 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
 {
     uint8_t bargraphBuffer[128];
     char paramValueBfr[16];
-    char * paramValueBfrPtr = paramValueBfr;
     BwImageType imgBfr;
     float fValue,fMaxValue,fMinValue;
     float cx,cy,px,py;
@@ -84,8 +83,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);
             ssd1306DisplayByteArray(2,13,imgBfr.data,510);
-            paramValueBfrPtr = data->currentParameter->getParameterDisplay(data->currentParameter);
-            ssd1306WriteText(paramValueBfrPtr,0,7);
+            data->currentParameter->getParameterDisplay(data->currentParameter,paramValueBfr);
+            ssd1306WriteText(paramValueBfr,0,7);
             break;
         case 2:
             for (uint16_t c=0;c<510;c++)
@@ -103,7 +102,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);   
             ssd1306DisplayByteArray(2,13,imgBfr.data,510);   
-            ssd1306WriteText(paramValueBfrPtr,0,7);
+            ssd1306WriteText(paramValueBfr,0,7);
             break;
     }
 }
@@ -115,6 +114,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
  */
 void drawUi(PiPicoFxUiType*data)
 {
+    uint8_t paramIdxesDrawn[3]={0,0,0};
     switch(data->displayLevel)
     {
         case 0:
@@ -123,20 +123,33 @@ void drawUi(PiPicoFxUiType*data)
             {
                 ssd1306DisplayByteArray(0,122,locksymbol,5);
             }
-            for (uint8_t c=0;c<8;c++)
+            for (uint8_t c=0;c<data->currentProgram->nParameters;c++)
             {
                 if (data->currentProgram->parameters[c].control == 0)
                 {
+                    ssd1306WriteText("P1:",0,4);
                     ssd1306WriteText(data->currentProgram->parameters[c].name,3,4);
+                    paramIdxesDrawn[0]=1;
                 }
                 if (data->currentProgram->parameters[c].control == 1)
                 {
+                    ssd1306WriteText("P2:",0,5);
                     ssd1306WriteText(data->currentProgram->parameters[c].name,3,5);
+                    paramIdxesDrawn[1]=1;
                 }
                 if (data->currentProgram->parameters[c].control == 2)
                 {
+                    ssd1306WriteText("P3:",0,6);
                     ssd1306WriteText(data->currentProgram->parameters[c].name,3,6);
+                    paramIdxesDrawn[2]=1;
                 }                
+            }
+            for (uint8_t c=0;c<3;c++)
+            {
+                if (paramIdxesDrawn[c]==0)
+                {
+                    ssd1306WriteText("                   ",0,c+4);
+                }
             }
             ssd1306WriteText("                   ",0,7);
             break;
@@ -151,46 +164,34 @@ void drawUi(PiPicoFxUiType*data)
     }
 }
 
-void knob0Callback(uint16_t val,PiPicoFxUiType*data)
+inline void knobCallback(uint16_t val,PiPicoFxUiType*data,uint8_t control)
 {
     if (data->locked == 0)
     {
-        for (uint8_t c=0;c<8;c++)
+        for (uint8_t c=0;c<data->currentProgram->nParameters;c++)
         {
-            if (data->currentProgram->parameters[c].control==0)
+            if (data->currentProgram->parameters[c].control==control)
             {
+                data->currentProgram->parameters[c].setParameter(val,data->currentProgram->data);
                 data->currentProgram->parameters[c].rawValue = val;
             }
         }  
     } 
+}
+
+void knob0Callback(uint16_t val,PiPicoFxUiType*data)
+{
+    knobCallback(val,data,0);
 }
 
 void knob1Callback(uint16_t val,PiPicoFxUiType*data)
 {
-    if (data->locked == 0)
-    {
-        for (uint8_t c=0;c<8;c++)
-        {
-            if (data->currentProgram->parameters[c].control==1)
-            {
-                data->currentProgram->parameters[c].rawValue = val;
-            }
-        } 
-    }  
+    knobCallback(val,data,1);
 }
 
 void knob2Callback(uint16_t val,PiPicoFxUiType*data)
 {
-    if (data->locked == 0)
-    {
-        for (uint8_t c=0;c<8;c++)
-        {
-            if (data->currentProgram->parameters[c].control==2)
-            {
-                data->currentProgram->parameters[c].rawValue = val;
-            }
-        }  
-    } 
+    knobCallback(val,data,2);
 }
 
 void button1Callback(PiPicoFxUiType*data)
@@ -280,4 +281,19 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
         }
         data->oldEncoderValue=encoderValue;
     }
+}
+
+
+PiPicoFxUiType piPicoUiController;
+
+void piPicoFxUiSetup()
+{
+    piPicoUiController.currentProgram=(FxProgramType*)fxPrograms;
+    piPicoUiController.currentProgramIdx=0;
+    piPicoUiController.currentParameter=fxPrograms[piPicoUiController.currentProgramIdx]->parameters;
+    piPicoUiController.currentParameterIdx=0;
+    piPicoUiController.displayLevel=0;
+    piPicoUiController.locked=0;
+    piPicoUiController.oldEncoderValue= 0x7FFFFFFF;
+    piPicoUiController.oldParamValue=0;
 }

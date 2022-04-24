@@ -214,6 +214,127 @@ void UInt16ToChar(uint16_t nr, char * out)
 	out[charpos]=0;
 }
 
+void decimalInt16ToChar(int16_t nr,char * out,uint8_t decimalPlace)
+{
+	uint16_t pos=10000;
+	uint16_t cntr=0,charpos=0;
+	uint16_t firstDigit = 0;
+	uint16_t interm_nr;
+	uint8_t c2;
+	if (nr==0)
+	{
+		out[charpos++]=0x30;
+	}
+	else
+	{
+		if (((uint16_t)nr & 0x8000) != 0)
+		{
+			interm_nr = (nr ^ 0xFFFF) + 1;
+			//nr++; 
+			out[charpos++] = '-';
+		}
+		else
+		{
+			interm_nr = nr;
+		}
+		while (pos > 0)
+		{
+			cntr=0;
+			while (interm_nr >= pos)
+			{
+				interm_nr -= pos;
+				cntr++;
+			}
+			if (cntr > 0 || firstDigit > 0)
+			{
+				out[charpos++] = cntr + 0x30;
+				firstDigit = 1;
+			}
+			pos /= 10;
+		}
+	}
+	out[charpos]=0;
+	if (((uint16_t)nr & 0x8000) != 0)
+	{
+		// have to add least one zero before the decimal separator
+		if(charpos < decimalPlace+3)
+		{
+			// shift digits back
+			c2=charpos;
+			for(uint8_t c=charpos;c>0;c--)
+			{
+				out[c2+(decimalPlace-charpos)+3] = out[c2];
+				c2--;
+			}
+
+			// fill with zeros
+			for(uint8_t c=0;c<(decimalPlace-charpos)+3;c++)
+			{
+				if (c==1)
+				{
+					out[c+1] = '.';
+				}
+				else
+				{
+					out[c+1] = '0';
+				}
+			}
+		}
+		else
+		{
+			// shift one position back
+			c2=charpos;
+			for(uint8_t c=0;c<decimalPlace;c++)
+			{
+				out[c2+1] = out[c2];
+				c2--;
+			}
+			// put in decimal separator
+			out[charpos-decimalPlace]='.';
+		}
+	}
+	else
+	{
+		// have to add least one zero before the decimal separator
+		if(charpos < decimalPlace+2)
+		{
+			// shift digits back
+			c2=charpos;
+			for(uint8_t c=charpos;c>=0;c--)
+			{
+				out[c2+(decimalPlace-charpos)+2] = out[c2];
+				c2--;
+			}
+
+			// fill with zeros
+			for(uint8_t c=0;c<(decimalPlace-charpos)+2;c++)
+			{
+				if (c==1)
+				{
+					out[c+1] = '.';
+				}
+				else
+				{
+					out[c+1] = '0';
+				}
+			}
+		}
+		else
+		{
+			// shift one position back
+			c2=charpos;
+			for(uint8_t c=0;c<decimalPlace;c++)
+			{
+				out[c2+1] = out[c2];
+				c2--;
+			}
+			// put in decimal separator
+			out[charpos-decimalPlace]='.';
+		}
+	}
+
+}
+
 void Int16ToChar(int16_t nr, char * out)
 {
 	uint16_t pos=10000;

@@ -1,10 +1,11 @@
 #include <stdint.h>
 #include "audio/fxprogram/fxProgram.h"
 #include "ssd1306_display.h"
+#include "stringFunctions.h"
 
 #define P4_HIGHPASS 30000
 
-int16_t fxProgram4processSample(int16_t sampleIn,void*data)
+static int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 {
     int32_t out;
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
@@ -60,36 +61,60 @@ int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 }
 
 
-void fxProgram4Param1Callback(uint16_t val,void*data) // gain
+static void fxProgram4Param1Callback(uint16_t val,void*data) // gain
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     pData->gainStage.gain = pData->gainStage.gain + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val << 2) + 0x3F) - pData->gainStage.gain)) >> 8);
     val >>= 9;
     val += 1;
-    pData->nWaveshapers = val;
+    //pData->nWaveshapers = val;
 }
 
-void fxProgram4Param2Callback(uint16_t val,void*data) // offset
+static void fxProgram4Param1Display(void*data,char*res)
+{
+    FxProgramType * fData = (FxProgramType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    fixedPointInt16ToChar(res,pData->gainStage.gain,8);
+}
+
+
+static void fxProgram4Param2Callback(uint16_t val,void*data) // offset
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     //pData->gainStage.offset = (val << 4) - 0x7FFF; 
     pData->gainStage.offset = pData->gainStage.offset + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val - 0x7FF) << 4)  - pData->gainStage.offset)) >> 8);
 }
 
-
-void fxProgram4Param3Callback(uint16_t val,void*data) // choose cab sim filters
+static void fxProgram4Param2Display(void*data,char*res)
 {
-    uint8_t cabSimTypeOld;
+    FxProgramType * fData = (FxProgramType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    Int16ToChar(pData->gainStage.offset,res);
+}
+
+
+static void fxProgram4Param3Callback(uint16_t val,void*data) // choose cab sim filters
+{
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    cabSimTypeOld = pData->cabSimType;
     pData->cabSimType = (val >> 9) & 7;
-    if (cabSimTypeOld != pData->cabSimType)
+    //if (cabSimTypeOld != pData->cabSimType)
+    //{
+    //    ssd1306WriteText(pData->cabNames[pData->cabSimType],0,7);
+    //}
+}
+
+static void fxProgram4Param3Display(void*data,char*res)
+{
+    FxProgramType * fData = (FxProgramType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    for(uint8_t c=0;c<PARAMETER_NAME_MAXLEN;c++)
     {
-        ssd1306WriteText(pData->cabNames[pData->cabSimType],0,7);
+        *(res+c)=*(pData->cabNames[pData->cabSimType]+c);
     }
 }
 
-void fxProgram4Setup(void*data)
+
+static void fxProgram4Setup(void*data)
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperDefaultOverdrive);
@@ -191,13 +216,53 @@ FxProgram4DataType fxProgram4data = {
 
 FxProgramType fxProgram4 = {
     .name = "Amp Model 2        ",
+    .nParameters=3,
+    .parameters = {
+        {
+            .name = "Gain           ",
+            .control=0,
+            .minValue=0,
+            .maxValue=32767,
+            .rawValue=0,
+            .getParameterDisplay=&fxProgram4Param1Display,
+            .getParameterValue=0,
+            .setParameter=&fxProgram4Param1Callback
+        },
+        {
+            .name = "DC-Offset      ",
+            .control=0,
+            .minValue=0,
+            .maxValue=32767,
+            .rawValue=0,
+            .getParameterDisplay=&fxProgram4Param2Display,
+            .getParameterValue=0,
+            .setParameter=&fxProgram4Param2Callback
+        },   
+        {
+            .name = "Cab Type       ",
+            .control=0,
+            .minValue=0,
+            .maxValue=32767,
+            .rawValue=0,
+            .getParameterDisplay=&fxProgram4Param3Display,
+            .getParameterValue=0,
+            .setParameter=&fxProgram4Param3Callback
+        }     
+    },
     .processSample = &fxProgram4processSample,
-    .param1Callback = &fxProgram4Param1Callback,
-    .param1Name = "Gain           ",
-    .param2Callback = &fxProgram4Param2Callback,
-    .param2Name = "DC-Offset      ",
-    .param3Callback = &fxProgram4Param3Callback,
-    .param3Name = "Cab Type       ",
     .setup = &fxProgram4Setup,
     .data = (void*)&fxProgram4data
 };
+
+/*
+        {
+            .name = "Frequency      ",
+            .control=0,
+            .minValue=0,
+            .maxValue=32767,
+            .rawValue=0,
+            .getParameterDisplay=&fxProgram2Param1Display,
+            .getParameterValue=0,
+            .setParameter=&fxProgram2Param1Callback
+        },
+        */
