@@ -42,11 +42,22 @@ void initSsd1306Display()
     *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
     waitSysticks(1);
     // reset low
-    //*(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
+    *(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
     waitSysticks(1);
     // reset high
-    //*(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
+    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
     waitSysticks(1);
+
+    // manually set display offset and  startline since these two values turned out to be wrong after reset
+    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *SSPDR = 0x40; // set startline 0
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    // set displayoffset 0
+    *SSPDR = 0xD3;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+    *SSPDR = 0x0;
+    while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
+
 
     // send display on command
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);

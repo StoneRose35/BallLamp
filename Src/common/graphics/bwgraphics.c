@@ -1,5 +1,5 @@
 #include "graphics/bwgraphics.h"
-
+#include "stdlib.h"
 #ifdef RP2040_FEATHER
 #include "romfunc.h"
 #else
@@ -20,22 +20,24 @@ float int2float(int32_t a)
 }
 #endif
 
-void drawLine(float spx,float spy,float epx, float epy,BwImageType* img)
+
+void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 {
-	float l;
+	float l,fc;
 	int32_t il;
     int32_t x,y;
-	l = 1.2*fsqrt((epy-spy)*(epy-spy) - (epx-spx)*(epx-spx));
+	l = 1.2f*fsqrt((epy-spy)*(epy-spy) - (epx-spx)*(epx-spx));
 	il = float2int(l);
-	for(uint16_t c=0;c<il;c++)
+	for(uint32_t c=0;c<il;c++)
 	{
-		x = float2int(spx + (c/l)*(epx-spx));
-		y = float2int(spy + (c/l)*(epy-spy));
+		fc = int2float(c);
+		x = float2int(spx + (fc/l)*(epx-spx));
+		y = float2int(spy + (fc/l)*(epy-spy));
 		setPixel(x,y,img);
 	}
 }
 
-void drawOval(float ax,float ay,float cx,float cy,BwImageType*img)
+void drawOval(float ax,float ay,float cx,float cy,BwImageBufferType*img)
 {
 	float fix,fiy,dr;
 	for(int32_t ix=0;ix<img->sx;ix++)
@@ -53,7 +55,7 @@ void drawOval(float ax,float ay,float cx,float cy,BwImageType*img)
 	}
 }
 
-void clearOval(float ax,float ay,float cx,float cy,BwImageType*img)
+void clearOval(float ax,float ay,float cx,float cy,BwImageBufferType*img)
 {
 	float fix,fiy,dr;
 	for(int32_t ix=0;ix<img->sx;ix++)
@@ -71,7 +73,7 @@ void clearOval(float ax,float ay,float cx,float cy,BwImageType*img)
 	}
 }
 
-void clearSquare(float spx, float spy,float epx, float epy,BwImageType* img)
+void clearSquare(float spx, float spy,float epx, float epy,BwImageBufferType* img)
 {
 	uint32_t dx,dy;
 	dx=(uint32_t)float2int(epx-spx);
@@ -88,7 +90,7 @@ void clearSquare(float spx, float spy,float epx, float epy,BwImageType* img)
 	}
 }
 
-void drawSquare(float spx, float spy,float epx, float epy,BwImageType* img)
+void drawSquare(float spx, float spy,float epx, float epy,BwImageBufferType* img)
 {
 	uint32_t dx,dy;
 	dx=(uint32_t)float2int(epx-spx);
@@ -105,14 +107,14 @@ void drawSquare(float spx, float spy,float epx, float epy,BwImageType* img)
 	}
 }
 
-void setPixel(int32_t px,int32_t py,BwImageType*img)
+void setPixel(int32_t px,int32_t py,BwImageBufferType*img)
 {
 	int32_t bitindex = px*(img->sy-1) + py;
 	int32_t pageIdx = bitindex >> 3;
 	*(img->data + pageIdx) |= (1 << (bitindex & 0x7));
 }
 
-void clearPixel(int32_t px,int32_t py,BwImageType*img)
+void clearPixel(int32_t px,int32_t py,BwImageBufferType*img)
 {
 	int32_t bitindex = px*(img->sy-1) + py;
 	int32_t pageIdx = bitindex >> 3;

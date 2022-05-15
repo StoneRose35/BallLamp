@@ -238,17 +238,6 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-
-	startCore1(&core1Main);
-	// sync with core 1
-	
-	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
-	core1Handshake=*SIO_FIFO_RD;
-	while (core1Handshake != 0xcafeface)
-	{
-		DebugLedOn();
-		core1Handshake = *SIO_FIFO_RD;
-	}
 	
 
 	initUsbPll();
@@ -303,6 +292,17 @@ int main(void)
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
 	ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
 	*/
+
+	startCore1(&core1Main);
+	// sync with core 1
+	while ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) != (1 << SIO_FIFO_ST_VLD_LSB));
+	core1Handshake=*SIO_FIFO_RD;
+	while (core1Handshake != 0xcafeface)
+	{
+		DebugLedOn();
+		core1Handshake = *SIO_FIFO_RD;
+	}
+
 	ticEnd=0;
 	ticStart=0;
 	setNote(64);

@@ -230,7 +230,7 @@ FxProgramType fxProgram4 = {
         },
         {
             .name = "DC-Offset      ",
-            .control=0,
+            .control=1,
             .minValue=0,
             .maxValue=32767,
             .rawValue=0,
@@ -240,7 +240,7 @@ FxProgramType fxProgram4 = {
         },   
         {
             .name = "Cab Type       ",
-            .control=0,
+            .control=2,
             .minValue=0,
             .maxValue=32767,
             .rawValue=0,

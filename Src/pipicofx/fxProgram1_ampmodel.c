@@ -129,7 +129,7 @@ FxProgramType fxProgram1 = {
         },
         {
             .name="Gain/Stages    ",
-            .control=0,
+            .control=1,
             .minValue=1,
             .maxValue=8,
             .rawValue=16384,
@@ -139,7 +139,7 @@ FxProgramType fxProgram1 = {
         },
         {
             .name="Delay Intensity",
-            .control=0,
+            .control=2,
             .minValue=0,
             .maxValue=32767,
             .rawValue=16384,

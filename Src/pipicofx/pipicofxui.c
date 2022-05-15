@@ -1,4 +1,4 @@
-
+#include "stdlib.h"
 #include "graphics/bwgraphics.h"
 #include "ssd1306_display.h"
 #include "pipicofx/pipicofxui.h"
@@ -21,7 +21,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
 {
     uint8_t bargraphBuffer[128];
     char paramValueBfr[16];
-    BwImageType imgBfr;
+    BwImageBufferType imgBfr;
     float fValue,fMaxValue,fMinValue;
     float cx,cy,px,py;
     switch(data->displayLevel)
@@ -68,6 +68,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             ssd1306DisplayByteArray(3,0,bargraphBuffer,128);
             break;
         case 1:
+            imgBfr.sx=pipicofx_param_1_scaled_streamimg.sx;
+            imgBfr.sy=pipicofx_param_1_scaled_streamimg.sy;
             for (uint16_t c=0;c<510;c++)
             {
                 imgBfr.data[c]=pipicofx_param_1_scaled_streamimg.data[c];
@@ -85,8 +87,11 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             ssd1306DisplayByteArray(2,13,imgBfr.data,510);
             data->currentParameter->getParameterDisplay(data->currentParameter,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
+
             break;
         case 2:
+            imgBfr.sx=pipicofx_param_2_scaled_streamimg.sx;
+            imgBfr.sy=pipicofx_param_2_scaled_streamimg.sy;
             for (uint16_t c=0;c<510;c++)
             {
                 imgBfr.data[c]=pipicofx_param_2_scaled_streamimg.data[c];
@@ -103,6 +108,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             drawLine(cx,cy,px,py,&imgBfr);   
             ssd1306DisplayByteArray(2,13,imgBfr.data,510);   
             ssd1306WriteText(paramValueBfr,0,7);
+
             break;
     }
 }
@@ -123,6 +129,9 @@ void drawUi(PiPicoFxUiType*data)
             {
                 ssd1306DisplayByteArray(0,122,locksymbol,5);
             }
+            ssd1306WriteText("                   ",0,1);
+            ssd1306WriteText("                   ",0,2);
+            ssd1306WriteText("                   ",0,3);
             for (uint8_t c=0;c<data->currentProgram->nParameters;c++)
             {
                 if (data->currentProgram->parameters[c].control == 0)
@@ -156,10 +165,23 @@ void drawUi(PiPicoFxUiType*data)
         case 1:
             ssd1306WriteText(data->currentProgram->name,0,0);
             ssd1306WriteText(data->currentParameter->name,0,1);
+            ssd1306WriteText("                   ",0,2);
+            ssd1306WriteText("                   ",0,3);
+            ssd1306WriteText("                   ",0,4);
+            ssd1306WriteText("                   ",0,5);
+            ssd1306WriteText("                   ",0,6);
+            ssd1306WriteText("                   ",0,7);
             break;
         case 2:
             ssd1306WriteText(data->currentProgram->name,0,0);
             ssd1306WriteText(data->currentParameter->name,0,1);
+            ssd1306WriteText("                   ",0,2);    
+            ssd1306WriteText("                   ",0,3);
+            ssd1306WriteText("                   ",0,4);
+            ssd1306WriteText("                   ",0,5);
+            ssd1306WriteText("                   ",0,6);
+            ssd1306WriteText("                   ",0,7);
+            break;
             break;
     }
 }
@@ -250,18 +272,26 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
             case 0: // UI Level 0 
                 //switch Programs
                 data->currentProgramIdx += diff;
-                if (data->currentProgramIdx == N_FX_PROGRAMS)
+                if (data->currentProgramIdx >= N_FX_PROGRAMS && diff > 0)
+                {
+                    data->currentProgramIdx = N_FX_PROGRAMS-1;
+                } 
+                else if (data->currentProgramIdx >= N_FX_PROGRAMS && diff < 0)
                 {
                     data->currentProgramIdx = 0;
-                } 
+                }
                 data->currentProgram = fxPrograms[data->currentProgramIdx];
                 drawUi(data);
                 break;
             case 1: // UI Level 1, change parameter
                 data->currentParameterIdx += diff;
-                if (data->currentParameterIdx == data->currentProgram->nParameters)
+                if (data->currentParameterIdx == data->currentProgram->nParameters && diff > 0)
                 {
-                    data->currentParameterIdx=0;
+                    data->currentParameterIdx=data->currentProgram->nParameters-1;
+                }
+                else if (data->currentParameterIdx == data->currentProgram->nParameters && diff < 0)
+                {
+                    data->currentParameterIdx = 0;
                 }
                 data->currentParameter = data->currentProgram->parameters + data->currentParameterIdx;
                 drawUi(data);
@@ -288,7 +318,7 @@ PiPicoFxUiType piPicoUiController;
 
 void piPicoFxUiSetup()
 {
-    piPicoUiController.currentProgram=(FxProgramType*)fxPrograms;
+    piPicoUiController.currentProgram=fxPrograms[0];
     piPicoUiController.currentProgramIdx=0;
     piPicoUiController.currentParameter=fxPrograms[piPicoUiController.currentProgramIdx]->parameters;
     piPicoUiController.currentParameterIdx=0;
@@ -296,4 +326,5 @@ void piPicoFxUiSetup()
     piPicoUiController.locked=0;
     piPicoUiController.oldEncoderValue= 0x7FFFFFFF;
     piPicoUiController.oldParamValue=0;
+
 }

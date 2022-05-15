@@ -38,18 +38,18 @@ void isr_io_irq_bank0_irq13()
     for (uint8_t c=0;c<8;c++)
     {
         switchIntAddress = (uint32_t*)(IO_BANK0_BASE + IO_BANK0_INTR0_OFFSET + (((4*switchPins[c]) & 0xFFE0) >> 3)); 
-        if ((*switchIntAddress & (1 << SWITCH_EDGE_HIGH)) == (1 << SWITCH_EDGE_HIGH))
+        if ((*switchIntAddress & (1 << (((4*switchPins[c]) & 0x1F)+3))) == (1 << (((4*switchPins[c]) & 0x1F)+3)))
         {
-            *switchIntAddress |= (1 << SWITCH_EDGE_HIGH);
+            *switchIntAddress |= (1 << (((4*switchPins[c]) & 0x1F)+3));
             if (oldTickSwitches[c] + ROTARY_ENCODER_DEBOUNCE < getTickValue())
             {
                 switchVals[c]=0;
                 oldTickSwitches[c]=getTickValue();
             }
         }
-        else if ((*switchIntAddress & (1 << SWITCH_EDGE_LOW)) == (1 << SWITCH_EDGE_LOW))
+        else if ((*switchIntAddress & (1 << (((4*switchPins[c]) & 0x1F)+2))) == (1 << (((4*switchPins[c]) & 0x1F)+2)))
         {
-            *switchIntAddress |= (1 << SWITCH_EDGE_LOW);
+            *switchIntAddress |= (1 << (((4*switchPins[c]) & 0x1F)+2));
             if (oldTickSwitches[c] + ROTARY_ENCODER_DEBOUNCE < getTickValue())
             {
                 switchVals[c]=1;
@@ -101,9 +101,10 @@ void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches)
     for (uint8_t c=0;c<nswitches;c++)
     {
         switchInteAddress = (uint32_t*)(IO_BANK0_BASE + IO_BANK0_PROC0_INTE0_OFFSET + (((4*pins[c]) & 0xFFE0) >> 3));
-        *switchInteAddress |= (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
+        *switchInteAddress |= (1 << (((4*pins[c]) & 0x1F)+2)) | (1 << (((4*pins[c]) & 0x1F)+3)); // (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
+        switchPins[c]=pins[c];
     }
-    *SWITCH_INTE |= (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
+    //*SWITCH_INTE |= (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
     *NVIC_ISER = (1 << 13);
 
     //read old tick values
