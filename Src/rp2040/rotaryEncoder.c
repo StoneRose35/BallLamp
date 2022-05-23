@@ -13,27 +13,41 @@ static volatile uint8_t switchVal;
 static volatile uint8_t switchPins[8];
 static volatile uint8_t switchVals[8];
 static volatile uint32_t oldTickSwitches[8];
+static volatile uint8_t lastTrigger;
 void isr_io_irq_bank0_irq13()
 {
     uint32_t* switchIntAddress;
     if ((*ENCODER_1_INTR & (1 << ENCODER_1_EDGE_HIGH)) == (1 << ENCODER_1_EDGE_HIGH))
     {
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_HIGH);
-        if(oldtickenc + ROTARY_ENCODER_DEBOUNCE < getTickValue())
+        if(lastTrigger == 1)
         {
             ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
-            oldtickenc = getTickValue();
+            //oldtickenc = getTickValue();
         }
+        lastTrigger = 0;
     }
     else if ((*ENCODER_1_INTR & (1 << ENCODER_1_EDGE_LOW)) == (1 << ENCODER_1_EDGE_LOW))
     {
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_LOW);
-        if(oldtickenc + ROTARY_ENCODER_DEBOUNCE < getTickValue())
+        if(lastTrigger==1)
         {
             ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
-            oldtickenc = getTickValue();
+            //oldtickenc = getTickValue();
         }
+        lastTrigger = 0;
     }
+    else if ((*ENCODER_2_INTR & (1 << ENCODER_2_EDGE_HIGH)) == (1 << ENCODER_2_EDGE_HIGH))
+    {
+        *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_HIGH);
+        lastTrigger = 1;
+    }
+    else if ((*ENCODER_2_INTR & (1 << ENCODER_2_EDGE_LOW)) == (1 << ENCODER_2_EDGE_LOW))
+    {
+        *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_LOW);
+        lastTrigger = 1;
+    }
+
 
     for (uint8_t c=0;c<8;c++)
     {
@@ -97,7 +111,8 @@ void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches)
     *SWITCH_PIN_CNTR = 5;
 
     // enable level change interrupt
-    *ENCODER_1_INTE |=  (1 << ENCODER_1_EDGE_LOW) | (1 << ENCODER_1_EDGE_HIGH);
+    *ENCODER_1_INTE |= (1 << ENCODER_1_EDGE_LOW) | (1 << ENCODER_1_EDGE_HIGH);
+    *ENCODER_2_INTE |= (1 << ENCODER_2_EDGE_LOW) | (1 << ENCODER_2_EDGE_HIGH);
     for (uint8_t c=0;c<nswitches;c++)
     {
         switchInteAddress = (uint32_t*)(IO_BANK0_BASE + IO_BANK0_PROC0_INTE0_OFFSET + (((4*pins[c]) & 0xFFE0) >> 3));
@@ -110,6 +125,7 @@ void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches)
     //read old tick values
     oldtickenc=getTickValue();
     oldtickswitch=getTickValue();
+    lastTrigger = 0;
 }
 
 uint32_t getEncoderValue()

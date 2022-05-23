@@ -4,7 +4,7 @@
 #ifdef RP2040_FEATHER
 
 #define ENCODER_1 7
-#define ENCODER_2 10
+#define ENCODER_2 6
 #define SWITCH 22
 #define BACKLIGHT 8
 
@@ -19,6 +19,11 @@
 
 #define ENCODER_2_PIN_CNTR  ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*ENCODER_2))
 #define ENCODER_2_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*ENCODER_2))
+#define ENCODER_2_INTE ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_PROC0_INTE0_OFFSET + (((4*ENCODER_2) & 0xFFE0) >> 3)))
+#define ENCODER_2_INTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_INTR0_OFFSET + (((4*ENCODER_2) & 0xFFE0) >> 3)))
+#define ENCODER_2_EDGE_LOW (((4*ENCODER_2) & 0x1F)+2)
+#define ENCODER_2_EDGE_HIGH (((4*ENCODER_2) & 0x1F)+3)
+
 
 #define ENCODER_2_IN ((volatile uint32_t*)(SIO_BASE + SIO_GPIO_IN_OFFSET))
 
