@@ -26,7 +26,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 	float l,fc;
 	int32_t il;
     int32_t x,y;
-	l = 1.2f*fsqrt((epy-spy)*(epy-spy) - (epx-spx)*(epx-spx));
+	l = fsqrt((epy-spy)*(epy-spy) + (epx-spx)*(epx-spx));
 	il = float2int(l);
 	for(uint32_t c=0;c<il;c++)
 	{

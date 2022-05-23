@@ -132,7 +132,7 @@ void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint16_t array
  */
 void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * img)
 {
-
+    //setCursor(py,px);
     *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
 
     // set vertical addressing mode
@@ -165,8 +165,6 @@ void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * i
         c++;
         while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
     }
-
-    setCursor(py,px);
 }
 
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)

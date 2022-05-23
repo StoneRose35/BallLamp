@@ -83,8 +83,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             py = 24.0f - fcos(fValue)*14.0f;
             cx = 51.0f;
             cy = 24.0f;
-            drawLine(cx,cy,px,py,&imgBfr);
-            ssd1306DisplayByteArray(2,13,imgBfr.data,510);
+            //drawLine(cx,cy,px,py,&imgBfr);
+            ssd1306DisplayImage(13,2,imgBfr.sx,imgBfr.sy>>3,imgBfr.data); //ssd1306DisplayByteArray(2,13,imgBfr.data,510);
             data->currentParameter->getParameterDisplay(data->currentProgram,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
 
@@ -106,7 +106,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cx = 51.0f;
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);   
-            ssd1306DisplayByteArray(2,13,imgBfr.data,510);   
+            //ssd1306DisplayByteArray(2,13,imgBfr.data,510);  
+            ssd1306DisplayImage(13,2,imgBfr.sx,imgBfr.sy>>3,imgBfr.data); 
             ssd1306WriteText(paramValueBfr,0,7);
 
             break;
