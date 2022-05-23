@@ -12,8 +12,8 @@ volatile f_proc_single _ftan=0;
 volatile f_proc_single _fexp=0;
 volatile f_proc_single _fln=0;
 volatile f_proc_fct_conv uint32ToFloat=0;
-volatile f_f2i_conv _f2i;
-volatile f_i2f_conv _i2f;
+volatile f_f2i_conv _f2i=0;
+volatile f_i2f_conv _i2f=0;
 
 void initFloatFunctions()
 {
@@ -28,6 +28,8 @@ void initFloatFunctions()
     _ftan = (f_proc_single)(uint32_t)(*(uint16_t*)(floatFunctionsTable+0x44));
     _fexp = (f_proc_single)(uint32_t)(*(uint16_t*)(floatFunctionsTable+0x4c));
     _fln = (f_proc_single)(uint32_t)(*(uint16_t*)(floatFunctionsTable+0x50));
+    _i2f = (f_i2f_conv)(uint32_t)(*(uint16_t*)(floatFunctionsTable+0x2c));
+    _f2i = (f_f2i_conv)(uint32_t)(*(uint16_t*)(floatFunctionsTable+0x1c));
 }
 
 
