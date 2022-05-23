@@ -85,7 +85,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);
             ssd1306DisplayByteArray(2,13,imgBfr.data,510);
-            data->currentParameter->getParameterDisplay(data->currentParameter,paramValueBfr);
+            data->currentParameter->getParameterDisplay(data->currentProgram,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
 
             break;
@@ -188,6 +188,7 @@ void drawUi(PiPicoFxUiType*data)
 
 inline void knobCallback(uint16_t val,PiPicoFxUiType*data,uint8_t control)
 {
+    int32_t intermVal;
     if (data->locked == 0)
     {
         for (uint8_t c=0;c<data->currentProgram->nParameters;c++)
@@ -195,7 +196,12 @@ inline void knobCallback(uint16_t val,PiPicoFxUiType*data,uint8_t control)
             if (data->currentProgram->parameters[c].control==control)
             {
                 data->currentProgram->parameters[c].setParameter(val,data->currentProgram->data);
-                data->currentProgram->parameters[c].rawValue = val;
+                
+                intermVal = val*(data->currentProgram->parameters[c].maxValue - data->currentProgram->parameters[c].minValue);
+                intermVal >>= 12;
+                intermVal += data->currentProgram->parameters[c].minValue;
+                data->currentProgram->parameters[c].rawValue = (int16_t)intermVal;
+
             }
         }  
     } 
