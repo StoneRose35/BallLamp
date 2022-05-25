@@ -171,7 +171,7 @@ void core1Main()
         }
         switchValsOld[0] = getSwitchValue(0);
 
-                switchVals[0] = getSwitchValue(0);
+        switchVals[1] = getSwitchValue(1);
         if (switchVals[1] == 0 && switchValsOld[1] == 1)
         {
             button2Callback(&piPicoUiController);

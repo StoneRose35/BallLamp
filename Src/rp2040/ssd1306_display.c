@@ -167,6 +167,37 @@ void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * i
     }
 }
 
+/**
+ * @brief displays a byte array containing y-x ordered image data using standard addressing mode
+ * y-x ordered image is
+ * 
+ * img[0]       img[sy]             .  .        img[(sx-1)*sy]
+ * img[1]       img[sy+1]                                .
+ *   .             .                                     .
+ *   .             .                                     .
+ * img[sy-1]    img[2*sy-1]         .  .        img[sx*sy-1]
+ * @param px x value of the top left position (0 to 127)
+ * @param py y values of the top left position (0 to 7)
+ * @param sx x size of the image
+ * @param sy y size of the image in pages (8 bit)
+ * @param img the image data, the number of bytes must be sx*sy
+ */
+void ssd1306DisplayImageStandardAdressing(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * img)
+{
+    uint16_t index;
+    for(uint8_t cc=0;cc<sy;cc++)
+    {
+        setCursor(py+cc,px);
+        *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+        for(uint8_t c=0;c<sx;c++)
+        {
+            index=c*sy + cc;
+            *SSPDR = img[index];
+            while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+        }
+    }
+}
+
 void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
 {
     uint8_t fontIdx;

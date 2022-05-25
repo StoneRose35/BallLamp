@@ -96,25 +96,36 @@ void isr_io_irq_bank0_irq13()
 void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches)
 {
     uint32_t* switchInteAddress;
+    uint32_t* switchRegisterAddress;
     // define pullups for encoder input and switch
     *ENCODER_1_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
     *ENCODER_1_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
     *ENCODER_2_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
     *ENCODER_2_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
 
-    *SWITCH_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    *SWITCH_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
+    //*SWITCH_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
+    //*SWITCH_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
 
     // set io bank control to sio
     *ENCODER_1_PIN_CNTR = 5;
     *ENCODER_2_PIN_CNTR = 5;
-    *SWITCH_PIN_CNTR = 5;
+    //*SWITCH_PIN_CNTR = 5;
 
     // enable level change interrupt
     *ENCODER_1_INTE |= (1 << ENCODER_1_EDGE_LOW) | (1 << ENCODER_1_EDGE_HIGH);
     *ENCODER_2_INTE |= (1 << ENCODER_2_EDGE_LOW) | (1 << ENCODER_2_EDGE_HIGH);
     for (uint8_t c=0;c<nswitches;c++)
     {
+        // control disable pulldown and enable pullup
+        switchRegisterAddress = (uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*pins[c]); //pad_ctrl: ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*ENCODER_1))
+        *switchRegisterAddress &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
+        *switchRegisterAddress |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
+
+        // set control to sio
+        switchRegisterAddress = (uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*pins[c]); //pin_ctrl  // ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*ENCODER_1))
+        *switchRegisterAddress = 5;
+
+        // enable edge triggers 
         switchInteAddress = (uint32_t*)(IO_BANK0_BASE + IO_BANK0_PROC0_INTE0_OFFSET + (((4*pins[c]) & 0xFFE0) >> 3));
         *switchInteAddress |= (1 << (((4*pins[c]) & 0x1F)+2)) | (1 << (((4*pins[c]) & 0x1F)+3)); // (1 << SWITCH_EDGE_HIGH) | (1 << SWITCH_EDGE_LOW);
         switchPins[c]=pins[c];
