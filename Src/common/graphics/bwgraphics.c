@@ -23,17 +23,172 @@ float int2float(int32_t a)
 
 void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 {
-	float l,fc;
-	int32_t il;
-    int32_t x,y;
-	l = fsqrt((epy-spy)*(epy-spy) + (epx-spx)*(epx-spx));
-	il = float2int(l);
-	for(uint32_t c=0;c<il;c++)
+	float dy,dx,absdy,absdx,delta;
+	int32_t idx,idy,ix,iy;
+	float m;
+	dy = epy-spy;
+	idy = float2int(dy);
+	if(dy < 0)
 	{
-		fc = int2float(c);
-		x = float2int(spx + (fc/l)*(epx-spx));
-		y = float2int(spy + (fc/l)*(epy-spy));
-		setPixel(x,y,img);
+		absdy=-dy;
+	}
+	else
+	{
+		absdy=dy;
+	}
+	dx = epx-spx;
+	idx = float2int(dx);
+	if (dx < 0)
+	{
+		absdx=-dx;
+	}
+	else
+	{
+		absdx=dx;
+	}
+	if (absdx > absdy)
+	{
+		m=absdy/absdx;
+		if (idx>=0 && idy >= 0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx)-1;
+			iy = float2int(spy);
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					iy++;
+					delta = delta - 1.0f;
+				}
+				ix++;
+				setPixel(ix,iy,img);
+			}
+		}
+		else if (idx < 0 && idy>=0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx)+1;
+			iy = float2int(spy);
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					iy++;
+					delta = delta - 1.0f;
+				}
+				ix--;
+				setPixel(ix,iy,img);
+			}
+		}
+		else if (idx>=0 && idy < 0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx)-1;
+			iy = float2int(spy);
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					iy--;
+					delta = delta - 1.0f;
+				}
+				ix++;
+				setPixel(ix,iy,img);
+			}
+		}
+		else
+		{
+			delta = 0.5f;
+			ix = float2int(spx)+1;
+			iy = float2int(spy);
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					iy--;
+					delta = delta - 1.0f;
+				}
+				ix--;
+				setPixel(ix,iy,img);
+			}
+		}
+	}
+	else
+	{
+		m=absdx/absdy;
+		if (idy>=0 && idy >=0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx);
+			iy = float2int(spy)-1;
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					ix++;
+					delta = delta - 1.0f;
+				}
+				iy++;
+				setPixel(ix,iy,img);
+			}
+		}
+		else if (idx < 0 && idy >=0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx);
+			iy = float2int(spy)-1;
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					ix--;
+					delta = delta - 1.0f;
+				}
+				iy++;
+				setPixel(ix,iy,img);
+			}
+		}
+		else if (idx >= 0 && idy < 0)
+		{
+			delta = 0.5f;
+			ix = float2int(spx);
+			iy = float2int(spy)+1;
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					ix++;
+					delta = delta - 1.0f;
+				}
+				iy--;
+				setPixel(ix,iy,img);
+			}
+		}
+		else
+		{
+			delta = 0.5f;
+			ix = float2int(spx);
+			iy = float2int(spy)+1;
+			for (int32_t c=0;c<idx;c++)
+			{
+				delta += m;
+				if(delta > 1.0f)
+				{
+					ix--;
+					delta = delta - 1.0f;
+				}
+				iy--;
+				setPixel(ix,iy,img);
+			}
+		}
 	}
 }
 

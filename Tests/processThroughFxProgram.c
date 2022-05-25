@@ -54,9 +54,21 @@ int main(int argc, char ** argv)
     {
         fxPrograms[c]->setup(fxPrograms[c]->data);
     }
-    fxPrograms[fxProgramNr]->param1Callback(param1,fxPrograms[fxProgramNr]->data);
-    fxPrograms[fxProgramNr]->param2Callback(param2,fxPrograms[fxProgramNr]->data);
-    fxPrograms[fxProgramNr]->param3Callback(param3,fxPrograms[fxProgramNr]->data);
+    for (uint8_t c=0;c<fxPrograms[fxProgramNr]->nParameters;c++)
+    {
+        if (fxPrograms[fxProgramNr]->parameters[c].control == 0)
+        {
+            fxPrograms[fxProgramNr]->parameters[c].setParameter(param1,fxPrograms[fxProgramNr]->data);
+        }
+        else if (fxPrograms[fxProgramNr]->parameters[c].control == 1)
+        {
+            fxPrograms[fxProgramNr]->parameters[c].setParameter(param2,fxPrograms[fxProgramNr]->data);
+        }
+        else if (fxPrograms[fxProgramNr]->parameters[c].control == 2)
+        {
+            fxPrograms[fxProgramNr]->parameters[c].setParameter(param3,fxPrograms[fxProgramNr]->data);
+        }
+    }
     while(byteCnt < wavFileIn.dataSize+TAIL_TIME)
     {
         if (byteCnt < wavFileIn.dataSize)
