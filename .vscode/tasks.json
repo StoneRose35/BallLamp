@@ -21,14 +21,39 @@
         },
         {
             "type": "cppbuild",
-            "label": "C/C++: gcc-9 Aktive Datei kompilieren",
+            "label": "compile offline audio processor",
             "command": "/usr/bin/gcc-9",
             "args": [
                 "-I./../Inc",
                 "-I./inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "./../Src/common/audio/*.c","./../Src/common/audio/fxprogram/*.c","./wavReader.c",
+                "${file}", "./../Src/common/audio/*.c","./../Src/common/audio/fxprogram/*.c","./libs/wavReader.c",
+                "-o",
+                "${fileDirname}/${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Vom Debugger generierte Aufgabe."
+        },
+        {
+            "type": "cppbuild",
+            "label": "compile bitmap helper",
+            "command": "/usr/bin/gcc-9",
+            "args": [
+                "-I./../Inc",
+                "-I./inc",
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}",
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}"
             ],

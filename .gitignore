@@ -17,6 +17,8 @@
 /Tests/audioTest
 /Tests/audioout.txt
 /Tests/processThroughFxProgram
+/Tests/libs/*.bmp
+/Tests/libs/bmplib
 /Src/common/fatLib
 /tools/fattestsmall.img
 **/.idea
