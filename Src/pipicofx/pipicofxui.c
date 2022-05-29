@@ -80,10 +80,10 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             fValue = 0.7853981633974483f + 4.71238898038469f*(fValue - fMinValue)/(fMaxValue-fMinValue); //fValue is now an angle in radians from 45° to 315°
             // center is at 51/24
             px = 51.0f - fsin(fValue)*14.0f;
-            py = 24.0f - fcos(fValue)*14.0f;
+            py = 24.0f + fcos(fValue)*14.0f;
             cx = 51.0f;
             cy = 24.0f;
-            //drawLine(cx,cy,px,py,&imgBfr);
+            drawLine(cx,cy,px,py,&imgBfr);
             ssd1306DisplayImageStandardAdressing(13,2,imgBfr.sx,imgBfr.sy>>3,imgBfr.data); 
             data->currentParameter->getParameterDisplay(data->currentProgram,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
@@ -102,7 +102,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             fValue = 0.7853981633974483f + 4.71238898038469f*(fValue - fMinValue)/(fMaxValue-fMinValue); //fValue is now an angle in radians from 45° to 315°
             // center is at 51/24
             px = 51.0f - fsin(fValue)*14.0f;
-            py = 24.0f - fcos(fValue)*14.0f;
+            py = 24.0f + fcos(fValue)*14.0f;
             cx = 51.0f;
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);   
