@@ -35,7 +35,8 @@
         "bwgraphics.h": "c",
         "pipicofx_param_2_scaled.h": "c",
         "ssd1306_display.h": "c",
-        "pipicofxui.h": "c"
+        "pipicofxui.h": "c",
+        "pipicofx_param_1_scaled.h": "c"
     },
     "cmake.configureOnOpen": false,
     "cortex-debug.variableUseNaturalFormat": true

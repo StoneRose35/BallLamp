@@ -53,9 +53,10 @@
                 "-I./inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "${file}", "./../Src/common/graphics/bwgraphics.c", "./libs/*.c" 
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${fileDirname}/${fileBasenameNoExtension}",
+                "-lm"
             ],
             "options": {
                 "cwd": "${fileDirname}"
