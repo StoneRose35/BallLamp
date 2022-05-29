@@ -53,7 +53,7 @@
                 "-I./inc",
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}", "./../Src/common/graphics/bwgraphics.c", "./libs/*.c" 
+                "${file}", "./../Src/common/graphics/bwgraphics.c", "./libs/*.c", 
                 "-o",
                 "${fileDirname}/${fileBasenameNoExtension}",
                 "-lm"
