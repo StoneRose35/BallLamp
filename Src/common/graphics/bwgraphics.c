@@ -18,6 +18,15 @@ float int2float(int32_t a)
 {
     return (float)a;
 }
+float fcos(float x)
+{
+	return cosf(x);
+}
+float fsin(float x)
+{
+	return sinf(x);
+}
+
 #endif
 
 
@@ -71,7 +80,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 			delta = 0.5f;
 			ix = float2int(spx)+1;
 			iy = float2int(spy);
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<-idx;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -105,7 +114,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 			delta = 0.5f;
 			ix = float2int(spx)+1;
 			iy = float2int(spy);
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<-idx;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -121,12 +130,12 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 	else
 	{
 		m=absdx/absdy;
-		if (idy>=0 && idy >=0)
+		if (idx>=0 && idy >=0)
 		{
 			delta = 0.5f;
 			ix = float2int(spx);
 			iy = float2int(spy)-1;
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<idy;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -143,7 +152,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 			delta = 0.5f;
 			ix = float2int(spx);
 			iy = float2int(spy)-1;
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<idy;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -160,7 +169,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 			delta = 0.5f;
 			ix = float2int(spx);
 			iy = float2int(spy)+1;
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<-idy;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -177,7 +186,7 @@ void drawLine(float spx,float spy,float epx, float epy,BwImageBufferType* img)
 			delta = 0.5f;
 			ix = float2int(spx);
 			iy = float2int(spy)+1;
-			for (int32_t c=0;c<idx;c++)
+			for (int32_t c=0;c<-idy;c++)
 			{
 				delta += m;
 				if(delta > 1.0f)
@@ -262,16 +271,23 @@ void drawSquare(float spx, float spy,float epx, float epy,BwImageBufferType* img
 	}
 }
 
+uint8_t getPixel(int32_t px,int32_t py,BwImageBufferType*img)
+{
+	int32_t bitindex = px*(img->sy) + py;
+	int32_t pageIdx = bitindex >> 3;
+	return *(img->data + pageIdx) & (1 << (bitindex & 0x7)); 
+}
+
 void setPixel(int32_t px,int32_t py,BwImageBufferType*img)
 {
-	int32_t bitindex = px*(img->sy-1) + py;
+	int32_t bitindex = px*(img->sy) + py;
 	int32_t pageIdx = bitindex >> 3;
 	*(img->data + pageIdx) |= (1 << (bitindex & 0x7));
 }
 
 void clearPixel(int32_t px,int32_t py,BwImageBufferType*img)
 {
-	int32_t bitindex = px*(img->sy-1) + py;
+	int32_t bitindex = px*(img->sy) + py;
 	int32_t pageIdx = bitindex >> 3;
 	*(img->data + pageIdx) &= ~(1 << (bitindex & 0x7));
 }
