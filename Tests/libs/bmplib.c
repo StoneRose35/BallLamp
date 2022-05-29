@@ -65,10 +65,8 @@ int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t
         rowSize += (4 - (rowSize & 0x3));
     }
 
-    bitmapFileHeader->bmpHeader.type[0] = 'B';
-    bitmapFileHeader->bmpHeader.type[1] = 'M';
-    bitmapFileHeader->bmpHeader.size = 14 + 40 + 8 + height*rowSize ;
-    bitmapFileHeader->bmpHeader.offset = 0;//14 + 40 + 8; // header + dib + palette containing two colors
+    bitmapFileHeader->bmpHeader.size = 14 + 40 + 2*4 + height*rowSize ;
+    bitmapFileHeader->bmpHeader.offset = 14 + 40 + 2*4; // header + dib + palette containing two colors
     bitmapFileHeader->bmpHeader.reserved1=0;
     bitmapFileHeader->bmpHeader.reserved2=0;
     
@@ -78,31 +76,31 @@ int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t
     bitmapFileHeader->dibHeader.nColorPlanes = 1;
     bitmapFileHeader->dibHeader.bitPerPixel = 1;
     bitmapFileHeader->dibHeader.compressionValue = 0;
-    bitmapFileHeader->dibHeader.imageDataSize = height*rowSize;
+    bitmapFileHeader->dibHeader.imageDataSize = 0;
     bitmapFileHeader->dibHeader.horizontalResolution = 11811;
     bitmapFileHeader->dibHeader.verticalResolution = 11811;
     bitmapFileHeader->dibHeader.colorPaletteSize = 2;
     bitmapFileHeader->dibHeader.importantColors = 2;
 
     // setup color palette
-    bitmapFileHeader->colorPalette = (ColorAlphaType*)malloc(2*sizeof(ColorAlphaType));
-    (bitmapFileHeader->colorPalette + 1)->alpha = 0xff;
+    bitmapFileHeader->colorPalette = (ColorAlphaType*)malloc(2*4);
+    (bitmapFileHeader->colorPalette + 1)->alpha = 0x0;
     (bitmapFileHeader->colorPalette + 1)->r = 0xff;
-    (bitmapFileHeader->colorPalette + 1)->g = 0x00;
-    (bitmapFileHeader->colorPalette + 1)->b = 0x00;
-    (bitmapFileHeader->colorPalette + 0)->alpha = 0xff;
+    (bitmapFileHeader->colorPalette + 1)->g = 0xff;
+    (bitmapFileHeader->colorPalette + 1)->b = 0xff;
+    (bitmapFileHeader->colorPalette + 0)->alpha = 0x0;
     (bitmapFileHeader->colorPalette + 0)->r = 0x0;
-    (bitmapFileHeader->colorPalette + 0)->g = 0xff;
+    (bitmapFileHeader->colorPalette + 0)->g = 0x0;
     (bitmapFileHeader->colorPalette + 0)->b = 0x0;
 
     // setup image data
     bitmapFileHeader->imageData =  (uint8_t**)malloc(height*sizeof(uint8_t*));
     for (uint32_t c=0;c<height;c++)
     {
-        *(bitmapFileHeader->imageData + c) = (uint8_t*)malloc(rowSize*sizeof(uint8_t));
+        *(bitmapFileHeader->imageData + c) = (uint8_t*)malloc(rowSize);
         for (uint16_t cc=0;cc<rowSize;cc++)
         {
-            *(*(bitmapFileHeader->imageData + c)+cc) = 0xF0;
+            *(*(bitmapFileHeader->imageData + c)+cc) = 0x0;
         }
     }
     return 0;
@@ -141,7 +139,7 @@ void clearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
 void writeBmp(const char*filename, BitmapFileHeaderType*bmp)
 {
     FILE*fid;
-
+    const char magic[2]={'B', 'M'};
     uint32_t rowSize = bmp->dibHeader.width >> 3;
     if ((rowSize & 0x3) != 0)
     {
@@ -149,24 +147,32 @@ void writeBmp(const char*filename, BitmapFileHeaderType*bmp)
     }
 
     fid = fopen(filename,"wb");
-    fwrite(&(bmp->bmpHeader),14,1,fid);
+    fwrite(magic,2,1,fid);
+    fwrite(&(bmp->bmpHeader),12,1,fid);
     fwrite(&(bmp->dibHeader),40,1,fid);
-    fwrite(&(bmp->colorPalette),2*4,1,fid);
+    fwrite(bmp->colorPalette,4*2,1,fid);
     for (uint16_t cy=0;cy<bmp->dibHeader.height;cy++)
     {
-        for(uint16_t cx=0;cx<rowSize;cx++)
-        {
-            fwrite((*(bmp->imageData + cy) + cx),1,1,fid);
-        }
+        //for(uint16_t cx=0;cx<rowSize;cx++)
+        //{
+        fwrite(*(bmp->imageData + cy),rowSize,1,fid);
+        //}
     }
     fclose(fid);
 }
 
-void readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp)
+int readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp)
 {
     FILE*fid;
+    uint8_t magic[2];
     fid = fopen(filename,"rb");
-    fread(&(bmp->bmpHeader),14,1,fid);
+    fread(magic,2,1,fid);
+    if (!(magic[0]=='B' && magic[1]=='M'))
+    {
+        fclose(fid);
+        return 1;
+    }
+    fread(&(bmp->bmpHeader),12,1,fid);
     fread(&(bmp->dibHeader),40,1,fid);
     if(bmp->dibHeader.colorPaletteSize == 0)
     {
@@ -174,27 +180,28 @@ void readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp)
         {
             case 8:
                 bmp->colorPalette = (ColorAlphaType*)malloc(256*sizeof(ColorAlphaType));
-                fread(&(bmp->colorPalette),256*sizeof(ColorAlphaType),1,fid);
+                fread(bmp->colorPalette,256*sizeof(ColorAlphaType),1,fid);
                 break;
             case 4:
                 bmp->colorPalette = (ColorAlphaType*)malloc(16*sizeof(ColorAlphaType));
-                fread(&(bmp->colorPalette),16*sizeof(ColorAlphaType),1,fid);
+                fread(bmp->colorPalette,16*sizeof(ColorAlphaType),1,fid);
                 break;
             case 2:
                 bmp->colorPalette = (ColorAlphaType*)malloc(4*sizeof(ColorAlphaType));
-                fread(&(bmp->colorPalette),4*sizeof(ColorAlphaType),1,fid);
+                fread(bmp->colorPalette,4*sizeof(ColorAlphaType),1,fid);
                 break;
             break;
             case 1:
                 bmp->colorPalette = (ColorAlphaType*)malloc(2*sizeof(ColorAlphaType));
-                fread(&(bmp->colorPalette),2*sizeof(ColorAlphaType),1,fid);
+                fread(bmp->colorPalette,2*sizeof(ColorAlphaType),1,fid);
                 break;
         }
     }
     else
     {
         bmp->colorPalette = (ColorAlphaType*)malloc(bmp->dibHeader.bitPerPixel*sizeof(ColorAlphaType));
-        fread(bmp->colorPalette,bmp->dibHeader.bitPerPixel*sizeof(ColorAlphaType),1,fid);
+        fread(bmp->colorPalette,(1 << bmp->dibHeader.bitPerPixel)*4,1,fid);
     }
     fclose(fid);
+    return 0;
 }

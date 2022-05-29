@@ -3,7 +3,6 @@
 #include "stdint.h"
 
 typedef struct {
-    uint8_t type[2];
     uint32_t size;
     uint16_t reserved1;
     uint16_t reserved2;
@@ -34,9 +33,9 @@ typedef struct
 
 typedef struct 
 {
-    uint8_t r;
-    uint8_t g;
     uint8_t b;
+    uint8_t g;
+    uint8_t r;
     uint8_t alpha;
 } ColorAlphaType;
 
@@ -51,6 +50,6 @@ int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t
 void setPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
 void clearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
 void writeBmp(const char*filename, BitmapFileHeaderType*bmp);
-void readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp);
+int readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp);
 
 #endif
