@@ -2,7 +2,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-
+#ifdef BBMP_LIB_STANDALONE
 int main(int argc,char ** argv)
 {
     BitmapFileHeaderType exampleBmp;
@@ -16,11 +16,11 @@ int main(int argc,char ** argv)
         {
             if ((checkerCnt & 0x1) == 0)
             {
-                setPixel(x,y,&exampleBmp);
+                 bmpLibSetPixel(x,y,&exampleBmp);
             }
             else
             {
-                clearPixel(x,y,&exampleBmp);
+                bmpLibClearPixel(x,y,&exampleBmp);
             }
             if( (checkerLineCnt & 0x1) == 0)
             {
@@ -56,14 +56,12 @@ int main(int argc,char ** argv)
     readBmpHeaders("./checkerExample1.bmp",&exampleReadBmp);
     return 0;
 }
+#endif
 
 int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t width)
 {
-    uint32_t rowSize = width >> 3;
-    if ((rowSize & 0x3) != 0)
-    {
-        rowSize += (4 - (rowSize & 0x3));
-    }
+    uint32_t rowSize = ((width+31) >> 5)*4;
+
 
     bitmapFileHeader->bmpHeader.size = 14 + 40 + 2*4 + height*rowSize ;
     bitmapFileHeader->bmpHeader.offset = 14 + 40 + 2*4; // header + dib + palette containing two colors
@@ -113,12 +111,12 @@ int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t
  * @param y vertical pixel position going from bottom to top
  * @param bmp the image to set the pixel to
  */
-void setPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
+void bmpLibSetPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
 {
     uint16_t xTransformed,yTransformed;
     xTransformed = x;
     yTransformed = bmp->dibHeader.height - y -1;
-    *(*(bmp->imageData + yTransformed) + (x >> 3)) |= (1 << (x & 0x7));
+    bmp->imageData[yTransformed][x >> 3] |= (uint8_t)(1 << (0x7 - (x & 0x7)));
 }
 
 /**
@@ -128,19 +126,19 @@ void setPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
  * @param y vertical pixel position going from bottom to top
  * @param bmp the image to set the pixel to
  */
-void clearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
+void bmpLibClearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp)
 {
     uint16_t xTransformed,yTransformed;
     xTransformed = x;
     yTransformed = bmp->dibHeader.height - y - 1;
-    *(*(bmp->imageData + yTransformed) + (x >> 3)) &= ~(1 << (x & 0x7));
+    *(*(bmp->imageData + yTransformed) + (x >> 3)) &= (uint8_t)(~(1 << (0x7 - (x & 0x7))));
 }
 
 void writeBmp(const char*filename, BitmapFileHeaderType*bmp)
 {
     FILE*fid;
     const char magic[2]={'B', 'M'};
-    uint32_t rowSize = bmp->dibHeader.width >> 3;
+    uint32_t rowSize = ((bmp->dibHeader.width+31) >> 5)*4;
     if ((rowSize & 0x3) != 0)
     {
         rowSize += (4 - (rowSize & 0x3));
@@ -153,10 +151,7 @@ void writeBmp(const char*filename, BitmapFileHeaderType*bmp)
     fwrite(bmp->colorPalette,4*2,1,fid);
     for (uint16_t cy=0;cy<bmp->dibHeader.height;cy++)
     {
-        //for(uint16_t cx=0;cx<rowSize;cx++)
-        //{
-        fwrite(*(bmp->imageData + cy),rowSize,1,fid);
-        //}
+        fwrite((*(bmp->imageData + cy)),rowSize,1,fid);
     }
     fclose(fid);
 }

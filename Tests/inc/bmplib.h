@@ -47,8 +47,8 @@ typedef struct {
 } BitmapFileHeaderType;
 
 int initBmpFile(BitmapFileHeaderType * bitmapFileHeader,uint16_t height,uint16_t width);
-void setPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
-void clearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
+void bmpLibSetPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
+void bmpLibClearPixel(uint16_t x,uint16_t y,BitmapFileHeaderType*bmp);
 void writeBmp(const char*filename, BitmapFileHeaderType*bmp);
 int readBmpHeaders(const char *filename,BitmapFileHeaderType*bmp);
 
