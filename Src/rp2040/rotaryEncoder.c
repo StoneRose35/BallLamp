@@ -22,8 +22,7 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_HIGH);
         if(lastTrigger == 1)
         {
-            ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
-            //oldtickenc = getTickValue();
+            ((*ENCODER_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
         }
         lastTrigger = 0;
     }
@@ -32,19 +31,26 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_LOW);
         if(lastTrigger==1)
         {
-            ((*ENCODER_2_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
-            //oldtickenc = getTickValue();
+            ((*ENCODER_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
         }
         lastTrigger = 0;
     }
     else if ((*ENCODER_2_INTR & (1 << ENCODER_2_EDGE_HIGH)) == (1 << ENCODER_2_EDGE_HIGH))
     {
         *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_HIGH);
+        if(lastTrigger == 0)
+        {
+            ((*ENCODER_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal++ : encoderVal--;
+        }
         lastTrigger = 1;
     }
     else if ((*ENCODER_2_INTR & (1 << ENCODER_2_EDGE_LOW)) == (1 << ENCODER_2_EDGE_LOW))
     {
         *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_LOW);
+        if(lastTrigger==1)
+        {
+            ((*ENCODER_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal-- : encoderVal++;
+        }
         lastTrigger = 1;
     }
 
