@@ -272,7 +272,7 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
 {
     if (data->locked == 0)
     {
-        int16_t diff = encoderValue - data->oldEncoderValue;
+        int16_t diff = (encoderValue - data->oldEncoderValue) >> 1;
         switch(data->displayLevel)
         {
             case 0: // UI Level 0 
