@@ -187,7 +187,7 @@ void core1Main()
         }
         */
        encoderVal=getEncoderValue();
-       if (encoderValOld != encoderVal)
+       if (encoderValOld > encoderVal + 1 || encoderValOld < encoderVal - 1)
        {
            rotaryCallback(encoderVal,&piPicoUiController);
            encoderValOld=encoderVal;
