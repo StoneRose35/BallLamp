@@ -67,6 +67,7 @@ static void fxProgram1Param3Callback(uint16_t val,void*data) // delay intensity
     FxProgram1DataType* pData = (FxProgram1DataType*)data;
     pData->delay->delayInSamples = 2400 + (val << 3);
     pData->delay->mix = val << 2; // up to 100%
+    pData->delay->feedback = (1<< 14);
 }
 
 static void fxProgram1Param3Display(void*data,char*res)
@@ -114,7 +115,7 @@ FxProgram1DataType fxProgram1data = {
     .nWaveshapers = 1
 };
 FxProgramType fxProgram1 = {
-    .name = "Amp-Simulator       ",
+    .name = "Amp-Simulator        ",
     .nParameters = 3,
     .parameters = {
         {

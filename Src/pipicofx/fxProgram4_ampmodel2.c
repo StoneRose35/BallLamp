@@ -16,7 +16,7 @@ static int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 
     out = pData->highpass_out;
     //out = sampleIn;
-    //out = gainStageProcessSample(out, &pData->gainStage);
+    out = gainStageProcessSample(out, &pData->gainStage);
 
     for (uint8_t c=0;c<pData->nWaveshapers;c++)
     {
@@ -205,6 +205,7 @@ FxProgram4DataType fxProgram4data = {
         "Vox AC15        (I)"  
     },
     .gainStage.gain=512,
+    .nWaveshapers = 4,
     .cabSimType = 1,
     .waveshaper1 = {
         .oversamplingFilter = {
@@ -215,7 +216,7 @@ FxProgram4DataType fxProgram4data = {
 };
 
 FxProgramType fxProgram4 = {
-    .name = "Amp Model 2        ",
+    .name = "Amp Model 2         ",
     .nParameters=3,
     .parameters = {
         {
