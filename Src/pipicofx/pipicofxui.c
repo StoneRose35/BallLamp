@@ -291,11 +291,11 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
                 break;
             case 1: // UI Level 1, change parameter
                 data->currentParameterIdx += diff;
-                if (data->currentParameterIdx == data->currentProgram->nParameters && diff > 0)
+                if (data->currentParameterIdx >= data->currentProgram->nParameters && diff > 0)
                 {
                     data->currentParameterIdx=data->currentProgram->nParameters-1;
                 }
-                else if (data->currentParameterIdx == data->currentProgram->nParameters && diff < 0)
+                else if (data->currentParameterIdx >= data->currentProgram->nParameters && diff < 0)
                 {
                     data->currentParameterIdx = 0;
                 }
