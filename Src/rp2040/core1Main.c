@@ -20,7 +20,6 @@ extern volatile uint32_t audioState;
 int16_t avgOldOutBfr;
 int16_t avgOldInBfr;
 uint8_t cpuLoadBfr;
-uint8_t bargraphBuffer[128];
 uint8_t switchValsOld[2]={0,0};
 uint32_t encoderValOld=0,encoderVal;
 uint8_t switchVals[2]={0,0};
@@ -99,57 +98,6 @@ void core1Main()
             avgOldInBfr = avgInOld >> 8;
             avgOldOutBfr = avgOutOld >> 8;
             cpuLoadBfr = (cpuLoad >> 1);
-            /*
-            for (uint8_t c=0;c<128;c++)
-            {
-                if (c<=avgOldInBfr)
-                {
-                    bargraphBuffer[c] = 126;
-                }
-                else
-                {
-                    bargraphBuffer[c] = 0;
-                }
-            }
-            ssd1306DisplayByteArray(1,0,bargraphBuffer,128);
-
-            for (uint8_t c=0;c<128;c++)
-            {
-                if (c<=avgOldOutBfr)
-                {
-                    bargraphBuffer[c] = 126;
-                }
-                else
-                {
-                    bargraphBuffer[c] = 0;
-                }
-            }
-            ssd1306DisplayByteArray(2,0,bargraphBuffer,128);
-
-            for (uint8_t c=0;c<128;c++)
-            {
-                if (c<=cpuLoadBfr)
-                {
-                    bargraphBuffer[c] = 126;
-                }
-                else
-                {
-                    bargraphBuffer[c] = 0;
-                }
-            }
-            ssd1306DisplayByteArray(3,0,bargraphBuffer,128);
-            */
-
-/*
-            if ((audioState & (1 << AUDIO_STATE_BUFFER_UNDERRUN)) != 0)
-            {
-                ssd1306WriteText("BUFFER UNDERRUN!!",0,7);
-            }
-            else
-            {
-                ssd1306WriteText("                 ",0,7);
-            }
-*/
             updateAudioUi(avgOldInBfr,avgOldOutBfr,cpuLoadBfr,&piPicoUiController);
             task &= ~(1 << TASK_UPDATE_AUDIO_UI);
         }
@@ -157,17 +105,6 @@ void core1Main()
         if (switchVals[0] == 0 && switchValsOld[0] == 1)
         {
             button1Callback(&piPicoUiController);
-            /*fxProgramIdx++;
-            if(fxProgramIdx == N_FX_PROGRAMS)
-            {
-                fxProgramIdx = 0;
-            }
-            ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
-            ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,4);
-            ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
-            ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
-            ssd1306WriteText("                   ",0,7);
-            */
         }
         switchValsOld[0] = getSwitchValue(0);
 
@@ -177,15 +114,6 @@ void core1Main()
             button2Callback(&piPicoUiController);
         }
         switchValsOld[1] = getSwitchValue(1);
-        /*
-        if ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_VLD_LSB)) == (1 << SIO_FIFO_ST_VLD_LSB))
-        {
-            data = (FirFilterType**)*SIO_FIFO_RD;
-            secondHalfOut = processFirstHalf(*data);
-            //secondHalfOut=0;
-            *SIO_FIFO_WR = secondHalfOut;
-        }
-        */
        encoderVal=getEncoderValue();
        if (encoderValOld > encoderVal + 1 || encoderValOld < encoderVal - 1)
        {

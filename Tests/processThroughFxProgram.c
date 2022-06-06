@@ -4,10 +4,10 @@
 #include <stdlib.h> 
 #include <string.h>
 
-#define SELECTED_FX_PROGRAM 0
-#define FX_PROGRAM_PARAM1_VAL 4000
-#define FX_PROGRAM_PARAM2_VAL 3800
-#define FX_PROGRAM_PARAM3_VAL 3000
+#define SELECTED_FX_PROGRAM 1
+#define FX_PROGRAM_PARAM1_VAL 200 // amp model 2: gain 
+#define FX_PROGRAM_PARAM2_VAL 3800 // 
+#define FX_PROGRAM_PARAM3_VAL 0 // 
 #define TAIL_TIME 48000
 int main(int argc, char ** argv)
 {
@@ -18,6 +18,8 @@ int main(int argc, char ** argv)
     int16_t dataOut;
     char filenameOut[256];
     char filenameIn[256];
+    char paramDisplay[24];
+    size_t fnameLength;
     uint16_t param1, param2, param3;
     uint8_t fxProgramNr;
     printf("Offline FxProgram Processor v0.1\r\n\r\n");
@@ -30,22 +32,23 @@ int main(int argc, char ** argv)
         param3=FX_PROGRAM_PARAM3_VAL;
         fxProgramNr=SELECTED_FX_PROGRAM;
         strcpy(filenameIn,"./audiosamples/guit_riff_16bit.wav");
-        strcpy(filenameOut,"./audiosamples/guit_riff_16bit.wav");
+        strcpy(filenameOut,"./audiosamples/guit_riff_16bit_proc.wav");
     }
     else
     {
         strcpy(filenameIn,argv[1]);
+        strcpy(filenameOut,argv[1]);
+        fnameLength = strlen(filenameOut);
+        filenameOut[fnameLength-4]=0;
+        strcat(filenameOut,"_proc.wav");
         fxProgramNr = (uint8_t)atoi(argv[2]);
-        param1 = (uint8_t)atoi(argv[3]);
-        param2 = (uint8_t)atoi(argv[4]);
-        param3 = (uint8_t)atoi(argv[5]);
+        param1 = (uint16_t)atoi(argv[3]);
+        param2 = (uint16_t)atoi(argv[4]);
+        param3 = (uint16_t)atoi(argv[5]);
 
     }
     printf("processing file %s\r\n",filenameIn);
     printf("\tFx Program: %s\r\n",fxPrograms[fxProgramNr]->name);
-    printf("\tParameter 1: %d\r\n",param1);
-    printf("\tParameter 2: %d\r\n",param2);
-    printf("\tParameter 3: %d\r\n",param3);
     size_t fnamelen = strlen(filenameIn);
     strcpy(filenameOut+fnamelen-4,"_proc.wav");
     openWavFile(filenameIn,&wavFileIn);
@@ -59,14 +62,20 @@ int main(int argc, char ** argv)
         if (fxPrograms[fxProgramNr]->parameters[c].control == 0)
         {
             fxPrograms[fxProgramNr]->parameters[c].setParameter(param1,fxPrograms[fxProgramNr]->data);
+            fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
+            printf("\tParameter 1: %s\r\n",paramDisplay);
         }
         else if (fxPrograms[fxProgramNr]->parameters[c].control == 1)
         {
             fxPrograms[fxProgramNr]->parameters[c].setParameter(param2,fxPrograms[fxProgramNr]->data);
+            fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
+            printf("\tParameter 2: %s\r\n",paramDisplay);
         }
         else if (fxPrograms[fxProgramNr]->parameters[c].control == 2)
         {
             fxPrograms[fxProgramNr]->parameters[c].setParameter(param3,fxPrograms[fxProgramNr]->data);
+            fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
+            printf("\tParameter 3: %s\r\n",paramDisplay);   
         }
     }
     while(byteCnt < wavFileIn.dataSize+TAIL_TIME)

@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "audio/fxprogram/fxProgram.h"
-#include "ssd1306_display.h"
 #include "stringFunctions.h"
 
 #define P4_HIGHPASS 30000
@@ -72,8 +71,8 @@ static void fxProgram4Param1Callback(uint16_t val,void*data) // gain
 
 static void fxProgram4Param1Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    //FxProgramType * fData = (FxProgramType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     fixedPointInt16ToChar(res,pData->gainStage.gain,8);
 }
 
@@ -87,8 +86,8 @@ static void fxProgram4Param2Callback(uint16_t val,void*data) // offset
 
 static void fxProgram4Param2Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    //FxProgramType * fData = (FxProgramType*)data;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     Int16ToChar(pData->gainStage.offset,res);
 }
 
