@@ -108,6 +108,34 @@ static void fxProgram4Param3Display(void*data,char*res)
     }
 }
 
+static void fxProgram4Param4Callback(uint16_t val,void*data)
+{
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
+    pData->nWaveshapers = (val >> 10) + 1;
+}
+
+static void fxProgram4Param4Display(void*data,char*res)
+{
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
+    UInt8ToChar(pData->nWaveshapers,res);
+}
+
+
+static void fxProgram4Param5Callback(uint16_t val,void*data)
+{
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
+    pData->waveshaperType = (val >> 10) ;
+}
+
+static void fxProgram4Param5Display(void*data,char*res)
+{
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
+    for(uint8_t c=0;c<24;c++)
+    {
+        *(res+c) =  pData->waveShaperNames[pData->waveshaperType][c];
+    }
+}
+
 
 static void fxProgram4Setup(void*data)
 {
@@ -199,6 +227,12 @@ FxProgram4DataType fxProgram4data = {
         "Vox AC15        (F)",
         "Vox AC15        (I)"  
     },
+    .waveShaperNames = {
+        "Overdrive 1   ",
+        "Soft Overdrive",
+        "Distortion    ",
+        "OVerdrive 2   "
+    },
     .gainStage.gain=512,
     .nWaveshapers = 4,
     .waveshaperType=0,
@@ -213,7 +247,7 @@ FxProgram4DataType fxProgram4data = {
 
 FxProgramType fxProgram4 = {
     .name = "Amp Model 2          ",
-    .nParameters=3,
+    .nParameters=5,
     .parameters = {
         {
             .name = "Gain           ",
@@ -245,11 +279,20 @@ FxProgramType fxProgram4 = {
         {
             .name = "Gainstages     ",
             .control=3,
-            .increment=64,
+            .increment=1024,
             .rawValue=0,
-            .getParameterDisplay=0,
+            .getParameterDisplay=&fxProgram4Param4Display,
             .getParameterValue=0,
-            .setParameter=0
+            .setParameter=&fxProgram4Param4Callback
+        },
+        {
+            .name = "OD/Dist Type",
+            .control = 4,
+            .increment = 1024,
+            .rawValue = 0,
+            .getParameterDisplay=&fxProgram4Param5Display,
+            .getParameterValue=0,
+            .setParameter=&fxProgram4Param5Callback
         }     
     },
     .processSample = &fxProgram4processSample,

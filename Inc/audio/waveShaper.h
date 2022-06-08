@@ -11,7 +11,8 @@ typedef struct
 const WaveShaperDataType waveShaperUnity;
 const WaveShaperDataType waveShaperDefaultOverdrive;
 const WaveShaperDataType waveShaperSoftOverdrive;
-const WaveShaperDataType waveShaperDistortion; 
+const WaveShaperDataType waveShaperDistortion;
+const WaveShaperDataType waveShaperCurvedOverdrive; 
 
 
 void initWaveShaper(WaveShaperDataType * data,const WaveShaperDataType* copyFrom);

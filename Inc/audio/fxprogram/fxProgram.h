@@ -64,6 +64,7 @@ typedef struct {
     uint8_t waveshaperType;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
     const char cabNames[6][24];
+    const char waveShaperNames[4][24];
     FirFilterType hiwattFir;
     OversamplingWaveshaperDataType waveshaper1;
     SecondOrderIirFilterType hiwattIir1;
