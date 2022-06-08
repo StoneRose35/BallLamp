@@ -121,8 +121,7 @@ FxProgramType fxProgram1 = {
         {
             .name="Hi-Cut         ",
             .control=0,
-            .minValue=20000,
-            .maxValue=31500,
+            .increment=100,
             .rawValue=31500,
             .setParameter=&fxProgram1Param1Callback,
             .getParameterValue=0,
@@ -131,9 +130,8 @@ FxProgramType fxProgram1 = {
         {
             .name="Gain/Stages    ",
             .control=1,
-            .minValue=1,
-            .maxValue=8,
-            .rawValue=16384,
+            .increment = 512, // 4096/8
+            .rawValue=0,
             .setParameter=&fxProgram1Param2Callback,
             .getParameterValue=0,
             .getParameterDisplay=&fxProgram1Param2Display
@@ -141,9 +139,8 @@ FxProgramType fxProgram1 = {
         {
             .name="Delay Intensity",
             .control=2,
-            .minValue=0,
-            .maxValue=32767,
-            .rawValue=16384,
+            .increment=64,
+            .rawValue=0,
             .setParameter=&fxProgram1Param3Callback,
             .getParameterValue=0,
             .getParameterDisplay=&fxProgram1Param3Display

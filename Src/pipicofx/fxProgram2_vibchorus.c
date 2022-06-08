@@ -107,8 +107,7 @@ FxProgramType fxProgram2 = {
         {
             .name = "Frequency      ",
             .control=0,
-            .minValue=0,
-            .maxValue=32767,
+            .increment = 64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram2Param1Display,
             .getParameterValue=0,
@@ -117,8 +116,7 @@ FxProgramType fxProgram2 = {
         {
             .name = "Depth          ",
             .control=1,
-            .minValue=0,
-            .maxValue=32767,
+            .increment = 64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram2Param2Display,
             .getParameterValue=0,
@@ -127,8 +125,7 @@ FxProgramType fxProgram2 = {
         {
             .name = "Mix            ",
             .control=2,
-            .minValue=0,
-            .maxValue=32767,
+            .increment=64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram2Param3Display,
             .getParameterValue=0,

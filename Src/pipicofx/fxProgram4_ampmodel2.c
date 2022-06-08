@@ -96,17 +96,13 @@ static void fxProgram4Param3Callback(uint16_t val,void*data) // choose cab sim f
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     pData->cabSimType = (val >> 9) & 7;
-    //if (cabSimTypeOld != pData->cabSimType)
-    //{
-    //    ssd1306WriteText(pData->cabNames[pData->cabSimType],0,7);
-    //}
 }
 
 static void fxProgram4Param3Display(void*data,char*res)
 {
     FxProgramType * fData = (FxProgramType*)data;
     FxProgram4DataType* pData = (FxProgram4DataType*)fData;
-    for(uint8_t c=0;c<PARAMETER_NAME_MAXLEN;c++)
+    for(uint8_t c=0;c<24;c++)
     {
         *(res+c)=*(pData->cabNames[pData->cabSimType]+c);
     }
@@ -205,6 +201,7 @@ FxProgram4DataType fxProgram4data = {
     },
     .gainStage.gain=512,
     .nWaveshapers = 4,
+    .waveshaperType=0,
     .cabSimType = 1,
     .waveshaper1 = {
         .oversamplingFilter = {
@@ -221,8 +218,7 @@ FxProgramType fxProgram4 = {
         {
             .name = "Gain           ",
             .control=0,
-            .minValue=0,
-            .maxValue=32767,
+            .increment=64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram4Param1Display,
             .getParameterValue=0,
@@ -231,8 +227,7 @@ FxProgramType fxProgram4 = {
         {
             .name = "DC-Offset      ",
             .control=1,
-            .minValue=0,
-            .maxValue=32767,
+            .increment=64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram4Param2Display,
             .getParameterValue=0,
@@ -241,12 +236,20 @@ FxProgramType fxProgram4 = {
         {
             .name = "Cab Type       ",
             .control=2,
-            .minValue=0,
-            .maxValue=32767,
+            .increment=64,
             .rawValue=0,
             .getParameterDisplay=&fxProgram4Param3Display,
             .getParameterValue=0,
             .setParameter=&fxProgram4Param3Callback
+        },
+        {
+            .name = "Gainstages     ",
+            .control=3,
+            .increment=64,
+            .rawValue=0,
+            .getParameterDisplay=0,
+            .getParameterValue=0,
+            .setParameter=0
         }     
     },
     .processSample = &fxProgram4processSample,

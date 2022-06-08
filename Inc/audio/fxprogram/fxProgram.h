@@ -27,8 +27,7 @@ typedef struct {
     const char name[PARAMETER_NAME_MAXLEN];
     uint8_t control; // 0-2: Potentiometers, 255: no control binding
     int16_t rawValue;
-    int16_t maxValue;
-    int16_t minValue;
+    int16_t increment;
     getParameterValueFct getParameterValue; // returns the converted parameter value, data type depends on the implementation
     getParameterDisplayFct getParameterDisplay; // returns the display value as a string of a Parameter
     paramChangeCallback setParameter; // sets the parameter in a meaningful way in the individual program
@@ -62,6 +61,7 @@ typedef struct {
     gainStageData gainStage;
     uint8_t cabSimType;
     uint8_t nWaveshapers;
+    uint8_t waveshaperType;
     int16_t highpass_out,highpass_old_out,highpass_old_in;
     const char cabNames[6][24];
     FirFilterType hiwattFir;
