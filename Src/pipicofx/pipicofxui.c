@@ -75,8 +75,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
                 imgBfr.data[c]=pipicofx_param_1_scaled_streamimg.data[c];
             }
             fValue = int2float((int32_t)data->currentParameter->rawValue);
-            fMaxValue = int2float((int32_t)data->currentParameter->maxValue);
-            fMinValue = int2float((int32_t)data->currentParameter->minValue);
+            fMaxValue = int2float((int32_t)(1 << 12));
+            fMinValue = int2float((int32_t)0);
             fValue = 0.7853981633974483f + 4.71238898038469f*(fValue - fMinValue)/(fMaxValue-fMinValue); //fValue is now an angle in radians from 45° to 315°
             // center is at 51/24
             px = 51.0f - fsin(fValue)*14.0f;
@@ -97,8 +97,8 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
                 imgBfr.data[c]=pipicofx_param_2_scaled_streamimg.data[c];
             }
             fValue = int2float((int32_t)data->currentParameter->rawValue);
-            fMaxValue = int2float((int32_t)data->currentParameter->maxValue);
-            fMinValue = int2float((int32_t)data->currentParameter->minValue);
+            fMaxValue = int2float((int32_t)(1 << 12));
+            fMinValue = int2float((int32_t)0);
             fValue = 0.7853981633974483f + 4.71238898038469f*(fValue - fMinValue)/(fMaxValue-fMinValue); //fValue is now an angle in radians from 45° to 315°
             // center is at 51/24
             px = 51.0f - fsin(fValue)*14.0f;
@@ -188,7 +188,6 @@ void drawUi(PiPicoFxUiType*data)
 
 inline void knobCallback(uint16_t val,PiPicoFxUiType*data,uint8_t control)
 {
-    int32_t intermVal;
     if (data->locked == 0)
     {
         for (uint8_t c=0;c<data->currentProgram->nParameters;c++)
@@ -196,11 +195,7 @@ inline void knobCallback(uint16_t val,PiPicoFxUiType*data,uint8_t control)
             if (data->currentProgram->parameters[c].control==control)
             {
                 data->currentProgram->parameters[c].setParameter(val,data->currentProgram->data);
-                
-                intermVal = val*(data->currentProgram->parameters[c].maxValue - data->currentProgram->parameters[c].minValue);
-                intermVal >>= 12;
-                intermVal += data->currentProgram->parameters[c].minValue;
-                data->currentProgram->parameters[c].rawValue = (int16_t)intermVal;
+                data->currentProgram->parameters[c].rawValue = (int16_t)val;
 
             }
         }  
@@ -304,14 +299,15 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
                 break;
             case 2: // UI Level 2, change Parameter Value
                 data->currentParameter->rawValue += diff;
-                if (data->currentParameter->rawValue < data->currentParameter->minValue)
+                if (data->currentParameter->rawValue < 0)
                 {
-                    data->currentParameter->rawValue = data->currentParameter->minValue;
+                    data->currentParameter->rawValue = 0;
                 }
-                else if  (data->currentParameter->rawValue > data->currentParameter->maxValue)
+                else if  (data->currentParameter->rawValue > ((1 << 12)-1))
                 {
-                    data->currentParameter->rawValue = data->currentParameter->maxValue;
+                    data->currentParameter->rawValue = ((1 << 12)-1);
                 }
+                data->currentParameter->setParameter(data->currentParameter->rawValue,data->currentProgram->data);
                 drawUi(data);
                 break;
         }

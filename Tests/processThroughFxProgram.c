@@ -7,8 +7,17 @@
 #define SELECTED_FX_PROGRAM 1
 #define FX_PROGRAM_PARAM1_VAL 200 // amp model 2: gain 
 #define FX_PROGRAM_PARAM2_VAL 3800 // 
-#define FX_PROGRAM_PARAM3_VAL 0 // 
+#define FX_PROGRAM_PARAM3_VAL 520 // 
 #define TAIL_TIME 48000
+
+void zeroString(char*data,int16_t len)
+{
+    for (uint16_t c=0;c<len;c++)
+    {
+        *(data+c)=0;
+    }
+}
+
 int main(int argc, char ** argv)
 {
     uint32_t byteCnt=0;
@@ -18,7 +27,7 @@ int main(int argc, char ** argv)
     int16_t dataOut;
     char filenameOut[256];
     char filenameIn[256];
-    char paramDisplay[24];
+    char paramDisplay[64];
     size_t fnameLength;
     uint16_t param1, param2, param3;
     uint8_t fxProgramNr;
@@ -61,19 +70,32 @@ int main(int argc, char ** argv)
     {
         if (fxPrograms[fxProgramNr]->parameters[c].control == 0)
         {
-            fxPrograms[fxProgramNr]->parameters[c].setParameter(param1,fxPrograms[fxProgramNr]->data);
+            zeroString(paramDisplay,64);
+            for(uint8_t c2=0;c2<128;c2++)
+            {
+                fxPrograms[fxProgramNr]->parameters[c].setParameter(param1,fxPrograms[fxProgramNr]->data);
+            }
             fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
+
             printf("\tParameter 1: %s\r\n",paramDisplay);
         }
         else if (fxPrograms[fxProgramNr]->parameters[c].control == 1)
         {
-            fxPrograms[fxProgramNr]->parameters[c].setParameter(param2,fxPrograms[fxProgramNr]->data);
+            zeroString(paramDisplay,64);
+            for(uint8_t c2=0;c2<128;c2++)
+            {
+                fxPrograms[fxProgramNr]->parameters[c].setParameter(param2,fxPrograms[fxProgramNr]->data);
+            }
             fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
             printf("\tParameter 2: %s\r\n",paramDisplay);
         }
         else if (fxPrograms[fxProgramNr]->parameters[c].control == 2)
         {
-            fxPrograms[fxProgramNr]->parameters[c].setParameter(param3,fxPrograms[fxProgramNr]->data);
+            zeroString(paramDisplay,64);           
+            for(uint8_t c2=0;c2<128;c2++)
+            {
+                fxPrograms[fxProgramNr]->parameters[c].setParameter(param3,fxPrograms[fxProgramNr]->data);
+            }
             fxPrograms[fxProgramNr]->parameters[c].getParameterDisplay(fxPrograms[fxProgramNr]->data,paramDisplay);
             printf("\tParameter 3: %s\r\n",paramDisplay);   
         }
