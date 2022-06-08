@@ -215,7 +215,7 @@ FxProgram4DataType fxProgram4data = {
 };
 
 FxProgramType fxProgram4 = {
-    .name = "Amp Model 2         ",
+    .name = "Amp Model 2          ",
     .nParameters=3,
     .parameters = {
         {

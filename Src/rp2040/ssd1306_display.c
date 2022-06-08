@@ -212,6 +212,13 @@ void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
     }
     *SSPDR = 0x0;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    if(col==20) // clear last two columns
+    {
+        *SSPDR = 0x0;
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+        *SSPDR = 0x0;
+        while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
+    }
 
 }
 
