@@ -24,8 +24,12 @@ uint8_t switchValsOld[2]={0,0};
 uint32_t encoderValOld=0,encoderVal;
 uint8_t switchVals[2]={0,0};
 //PiPicoFxUiType uiControllerData;
-uint16_t adcChannelOld=0,adcChannel=0;
+uint16_t adcChannelOld0=0,adcChannel0=0;
+uint16_t adcChannelOld1=0,adcChannel1=0;
+uint16_t adcChannelOld2=0,adcChannel2=0;
+uint16_t adcChannel=0;
 #define UI_DMIN 1
+#define ADC_LOWPASS 2
 
 void isr_sio_irq_proc1_irq16() // only fires when a fir computation has to be made
 {
@@ -56,39 +60,42 @@ void core1Main()
         {
             // call the update function of the chosen program
             adcChannel = getChannel0Value();
-            if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
+            adcChannel0 = adcChannel0 + ((ADC_LOWPASS*(adcChannel - adcChannel0)) >> 8);
+            if ((adcChannel0 > adcChannelOld0) && (adcChannel0-adcChannelOld0) > UI_DMIN )
             {
-                knob0Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob0Callback(adcChannel0,&piPicoUiController);
+                adcChannelOld0=adcChannel0;
             }
-            else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
+            else if ((adcChannel0 < adcChannelOld0) && (adcChannelOld0-adcChannel0) > UI_DMIN )
             {
-                knob0Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob0Callback(adcChannel0,&piPicoUiController);
+                adcChannelOld0=adcChannel0;
             }
 
             adcChannel = getChannel1Value();
-            if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
+            adcChannel1 = adcChannel1 + ((ADC_LOWPASS*(adcChannel - adcChannel1)) >> 8);
+            if ((adcChannel1 > adcChannelOld1) && (adcChannel1-adcChannelOld1) > UI_DMIN )
             {
-                knob1Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob1Callback(adcChannel1,&piPicoUiController);
+                adcChannelOld1=adcChannel1;
             }
-            else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
+            else if ((adcChannel1 < adcChannelOld1) && (adcChannelOld1-adcChannel1) > UI_DMIN )
             {
-                knob1Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob1Callback(adcChannel1,&piPicoUiController);
+                adcChannelOld1=adcChannel1;
             }
 
             adcChannel = getChannel2Value();
-            if ((adcChannel > adcChannelOld) && (adcChannel-adcChannelOld) > UI_DMIN )
+            adcChannel2 = adcChannel2 + ((ADC_LOWPASS*(adcChannel - adcChannel2)) >> 8);
+            if ((adcChannel2 > adcChannelOld2) && (adcChannel2-adcChannelOld2) > UI_DMIN )
             {
-                knob2Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob2Callback(adcChannel2,&piPicoUiController);
+                adcChannelOld2=adcChannel2;
             }
-            else if ((adcChannel < adcChannelOld) && (adcChannelOld-adcChannel) > UI_DMIN )
+            else if ((adcChannel2 < adcChannelOld2) && (adcChannelOld2-adcChannel) > UI_DMIN )
             {
-                knob2Callback(adcChannel,&piPicoUiController);
-                adcChannelOld=adcChannel;
+                knob2Callback(adcChannel2,&piPicoUiController);
+                adcChannelOld2=adcChannel;
             }
             task &= ~(1 << TASK_UPDATE_POTENTIOMETER_VALUES);
             //*ADC_CS |= (1 << ADC_CS_START_MANY_LSB);

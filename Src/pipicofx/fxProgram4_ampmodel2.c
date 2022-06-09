@@ -63,7 +63,7 @@ static int16_t fxProgram4processSample(int16_t sampleIn,void*data)
 static void fxProgram4Param1Callback(uint16_t val,void*data) // gain
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    pData->gainStage.gain = pData->gainStage.gain + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val << 2) + 0x3F) - pData->gainStage.gain)) >> 8);
+    pData->gainStage.gain = ((val << 2) + 0x3F); //pData->gainStage.gain + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val << 2) + 0x3F) - pData->gainStage.gain)) >> 8);
     val >>= 9;
     val += 1;
     //pData->nWaveshapers = val;
@@ -81,7 +81,7 @@ static void fxProgram4Param2Callback(uint16_t val,void*data) // offset
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
     //pData->gainStage.offset = (val << 4) - 0x7FFF; 
-    pData->gainStage.offset = pData->gainStage.offset + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val - 0x7FF) << 4)  - pData->gainStage.offset)) >> 8);
+    pData->gainStage.offset = ((val - 0x7FF) << 4);//pData->gainStage.offset + ((FXPROGRAM6_DELAY_TIME_LOWPASS_T*(((val - 0x7FF) << 4)  - pData->gainStage.offset)) >> 8);
 }
 
 static void fxProgram4Param2Display(void*data,char*res)
