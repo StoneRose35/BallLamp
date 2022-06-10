@@ -9,11 +9,12 @@
 #include "audio/gainstage.h"
 #include "audio/bitcrusher.h"
 #include "audio/delay.h"
+#include "audio/compressor.h"
 
 #define PARAMETER_NAME_MAXLEN 16
 #define FXPROGRAM_NAME_MAXLEN 24
 #define FXPROGRAM_MAX_PARAMETERS 8
-#define N_FX_PROGRAMS 6
+#define N_FX_PROGRAMS 7
 
 
 #define FXPROGRAM6_DELAY_TIME_LOWPASS_T 2
@@ -96,13 +97,36 @@ typedef struct
 } FxProgram6DataType;
 
 
+typedef struct fxProgram
+{
+    WaveShaperDataType waveshaper1;
+    WaveShaperDataType waveshaper2;
+    WaveShaperDataType waveshaper3;
+    gainStageData gainStage;
+    CompressorDataType compressor;
+    int16_t highpass_out,highpass_old_out,highpass_old_in;
+    const char cabNames[4][24];
+    FirFilterType hiwattFir;
+    FirFilterType frontmanFir;
+    FirFilterType voxAC15Fir;
+    DelayDataType* delay;
+    uint8_t cabSimType;
+    
+} FxProgram7DataType;
+
+
+/* 
+   ***************************************************************************
+   ***************************************************************************
+*/
+
 FxProgramType fxProgram1;
 FxProgramType fxProgram2;
 FxProgramType fxProgram3;
 FxProgramType fxProgram4;
 FxProgramType fxProgram5;
 FxProgramType fxProgram6;
-
+FxProgramType fxProgram7;
 
 FxProgramType * fxPrograms[N_FX_PROGRAMS];
 
