@@ -323,8 +323,13 @@ class IrOptimizer:
             a = np.append(a,current_vectr[idx*5+3:idx*5 + 5])
             w, h = scipy.signal.freqz(b, a, worN=halflen, fs=48000)
             h_tot = h_tot * h
-
-        respdiff = map(lambda x, y: abs(x - y), self.ir_spec, h_tot)
+        logfreq = np.logspace(4, 14.287, len(w),base=2.0)
+        interpolator_h_tot = scipy.interpolate.interp1d(w,h_tot)
+        h_tot_logfreq = interpolator_h_tot(logfreq)
+        interpolator_ir_spec = scipy.interpolate.interp1d(w, self.ir_spec)
+        ir_spec_logfreq = interpolator_ir_spec(logfreq)
+        #respdiff = map(lambda x, y: abs(x - y), self.ir_spec, h_tot)
+        respdiff = map(lambda x, y: abs(np.log10(abs(x)) - np.log10(abs(y))), ir_spec_logfreq,h_tot_logfreq)
         respdiff = sum(respdiff)
         print("****** Iteration {} ******".format(self.iteration_cntr))
         for c in range(int(len(current_vectr)/5)):
@@ -369,7 +374,8 @@ if __name__ == "__main__":
 
     shortened_ir = optimizer.ir
     shortened_ir[64:] = 0
-    shortened_ir = np.array(shortened_ir)
+    shortened_ir[:64] = shorten_ir(np.array(optimizer.ir),64,48)
+    #shortened_ir = np.array(shortened_ir)
     spec_shorted = scipy.fft.fft(shortened_ir)
     print("FIR Coefficients")
     shortened_ir = renorm_ir(shortened_ir)
