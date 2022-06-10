@@ -124,7 +124,24 @@ static void fxProgram4Param4Display(void*data,char*res)
 static void fxProgram4Param5Callback(uint16_t val,void*data)
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    pData->waveshaperType = (val >> 10) ;
+    pData->waveshaperType = (val >> 10);
+    switch(pData->waveshaperType)
+    {
+        case 0:
+            initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperDefaultOverdrive);
+            break;
+        case 1:
+            initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperSoftOverdrive);
+            break;
+        case 2: 
+            initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperDistortion);
+            break;            
+        case 3:
+            initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperCurvedOverdrive);
+            break;
+        default:
+            break;
+    }
 }
 
 static void fxProgram4Param5Display(void*data,char*res)
