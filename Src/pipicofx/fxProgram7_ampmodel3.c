@@ -121,6 +121,7 @@ static void fxProgram7Setup(void*data)
     initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
     initWaveShaper(&pData->waveshaper2,&waveShaperSoftOverdrive);
     initWaveShaper(&pData->waveshaper3,&waveShaperCurvedOverdrive);
+    pData->delay = getDelayData();
     initDelay(pData->delay);
     initfirFilter(&pData->frontmanFir);
     initfirFilter(&pData->hiwattFir);

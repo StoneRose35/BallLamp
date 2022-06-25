@@ -1,8 +1,10 @@
 #include "inc/wavReader.h"
 #include "audio/fxprogram/fxProgram.h"
+#include "romfunc.h"
 #include <stdio.h>
 #include <stdlib.h> 
 #include <string.h>
+
 
 #define SELECTED_FX_PROGRAM 1
 #define FX_PROGRAM_PARAM1_VAL 200 // amp model 2: gain 
@@ -16,6 +18,16 @@ void zeroString(char*data,int16_t len)
     {
         *(data+c)=0;
     }
+}
+
+float int2float(int32_t a)
+{
+    return (float)a;
+}
+
+int32_t float2int(float a)
+{
+    return (int32_t)a;
 }
 
 int main(int argc, char ** argv)
