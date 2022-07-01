@@ -69,6 +69,30 @@
                 "isDefault": true
             },
             "detail": "Rendering OLED display images to Bitmaps."
+        },
+        {
+            "type": "cppbuild",
+            "label": "compile audio test",
+            "command": "/usr/bin/gcc-9",
+            "args": [
+                "-I./../Inc",
+                "-I./../Tests/inc",
+                "-fdiagnostics-color=always",
+                "-g",
+                "${file}", "./../Src/common/audio/*.c","./../Src/common/stringFunctions.c","./../Src/pipicofx/fxProgram*.c","./libs/wavReader.c",
+                "-o", "${fileBasenameNoExtension}"
+            ],
+            "options": {
+                "cwd": "${fileDirname}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Audio Test."
         }
     ]
 }

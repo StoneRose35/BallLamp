@@ -14,7 +14,14 @@ int16_t applyGain(int16_t sample,int16_t avgVolume,GainFunctionType*gainFunction
     }
     else
     {
-        return gainFunction->threshhold + ((sample-gainFunction->threshhold) >> (gainFunction->gainReduction));
+        if (sample > 0)
+        {
+            return gainFunction->threshhold + ((sample-gainFunction->threshhold) >> (gainFunction->gainReduction));
+        }
+        else
+        {
+            return -gainFunction->threshhold + ((sample+gainFunction->threshhold) >> (gainFunction->gainReduction));
+        }
     }
 }
 
