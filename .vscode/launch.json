@@ -131,7 +131,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "${workspaceFolder}/Tests/processThroughFxProgram",
-            "args": ["./audiosamples/guit_riff_16bit.wav", "2", "2000", "2000", "0"],
+            "args": ["./audiosamples/guit_riff_16bit.wav", "2", "6", "2000", "0"],
             "cwd": "${workspaceFolder}/Tests",
             "stopAtEntry": false,
             "environment": [],

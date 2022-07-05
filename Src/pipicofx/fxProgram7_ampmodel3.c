@@ -2,7 +2,7 @@
 #include "audio/fxprogram/fxProgram.h"
 #include "stringFunctions.h"
 
-#define P7_HIGHPASS 30000
+#define P7_HIGHPASS 31000
 
 
 static int16_t fxProgram7processSample(int16_t sampleIn,void*data)
@@ -17,28 +17,25 @@ static int16_t fxProgram7processSample(int16_t sampleIn,void*data)
     out = pData->highpass_out;
     //out = sampleIn;
     out = gainStageProcessSample(out, &pData->gainStage);
-
-
     out = waveShaperProcessSample(out,&pData->waveshaper1);
     out = compressorProcessSample(out,&pData->compressor);
+    
+
     out = waveShaperProcessSample(out,&pData->waveshaper2);
-    out = waveShaperProcessSample(out,&pData->waveshaper3);
+    //out = waveShaperProcessSample(out,&pData->waveshaper3);
 
 
-    out = out >> 1;
+    out = out >> 2;
     if (pData->cabSimType == 0)
     {
-        out >>= 2;
         out = firFilterProcessSample(out,&pData->hiwattFir);
     }
     else if (pData->cabSimType == 1)
     {
-        out >>= 2;
         out = firFilterProcessSample(out,&pData->frontmanFir);
     }
     else if (pData->cabSimType == 2)
     {
-        out >>= 2;
         out = firFilterProcessSample(out,&pData->voxAC15Fir);
     }
 
@@ -84,8 +81,8 @@ static void fxProgramParam3Callback(uint16_t val,void*data) // delay intensity
 static void fxProgramParam3Display(void*data,char*res)
 {
     int16_t dVal;
-    FxProgramType* fData = (FxProgramType*)data;
-    dVal=fData->parameters[2].rawValue/328;
+    FxProgram7DataType* fData = (FxProgram7DataType*)data;
+    dVal=fData->delay->mix/164;
     Int16ToChar(dVal,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {
@@ -127,7 +124,7 @@ static void fxProgram7Setup(void*data)
     initfirFilter(&pData->hiwattFir);
     initfirFilter(&pData->voxAC15Fir);
     setAttack(300,&pData->compressor);
-    setRelease(3000,&pData->compressor);
+    setRelease(300,&pData->compressor);
     initDelay(pData->delay);
 }
 
