@@ -46,7 +46,8 @@ void fixedPointInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals)
 {
 	uint32_t fracBase=1;
 	uint8_t c=0,fracLength=0,strPtr;
-	uint16_t fracNr,intNr;
+	uint32_t fracNr;
+	uint16_t intNr;
 	char fracStr[16];
 	strPtr=0;
 
@@ -61,7 +62,7 @@ void fixedPointInt16ToChar(char * str,uint16_t nr,uint8_t fracDecimals)
 		fracBase *= 5;
 	}
 	fracNr = (nr &  ((1 << fracDecimals) - 1))*fracBase;
-	UInt16ToChar(fracNr,fracStr);
+	UInt32ToChar(fracNr,fracStr);
 	c=0;
 	while(*(fracStr+c) != 0)
 	{
