@@ -18,6 +18,8 @@
 /Tests/audioout.txt
 /Tests/processThroughFxProgram
 /Tests/pipicouitest
+/Tests/compressorTest
+/Tests/audiosamples/*_proc*
 /Tests/libs/*.bmp
 /Tests/libs/bmplib
 /Src/common/fatLib
