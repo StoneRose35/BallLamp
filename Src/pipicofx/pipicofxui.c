@@ -85,7 +85,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);
             ssd1306DisplayImageStandardAdressing(13,2,imgBfr.sx,imgBfr.sy>>3,imgBfr.data); 
-            data->currentParameter->getParameterDisplay(data->currentProgram,paramValueBfr);
+            data->currentParameter->getParameterDisplay(data->currentProgram->data,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
 
             break;
@@ -107,6 +107,7 @@ void updateAudioUi(int16_t avgInput,int16_t avgOutput,uint8_t cpuLoad,PiPicoFxUi
             cy = 24.0f;
             drawLine(cx,cy,px,py,&imgBfr);   
             ssd1306DisplayImageStandardAdressing(13,2,imgBfr.sx,imgBfr.sy>>3,imgBfr.data); 
+            data->currentParameter->getParameterDisplay(data->currentProgram->data,paramValueBfr);
             ssd1306WriteText(paramValueBfr,0,7);
 
             break;
@@ -282,6 +283,8 @@ void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
                     data->currentProgramIdx = 0;
                 }
                 data->currentProgram = fxPrograms[data->currentProgramIdx];
+                data->currentParameterIdx=0;
+                data->currentParameter = data->currentProgram->parameters;
                 drawUi(data);
                 break;
             case 1: // UI Level 1, change parameter

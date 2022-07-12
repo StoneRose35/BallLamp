@@ -21,7 +21,7 @@ static int16_t fxProgram1processSample(int16_t sampleIn,void*data)
         out = waveShaperProcessSample(out,&pData->waveshaper1);
     }
 
-    out = out >> 2;
+    out = out >> 1;
 
     out = secondOrderIirFilterProcessSample(out,&pData->filter1);
     out >>= 1;
@@ -41,8 +41,8 @@ static void fxProgram1Param1Callback(uint16_t val,void*data) // highpass cutoff 
 
 static void fxProgram1Param1Display(void*data,char*res)
 {
-    FxProgramType* pData = (FxProgramType*)data;
-    Int16ToChar(pData->parameters[0].rawValue,res);
+    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    Int16ToChar(pData->highpassCutoff,res);
 }
 
 static void fxProgram1Param2Callback(uint16_t val,void*data) // number of waveshaper (more means more distortion)
@@ -56,8 +56,7 @@ static void fxProgram1Param2Callback(uint16_t val,void*data) // number of wavesh
 
 static void fxProgram1Param2Display(void*data,char*res)
 {
-    FxProgramType* fData = (FxProgramType*)data;
-    FxProgram1DataType* pData = (FxProgram1DataType*)fData->data;
+    FxProgram1DataType* pData = (FxProgram1DataType*)data;
     UInt8ToChar(pData->nWaveshapers,res);
 }
 
@@ -73,8 +72,8 @@ static void fxProgram1Param3Callback(uint16_t val,void*data) // delay intensity
 static void fxProgram1Param3Display(void*data,char*res)
 {
     int16_t dVal;
-    FxProgramType* fData = (FxProgramType*)data;
-    dVal=fData->parameters[2].rawValue/328;
+    FxProgram1DataType* pData = (FxProgram1DataType*)data;
+    dVal=pData->delay->mix/164;
     Int16ToChar(dVal,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {

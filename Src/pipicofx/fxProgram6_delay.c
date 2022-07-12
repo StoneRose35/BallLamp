@@ -19,8 +19,7 @@ static void fxProgram6Param1Callback(uint16_t val,void*data) // Delay Time
 static void fxProgram6Param1Display(void*data,char*res)
 {
     int16_t dval;
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram6DataType* pData = (FxProgram6DataType*)fData;
+    FxProgram6DataType* pData = (FxProgram6DataType*)data;
     dval = pData->delay->delayInSamples/48; // in ms
     Int16ToChar(dval,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-2;c++)
@@ -46,8 +45,7 @@ static void fxProgram6Param2Callback(uint16_t val,void*data) // Feedback
 
 static void fxProgram6Param2Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram6DataType* pData = (FxProgram6DataType*)fData;
+    FxProgram6DataType* pData = (FxProgram6DataType*)data;
     Int16ToChar(pData->delay->feedback/328,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {
@@ -71,8 +69,7 @@ static void fxProgram6Param3Callback(uint16_t val,void*data) // Mix
 
 static void fxProgram6Param3Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram6DataType* pData = (FxProgram6DataType*)fData;
+    FxProgram6DataType* pData = (FxProgram6DataType*)data;
     Int16ToChar(pData->delay->mix/328,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {

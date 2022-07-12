@@ -100,8 +100,7 @@ static void fxProgram4Param3Callback(uint16_t val,void*data) // choose cab sim f
 
 static void fxProgram4Param3Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram4DataType* pData = (FxProgram4DataType*)fData;
+    FxProgram4DataType* pData = (FxProgram4DataType*)data;
     for(uint8_t c=0;c<24;c++)
     {
         *(res+c)=*(pData->cabNames[pData->cabSimType]+c);

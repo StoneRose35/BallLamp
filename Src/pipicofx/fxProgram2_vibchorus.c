@@ -19,8 +19,7 @@ static void fxProgram2Param1Callback(uint16_t val,void*data) // frequency
 
 static void fxProgram2Param1Display(void*data,char*res)
 {
-    FxProgramType * fData = (FxProgramType*)data;
-    FxProgram2DataType* pData = (FxProgram2DataType*)fData;
+    FxProgram2DataType* pData = (FxProgram2DataType*)data;
     decimalInt16ToChar(pData->chorusData.frequency,res,2);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-3;c++)
     {
@@ -46,8 +45,8 @@ static void fxProgram2Param2Callback(uint16_t val,void*data) // depth
 static void fxProgram2Param2Display(void*data,char*res)
 {
     int16_t dVal;
-    FxProgramType * fData = (FxProgramType*)data;
-    dVal = fData->parameters[1].rawValue/328;
+    FxProgram2DataType* fData=(FxProgram2DataType*)data;
+    dVal = fData->chorusData.depth/164;
     Int16ToChar(dVal,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {
@@ -71,8 +70,8 @@ static void fxProgram2Param3Callback(uint16_t val,void*data) // mix
 static void fxProgram2Param3Display(void*data,char*res)
 {
     int16_t dVal;
-    FxProgramType * fData = (FxProgramType*)data;
-    dVal = fData->parameters[2].rawValue/328;
+    FxProgram2DataType* fData = (FxProgram2DataType*)data;
+    dVal = fData->chorusData.mix/328;
     Int16ToChar(dVal,res);
     for (uint8_t c=0;c<PARAMETER_NAME_MAXLEN-1;c++)
     {
