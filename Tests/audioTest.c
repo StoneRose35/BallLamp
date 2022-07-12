@@ -5,6 +5,16 @@
 #include "audio/waveShaper.h"
 #include "math.h"
 
+float int2float(int32_t a)
+{
+    return (float)a;
+}
+
+int32_t float2int(float a)
+{
+    return (int32_t)a;
+}
+
 void impulseTest()
 {
     FILE * fid;
@@ -34,26 +44,18 @@ void impulseTest()
     fclose(fid);
 }
 
+void waveshaperTest()
+{
+    WaveShaperDataType wsData;
+    initWaveShaper(&wsData,&waveShaperDefaultOverdrive);
+
+    waveShaperProcessSample(0,&wsData);
+    waveShaperProcessSample(100,&wsData); 
+    waveShaperProcessSample(-100,&wsData);   
+}
+
 int main()
 {
-    impulseTest();
-    /*
-    FILE * fid;
-    int16_t cval;
-    int16_t val_out;
-    WaveShaperDataType wavershaper1;
-
-    initWaveShaper(&wavershaper1,&waveShaperDistortion);
-    fid = fopen("audioout.txt","wt");
-    setNote(64);
-
-    for (uint16_t c=0;c< 1024;c++)
-    {
-        cval = getNextSineValue();
-        val_out = waveShaperProcessSample(cval,&wavershaper1);
-
-        fprintf(fid,"%d\r\n",val_out);
-    }
-    fclose(fid);
-    */
+    //impulseTest();
+    waveshaperTest();
 }
