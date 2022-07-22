@@ -47,7 +47,7 @@ void isr_io_irq_bank0_irq13()
     else if ((*ENCODER_2_INTR & (1 << ENCODER_2_EDGE_LOW)) == (1 << ENCODER_2_EDGE_LOW))
     {
         *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_LOW);
-        if(lastTrigger==1)
+        if(lastTrigger == 0)
         {
             ((*ENCODER_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal-- : encoderVal++;
         }
@@ -76,26 +76,7 @@ void isr_io_irq_bank0_irq13()
                 oldTickSwitches[c]=getTickValue();
             }
         }
-    }/*
-    else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_HIGH)) == (1 << SWITCH_EDGE_HIGH))
-    {
-        *SWITCH_INTR |= (1 << SWITCH_EDGE_HIGH);
-        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
-        {
-            switchVal=0;
-            oldtickswitch=getTickValue();
-        }
     }
-    else if ((*SWITCH_INTR & (1 << SWITCH_EDGE_LOW)) == (1 << SWITCH_EDGE_LOW))
-    {
-        *SWITCH_INTR |= (1 << SWITCH_EDGE_LOW);
-        if (oldtickswitch + ROTARY_ENCODER_DEBOUNCE  < getTickValue())
-        {
-            switchVal=1;
-            oldtickswitch=getTickValue();
-        }
-    }
-*/
 
 }
 
@@ -108,9 +89,6 @@ void initRotaryEncoder(const uint8_t* pins,const uint8_t nswitches)
     *ENCODER_1_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
     *ENCODER_2_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
     *ENCODER_2_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
-
-    //*SWITCH_PAD_CNTR &= ~(1 << PADS_BANK0_GPIO0_PDE_LSB);
-    //*SWITCH_PAD_CNTR |= (1 << PADS_BANK0_GPIO0_PUE_LSB);
 
     // set io bank control to sio
     *ENCODER_1_PIN_CNTR = 5;

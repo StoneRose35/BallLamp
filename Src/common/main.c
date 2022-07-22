@@ -154,37 +154,22 @@
 #include <neopixelDriver.h>
 #include "system.h"
 #include "core.h"
-//#include "romfunc.h"
 #include "systemClock.h"
 #include "systick.h"
-//#include "datetimeClock.h"
 #include "uart.h"
 #include "dma.h"
 #include "pio.h"
-//#include "pwm.h"
 #include "adc.h"
 #include "timer.h"
-//#include "spi_sdcard_display.h"
 #include "ssd1306_display.h"
 #include "debugLed.h"
-//#include "fatLib.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
 #include "bufferedInputHandler.h"
-//#include "colorInterpolator.h"
-//#include "interpolators.h"
 #include "stringFunctions.h"
-//#include "taskManager.h"
-//#include "neopixelCommands.h"
 #include "charDisplay.h"
-//#include "ds18b20.h"
-//#include "remoteSwitch.h"
 #include "rotaryEncoder.h"
 #include "cliApiTask.h"
-//#include "uiStack.h"
-//#include "heater.h"
-//#include "services/triopsBreederService.h"
-//#include "services/hibernateService.h"
 #include "i2s.h"
 #include "audio/sineplayer.h"
 #include "audio/simpleChorus.h"
@@ -243,13 +228,9 @@ int main(void)
 	initUsbPll();
 	initSystickTimer();
 	initDMA();
-	//initPwm();
 	initPio();
 	initGpio();
-	//initSpi();
-	//initDatetimeClock();
 	initTimer();
-	//initUart(BAUD_RATE);
 	initAdc();
 	//
 
@@ -259,7 +240,6 @@ int main(void)
 	 * Initialise Component-specific drivers
 	 * 
 	 * */
-	//initCliApi();
 	initSsd1306Display();
 	initI2S();
 	//enableAudioEngine(); // i2s adc and dac
@@ -283,15 +263,7 @@ int main(void)
 		fxPrograms[c]->setup(fxPrograms[c]->data);
 	}
 	drawUi(&piPicoUiController);
-	/*
-	ssd1306WriteText(fxPrograms[fxProgramIdx]->name,0,0);
-	ssd1306WriteText("P1:",0,4);
-	ssd1306WriteText("P2:",0,5);
-	ssd1306WriteText("P3:",0,6);
-	ssd1306WriteText(fxPrograms[fxProgramIdx]->param1Name,3,4);
-	ssd1306WriteText(fxPrograms[fxProgramIdx]->param2Name,3,5);
-	ssd1306WriteText(fxPrograms[fxProgramIdx]->param3Name,3,6);
-	*/
+
 
 	startCore1(&core1Main);
 	// sync with core 1

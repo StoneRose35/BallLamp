@@ -185,7 +185,7 @@ FxProgramType fxProgram7 = {
         },
         {
             .name = "Cab Type       ",
-            .control=3,
+            .control=0xFF,
             .increment=1024,
             .rawValue=0,
             .getParameterDisplay=&fxProgramParam4Display,

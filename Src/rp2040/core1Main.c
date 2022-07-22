@@ -38,7 +38,7 @@ void isr_sio_irq_proc1_irq16() // only fires when a fir computation has to be ma
         core1FirData = (FirFilterType**)*SIO_FIFO_RD;
         firstHalfOut = processFirstHalf(*core1FirData);
         *SIO_FIFO_WR = firstHalfOut;
-        *SIO_FIFO_ST = (1 << 2);
+        //*SIO_FIFO_ST = (1 << 2);
     }
     else if (((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_ROE_LSB)) != 0) || ((*SIO_FIFO_ST & (1 << SIO_FIFO_ST_WOF_LSB)) != 0))
     {
@@ -122,7 +122,7 @@ void core1Main()
         }
         switchValsOld[1] = getSwitchValue(1);
        encoderVal=getEncoderValue();
-       if (encoderValOld > encoderVal + 1 || encoderValOld < encoderVal - 1)
+       if (encoderValOld > encoderVal+3|| encoderValOld < encoderVal-3)
        {
            rotaryCallback(encoderVal,&piPicoUiController);
            encoderValOld=encoderVal;
