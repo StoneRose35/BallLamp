@@ -122,7 +122,7 @@ void core1Main()
         }
         switchValsOld[1] = getSwitchValue(1);
        encoderVal=getEncoderValue();
-       if (encoderValOld > encoderVal+3|| encoderValOld < encoderVal-3)
+       if (encoderValOld > encoderVal + 2 || encoderValOld < encoderVal - 2)
        {
            rotaryCallback(encoderVal,&piPicoUiController);
            encoderValOld=encoderVal;

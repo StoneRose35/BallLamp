@@ -267,7 +267,14 @@ void button2Callback(PiPicoFxUiType*data)
 void rotaryCallback(uint32_t encoderValue,PiPicoFxUiType*data)
 {
     int32_t diff = (encoderValue - data->oldEncoderValue);
-    diff >>=2;
+    if (diff > 0)
+    {
+        diff = 1;
+    }
+    else
+    {
+        diff = -1;
+    }
     if (data->locked == 0 && diff != 0)
     {
         switch(data->displayLevel)
