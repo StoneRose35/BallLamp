@@ -10,7 +10,14 @@ int16_t applyGain(int16_t sample,int16_t avgVolume,GainFunctionType*gainFunction
     }
     else if (gainFunction->gainReduction > 4)
     {
-        return gainFunction->threshhold;
+        if (sample > 0)
+        {
+            return gainFunction->threshhold;
+        }
+        else
+        {
+            return -gainFunction->threshhold;
+        }
     }
     else
     {
@@ -84,7 +91,7 @@ int16_t compressorProcessSample(int16_t sampleIn,CompressorDataType*data)
         }
         if (data->currentAvg < 0) // overflow in this case
         {
-            data->currentAvg=(1 << 15);
+            data->currentAvg=(1 << 15)-1;
         }
     }
     return sampleOut;
