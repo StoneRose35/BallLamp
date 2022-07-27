@@ -95,7 +95,6 @@ static void fxProgramP2Display(void*data,char*res)
         ival = float2int(dval);
         i16val = (int16_t)ival;
         Int16ToChar(i16val,res);
-        uint8_t c=0;
         while (*(res+c) != 0)
         {
             c++;
@@ -124,23 +123,16 @@ static void fxProgramP3Callback(uint16_t val,void*data)
 static void fxProgramP3Display(void*data,char*res)
 {
     FxProgram8DataType * pData=(FxProgram8DataType*)data;
-    switch (pData->compressor.gainFunction.gainReduction)
+    const char* dstrings[5];
+    dstrings[0]="1:2            ";
+    dstrings[1]="1:4            ";
+    dstrings[2]="1:8            ";
+    dstrings[3]="1:16           ";
+    dstrings[4]="1:Inf          ";
+
+    for(uint8_t c=0;c<16;c++)
     {
-        case 0: 
-            res="1:2            ";
-            break;
-        case 1: 
-            res="1:4            ";
-            break;
-        case 2:
-            res="1:8            ";
-            break;
-        case 3:
-            res="1:16           ";
-            break;
-        case 4:
-            res="1:Inf          ";
-            break;
+        *(res+c)=*(dstrings[pData->compressor.gainFunction.gainReduction] + c);
     }
 }
 
@@ -170,7 +162,7 @@ FxProgram8DataType fxProgram8Data =
 FxProgramType fxProgram8 = {
     .data = (void*)&fxProgram8Data,
     .name = "Compressor             ",
-    .nParameters=3,
+    .nParameters=4,
     .parameters = {
         {
             .name="Attack         ",

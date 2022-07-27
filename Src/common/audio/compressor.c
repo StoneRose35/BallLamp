@@ -2,34 +2,39 @@
 #include "audio/compressor.h"
 #include "romfunc.h"
 
-int16_t applyGain(int16_t sample,int16_t avgVolume,GainFunctionType*gainFunction)
+int16_t applyGain(int16_t sample,int16_t avgVolume,CompressorDataType*comp)
 {
-    if (avgVolume < gainFunction->threshhold)
+    int16_t sample_reduced;
+    int16_t sampleOut;
+    int32_t sampleInterm;
+    if (avgVolume < comp->gainFunction.threshhold)
     {
-        return sample;
+        sample_reduced = avgVolume;
+        sampleInterm=sample;
     }
-    else if (gainFunction->gainReduction > 4)
+    else if (comp->gainFunction.gainReduction > 4)
     {
-        if (sample > 0)
+        sample_reduced =  comp->gainFunction.threshhold;
+        sampleInterm=sample*sample_reduced;
+        if (avgVolume != 0)
         {
-            return gainFunction->threshhold;
-        }
-        else
-        {
-            return -gainFunction->threshhold;
+            sampleInterm = sampleInterm/avgVolume;
         }
     }
     else
     {
-        if (sample > 0)
+        sample_reduced =  comp->gainFunction.threshhold + ((avgVolume-comp->gainFunction.threshhold) >> (comp->gainFunction.gainReduction));
+        sampleInterm=sample*sample_reduced;
+        if (avgVolume != 0)
         {
-            return gainFunction->threshhold + ((sample-gainFunction->threshhold) >> (gainFunction->gainReduction));
-        }
-        else
-        {
-            return -gainFunction->threshhold + ((sample+gainFunction->threshhold) >> (gainFunction->gainReduction));
+            sampleInterm = sampleInterm/avgVolume;
         }
     }
+
+
+    sampleOut=(int16_t)sampleInterm;
+
+    return sampleOut;
 }
 
 void setAttack(int32_t attackInUs,CompressorDataType*data)
@@ -54,7 +59,7 @@ int16_t compressorProcessSample(int16_t sampleIn,CompressorDataType*data)
     int16_t delta;
     int16_t sampleOut;
 
-    sampleOut = applyGain(sampleIn,data->currentAvg,&data->gainFunction);
+    sampleOut = applyGain(sampleIn,data->currentAvg,data);
     if(sampleOut < 0)
     {
         absSample = -sampleOut;

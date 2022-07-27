@@ -26,20 +26,20 @@ typedef void(*getParameterDisplayFct)(void*,char*);
 
 typedef struct {
     const char name[PARAMETER_NAME_MAXLEN];
-    uint8_t control; // 0-2: Potentiometers, 255: no control binding
+    const uint8_t control; // 0-2: Potentiometers, 255: no control binding
     int16_t rawValue;
     int16_t increment;
-    getParameterValueFct getParameterValue; // returns the converted parameter value, data type depends on the implementation
-    getParameterDisplayFct getParameterDisplay; // returns the display value as a string of a Parameter
+    const getParameterValueFct getParameterValue; // returns the converted parameter value, data type depends on the implementation
+    const getParameterDisplayFct getParameterDisplay; // returns the display value as a string of a Parameter
     paramChangeCallback setParameter; // sets the parameter in a meaningful way in the individual program
 } FxProgramParameterType;
 
 typedef struct {
     const char name[FXPROGRAM_NAME_MAXLEN];
     FxProgramParameterType parameters[FXPROGRAM_MAX_PARAMETERS];
-    processSampleCallback processSample;
-    setupCallback setup;
-    uint8_t nParameters;
+    const processSampleCallback processSample;
+    const setupCallback setup;
+    const uint8_t nParameters;
     void * data;
 } FxProgramType;
 

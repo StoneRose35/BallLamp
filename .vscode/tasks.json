@@ -80,7 +80,8 @@
                 "-fdiagnostics-color=always",
                 "-g",
                 "${file}", "./../Src/common/audio/*.c","./../Src/common/stringFunctions.c","./../Src/pipicofx/fxProgram*.c","./libs/wavReader.c",
-                "-o", "${fileBasenameNoExtension}"
+                "-o", "${fileBasenameNoExtension}",
+                "-lm"
             ],
             "options": {
                 "cwd": "${fileDirname}"
