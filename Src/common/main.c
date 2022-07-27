@@ -260,7 +260,10 @@ int main(void)
 	ssd1306ClearDisplay();
 	for (uint8_t c=0;c<N_FX_PROGRAMS;c++)
 	{
-		fxPrograms[c]->setup(fxPrograms[c]->data);
+		if ((uint32_t)fxPrograms[c]->setup != 0)
+		{
+			fxPrograms[c]->setup(fxPrograms[c]->data);
+		}
 	}
 	drawUi(&piPicoUiController);
 
