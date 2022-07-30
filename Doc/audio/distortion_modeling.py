@@ -5,6 +5,79 @@ import matplotlib.pyplot as plt
 import scipy.signal
 from numpy import uint, ushort
 
+class TransferFunctionException(Exception):
+    def __init__(self,msg):
+        self.msg = msg
+
+
+class GainReductedTransferFunction:
+    '''
+    distortion surve connecting a unity-gain curve from 0 to q with another linear segment from rx/ry with slope m
+    '''
+    def __init__(self,q,rx,ry,m,qm=-1.1,rxm=-1.0,rym=-1.0,mm=1.0):
+        self.q=q
+        self.rx=rx
+        self.ry=ry
+        self.m=m
+        self.qm=qm
+        self.rxm=rxm
+        self.rym=rym
+        self.mm=mm
+        errormsg=""
+        if (q < 0 or q > 1):
+            errormsg += "q is outside of the range 0.0 to 1.0\r\n"
+        if rx < q:
+            errormsg += "second point rx must be between q and 1.0\r\n"
+        if ry > rx:
+            errormsg += "y value of second point (ry) must be smaller than rx\r\n"
+        if m < 0.0 or m > 1.0:
+            errormsg += "slope m is outside of the valid range 0.0 to 1.0"
+        if len(errormsg) > 0:
+            raise TransferFunctionException(errormsg)
+
+        mat = np.array([[self.q * self.q * self.q, self.q*self.q, self.q, 1], [3*self.q*self.q, 2*self.q, 1, 0],
+                        [self.rx*self.rx*self.rx, self.rx*self.rx, self.rx, 1], [3 * self.rx * self.rx, 2 * self.rx, 1, 0]])
+        vectr = np.array([self.q, 1, self.ry,self.m])
+        self.coeffs = np.linalg.solve(mat, vectr)
+        self.coeffsm=None
+        if qm > -1.0:
+            if qm > 0 or qm < -1:
+                errormsg += "qm is outside of the range -1.0 to 0.0\r\n"
+            if rxm > qm:
+                errormsg += "second point rxm must be between q and -1.0\r\n"
+            if rym < rxm:
+                errormsg += "y value of second point (rym) must be larger than rxm\r\n"
+            if mm < 0.0 or mm > 1.0:
+                errormsg += "slope mm is outside of the valid range 0.0 to 1.0"
+            if len(errormsg) > 0:
+                raise TransferFunctionException(errormsg)
+
+            mat2 = np.array(
+                [[self.qm * self.qm * self.qm, self.qm * self.qm, self.qm, 1], [3 * self.qm * self.qm, 2 * self.qm, 1, 0],
+                 [self.rxm * self.rxm * self.rxm, self.rxm * self.rxm, self.rxm, 1],
+                 [3 * self.rxm * self.rxm, 2 * self.rxm, 1, 0]])
+            vectr2 = np.array([self.qm, 1, self.rym, self.mm])
+            self.coeffsm = np.linalg.solve(mat2, vectr2)
+
+    def compute(self, x):
+        if x < 0:
+            if self.coeffsm is not None:
+                if x > self.qm:
+                    return x
+                elif self.qm >= x > self.rxm:
+                    return self.coeffsm[0]*x*x*x + self.coeffsm[1]*x*x + self.coeffsm[2]*x + self.coeffsm[3]
+                else:
+                    return self.rym - self.mm*(self.rym-x)
+            else:
+                return x
+        else:
+            if x < self.q:
+                return x
+            elif self.rx > x >= self.q:
+                return self.coeffs[0] * x * x * x + self.coeffs[1] * x * x + self.coeffs[2] * x + self.coeffs[3]
+            else:
+                return self.ry + self.m * (x - self.ry)
+
 
 class TransferFunction:
     def __init__(self,xa,xb,ya,yb):

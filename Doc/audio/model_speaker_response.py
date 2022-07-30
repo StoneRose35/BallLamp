@@ -57,7 +57,7 @@ def highpassed_ir(ir, f_cutoff,f_sample):
     return hp_ir
 
 def renorm_ir(ir):
-    current_power = np.sqrt(np.sum(np.power(ir,2)))
+    current_power = np.sum(ir)# np.sqrt(np.sum(np.power(ir,2)))
     return ir/current_power
 
 def plot_model_cab_curve(sampling_rate=44100,axes=None,style="-k",sample_length=4096):
@@ -359,14 +359,6 @@ class IrOptimizer:
         return soss
 
 if __name__ == "__main__":
-    #fig, axxes = plt.subplots()
-
-    #init_filter_data = np.array([[[1.,0.,0.],[1.,0.,0.]],[[1.,0.,0.],[1.,0.,0.]],[[1.,0.,0.],[1.,0.,0.]]])
-
-    #optimizer.load_ir("resources/soundwoofer/Vox AC15C1 SM57 1.wav")
-    #optim_filter_data = init_filter_data.flatten()
-    #ir_spec = get_ir_spec("resources/soundwoofer/Fender Frontman 212 AKG D112.wav")
-    #frequency_response_diff(optim_filter_data, ir_spec, True)
 
     ir_files = ["resources/soundwoofer/Hiwatt Maxwatt M412 SM57 2.wav", "resources/soundwoofer/Fender Frontman 212 AKG D112.wav", "resources/soundwoofer/Vox AC15C1 SM57 1.wav"]
     optimizer = IrOptimizer(3)
@@ -389,11 +381,6 @@ if __name__ == "__main__":
     plt.xscale("log")
     plt.show()
 
-    #plt.plot(20.*np.log10(abs(remaining_spec)))
-    #plt.show()
-    #halflen = int(len(remaining_spec) / 2.)
-    #optimizer.ir_spec = remaining_spec[:halflen]
-    #optimizer.ir_spec_full = remaining_spec
 
     res = scipy.optimize.minimize(optimizer.get_diff,optimizer.optim_data,method='Nelder-Mead',
                                   bounds=optimizer.bounds,callback=optimizer.iterator_callback,options = {"fatol":0.000001,'xatol': 0.000001})
@@ -401,11 +388,3 @@ if __name__ == "__main__":
     optimizer.optim_data = res.x
     best_sos = optimizer.get_sos()
     audio.filter_calculations.plot_iir_filter(best_sos,do_plot=True,fs=48000,do_overflow=True,sample_size=None,ftype="Custom",type="Custom")
-
-
-
-
-    #plot_model_cab_curve(axes=axxes,style=".-k")
-    #plot_simple_model_cab_curve(axes=axxes,style=".-k")
-
-    #plt.ylim([-60,0])

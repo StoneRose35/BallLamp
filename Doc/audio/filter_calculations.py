@@ -87,7 +87,7 @@ def get_sine_table():
         sinetable.append(int(math.cos(c/nvals*math.pi*2)*((1 << (bitres-1)) - 1)))
     return sinetable
 
-def design_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
+def design_iir_filter(rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
     if fc is None:
         fc = fs/2
     if ftype == "highpass" or ftype=="lowpass":
@@ -108,7 +108,7 @@ def design_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sampl
         sos= [[1.,0.,0.], [1.,0.,0.]]
     return sos
 
-def plot_iir_filter(sos,do_plot=True,fs=48000,do_overflow=True,sample_size=16,scaling=None,fc=None,ftype=None,type=None):
+def plot_iir_filter(sos,do_plot=True,fs=48000,do_overflow=True,sample_size=16,scaling=None,fc=None,ftype=None,type=None,rs=0):
 
     auto_sample_size = sample_size is None
     cnt=0
@@ -268,8 +268,27 @@ def plot_iir_filter(sos,do_plot=True,fs=48000,do_overflow=True,sample_size=16,sc
     return sos_returned
 
 def design_and_plot_iir_filter(do_plot=True,rs=20,fc=None,fs=48000,do_overflow=True,sample_size=16,scaling=None,type="cheby2",ftype="lowpass"):
-    sos = design_iir_filter(rs=20,fc=None,fs=48000,sample_size=16,scaling=None,type="cheby2",ftype="lowpass")
-    plot_iir_filter(sos,do_plot=do_plot,fs=fs,do_overflow=do_overflow,sample_size=sample_size,scaling=scaling,fc=fc, ftype=ftype,type=type)
+    sos = design_iir_filter(rs=rs,fc=fc,fs=fs,sample_size=sample_size,scaling=scaling,type=type,ftype=ftype)
+    plot_iir_filter(sos,do_plot=do_plot,fs=fs,do_overflow=do_overflow,sample_size=sample_size,scaling=scaling,fc=fc, ftype=ftype,type=type,rs=rs)
+
+def plot_sos_frequency_response(sosections,fs=48000,nfreqs=512):
+
+    h_tot = np.ones(nfreqs)
+    w = np.linspace(0, fs / 2., nfreqs)
+    for sos in sosections:
+        b = sos[0]
+        a = sos[1]
+        w, h = scipy.signal.freqz(b, a, worN=nfreqs, fs=fs)
+        h_tot = h_tot * h
+
+    fig, axxes = plt.subplots(2, 1)
+    axxes[0].plot(w, 20. * np.log10(abs(h_tot)) - max(20.* np.log10(abs(h_tot))), ".-r")
+    axxes[0].set_xscale("log")
+    axxes[0].set_ylim([-60,0])
+
+    axxes[1].plot(w, np.unwrap(np.arctan2(np.real(h_tot), np.imag(h_tot))), ".-r")
+    axxes[1].set_xscale("log")
+    plt.show()
 
 def design_and_plot_oversampling_lowpass_cheby(do_plot=False,to_integer=True,rs=20,oversampling=2,fc=None):
     ftype = 'lowpass'
@@ -391,16 +410,27 @@ if __name__ == "__main__":
     notenr = 128
     sample_rate=48000
     oversampling = 4
-    phaseincr_bitsize=32
+    phaseincr_bitsize=36
     rs=3
     #design_and_plot_iir_filter(True,rs=10,fc=170,type="cheby2",ftype="highpass")
-    design_and_plot_iir_filter(True, rs=6, fc=6000, do_overflow=True,sample_size=None, type="cheby1", ftype="lowpass")
 
-    #design_oversampling_comb_lp_filter(rs,oversampling,sample_rate)
-    #design_and_plot_oversampling_lowpass_cheby(True,oversampling=4,rs=1,fc=17333.18)  #first antialiasing filter
-    #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=37084.24) #second antialiasing filter
-    #design_and_plot_oversampling_lowpass_cheby(True, oversampling=4, rs=3, fc=63238) # third antialiasing filter
-    #design_and_plot_oversampling_lowpass_butter(True,oversampling=1,fc=6000)
+    ord = scipy.signal.cheb1ord(200./24000.,20./24000,1,50,analog=False)
+    # manual modeling attempt of a guitar speaker using 4 iir filters
+    iirfilters=[]
+    sos = design_iir_filter(6,3500,type="cheby1",ftype="lowpass")
+    design_and_plot_iir_filter(True,rs=6,fc=3500,do_overflow=True,sample_size=None,type="cheby1",ftype="lowpass")
+    iirfilters.append([sos[0][:3],sos[0][3:]])
+    sos = design_iir_filter(6,2500,type="cheby1",ftype="lowpass")
+    design_and_plot_iir_filter(True, rs=6, fc=2500, do_overflow=True, sample_size=None, type="cheby1", ftype="lowpass")
+    iirfilters.append([sos[0][:3],sos[0][3:]])
+    sos=design_iir_filter(16, 120, type="cheby1", ftype="highpass")
+    design_and_plot_iir_filter(True, rs=16, fc=12000, do_overflow=True, sample_size=None, type="cheby1", ftype="highpass")
+    iirfilters.append([sos[0][:3],sos[0][3:]])
+    sos=design_iir_filter(1, 300, type="butter", ftype="highpass")
+    design_and_plot_iir_filter(True, rs=1, fc=300, do_overflow=True, sample_size=None, type="butter", ftype="highpass")
+    iirfilters.append([sos[0][:3],sos[0][3:]])
+
+    plot_sos_frequency_response(iirfilters)
 
 
 

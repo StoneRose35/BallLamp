@@ -56,6 +56,19 @@ def generate_curved_overdrive():
     plt.plot(xvals, yvals,".-k")
     plt.show()
 
+def generate_asymmetric_od():
+
+    t1 = distortion_modeling.GainReductedTransferFunction(0.27,0.35,0.3,0.125/2,-0.7,-0.99,-0.8,0.0)
+    xvals = np.linspace(-1.,1.*63./64.,128)
+    yvals = []
+    bytearray=""
+    for e in xvals:
+        yvals.append(t1.compute(e))
+        bytearray += "0x{:x}, ".format(ushort(yvals[-1]*32767))
+    print(bytearray)
+    plt.plot(xvals, yvals,".-k")
+    plt.show()
+
 
 def generate_unity():
 
@@ -74,5 +87,5 @@ if __name__ == "__main__":
     #generate_default_distortion()
     #generate_unity()
     #generate_distortion()
-    generate_curved_overdrive()
-
+    #generate_curved_overdrive()
+    generate_asymmetric_od()
