@@ -36,31 +36,34 @@ int16_t firFilterProcessSample(int16_t sampleIn,FirFilterType*data)
     firstHalf = processFirstHalf(data);
     #endif
     firstHalf += secondHalf;
+    //firstHalf=secondHalf;
     return firstHalf;
 }
 
 int16_t processFirstHalf(FirFilterType*data)
 {
-    int16_t res=0;
+    int32_t res=0;
     uint8_t runningPtr=(data->delayPointer+1) & (data->filterLength-1);
     for(uint8_t c=0;c<(data->filterLength >> 1);c++)
     {
-        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c]) >> 15;
+        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c]);
         runningPtr += 1;
         runningPtr &= (data->filterLength-1);
     }
-    return res;
+    res >>= 15;
+    return (int16_t)res;
 }
 
 int16_t processSecondHalf(FirFilterType*data)
 {
-    int16_t res=0;
+    int32_t res=0;
     uint8_t runningPtr=(data->delayPointer+1+(data->filterLength>>1)) & (data->filterLength-1);
     for(uint8_t c=0;c<(data->filterLength >> 1);c++)
     {
-        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c+(data->filterLength >> 1)]) >> 15;
+        res += ((uint32_t)data->delayBuffer[runningPtr]*(uint32_t)data->coefficients[c+(data->filterLength >> 1)]);
         runningPtr += 1;
         runningPtr &= (data->filterLength-1);
     }
-    return res;
+    res >>= 15;
+    return (int16_t)res;
 }

@@ -13,30 +13,38 @@ static int16_t fxProgram7processSample(int16_t sampleIn,void*data)
     pData->highpass_out = (((((1 << 15) + P7_HIGHPASS) >> 1)*(sampleIn - pData->highpass_old_in))>>15) + ((P7_HIGHPASS *pData->highpass_old_out) >> 15);
     pData->highpass_old_in = sampleIn;
     pData->highpass_old_out = pData->highpass_out;
-
-    out = pData->highpass_out;
-    //out = sampleIn;
-    out = gainStageProcessSample(out, &pData->gainStage);
+    //out = pData->highpass_out;
+    out = sampleIn;
+    //out = compressorProcessSample(out,&pData->compressor);
+    out = gainStageProcessSample(out,&pData->gainStage);
+    //out = waveShaperProcessSample(out,&pData->waveshaper2);
     out = waveShaperProcessSample(out,&pData->waveshaper1);
-    out = compressorProcessSample(out,&pData->compressor);
-    
-
-    out = waveShaperProcessSample(out,&pData->waveshaper2);
-    //out = waveShaperProcessSample(out,&pData->waveshaper3);
 
 
-    out = out >> 2;
+
     if (pData->cabSimType == 0)
     {
+        out >>= 2;
         out = firFilterProcessSample(out,&pData->hiwattFir);
     }
     else if (pData->cabSimType == 1)
     {
+        out >>= 2;
         out = firFilterProcessSample(out,&pData->frontmanFir);
     }
     else if (pData->cabSimType == 2)
     {
+        out >>= 2;
         out = firFilterProcessSample(out,&pData->voxAC15Fir);
+    }
+    else
+    {
+        out >>=4;
+        out = secondOrderIirFilterProcessSample(out,&pData->cabF1);
+        out <<=4;
+        //out = secondOrderIirFilterProcessSample(out,&pData->cabF2);
+        //out = secondOrderIirFilterProcessSample(out,&pData->cabF3);
+        //out = secondOrderIirFilterProcessSample(out,&pData->cabF4);
     }
 
     out = delayLineProcessSample(out, pData->delay);
@@ -115,7 +123,7 @@ static void fxProgramParam4Display(void*data,char*res)
 static void fxProgram7Setup(void*data)
 {
     FxProgram7DataType* pData = (FxProgram7DataType*)data;
-    initWaveShaper(&pData->waveshaper1,&waveShaperDefaultOverdrive);
+    initWaveShaper(&pData->waveshaper1,&waveShaperAsymm);
     initWaveShaper(&pData->waveshaper2,&waveShaperSoftOverdrive);
     initWaveShaper(&pData->waveshaper3,&waveShaperCurvedOverdrive);
     pData->delay = getDelayData();
@@ -142,7 +150,31 @@ FxProgram7DataType fxProgram7data = {
         "Hiwatt M412        ", 
         "Fender Frontman    ",
         "Vox AC15           ",
-        "Off                "
+        "IIR                "
+    },
+    .cabF1 = {
+        .bitRes=16,
+        .coeffA = {-56503, 27401},
+        .coeffB = {459, 918, 459},
+        .w =  {0,0,0}
+    },
+    .cabF2 = {
+        .bitRes=16,
+        .coeffA = {-59675, 28818},
+        .coeffB = {239, 478, 239},
+        .w =  {0,0,0}
+    },
+    .cabF3 = {
+        .bitRes=16,
+        .coeffA = {19973, 28188},
+        .coeffB = {1623,-3247,1623},
+        .w =  {0,0,0}
+    },
+    .cabF4 = {
+        .bitRes=16,
+        .coeffA = {-63714, 30996},
+        .coeffB = {31869, -63739, 31869},
+        .w =  {0,0,0}
     },
     .gainStage.gain=512,
     .gainStage.offset=0,

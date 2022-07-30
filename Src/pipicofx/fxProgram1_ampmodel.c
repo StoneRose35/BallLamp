@@ -24,7 +24,7 @@ static int16_t fxProgram1processSample(int16_t sampleIn,void*data)
     out = out >> 1;
 
     out = secondOrderIirFilterProcessSample(out,&pData->filter1);
-    out >>= 1;
+    out >>= 2;
     out = firFilterProcessSample(out,&pData->filter3);
     out = delayLineProcessSample(out, pData->delay);
     return out;

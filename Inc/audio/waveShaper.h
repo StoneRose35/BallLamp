@@ -12,7 +12,8 @@ const WaveShaperDataType waveShaperUnity;
 const WaveShaperDataType waveShaperDefaultOverdrive;
 const WaveShaperDataType waveShaperSoftOverdrive;
 const WaveShaperDataType waveShaperDistortion;
-const WaveShaperDataType waveShaperCurvedOverdrive; 
+const WaveShaperDataType waveShaperCurvedOverdrive;
+const WaveShaperDataType waveShaperAsymm; 
 
 
 void initWaveShaper(WaveShaperDataType * data,const WaveShaperDataType* copyFrom);

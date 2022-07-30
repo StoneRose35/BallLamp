@@ -156,7 +156,7 @@ static void fxProgram4Param5Display(void*data,char*res)
 static void fxProgram4Setup(void*data)
 {
     FxProgram4DataType* pData = (FxProgram4DataType*)data;
-    initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperDefaultOverdrive);
+    initWaveShaper(&pData->waveshaper1.waveshaper,&waveShaperAsymm);
     initfirFilter(&pData->frontmanFir);
     initfirFilter(&pData->hiwattFir);
     initfirFilter(&pData->voxAC15Fir);

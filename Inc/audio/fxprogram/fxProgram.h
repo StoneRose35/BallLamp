@@ -109,6 +109,10 @@ typedef struct
     FirFilterType hiwattFir;
     FirFilterType frontmanFir;
     FirFilterType voxAC15Fir;
+    SecondOrderIirFilterType cabF1;
+    SecondOrderIirFilterType cabF2;
+    SecondOrderIirFilterType cabF3;
+    SecondOrderIirFilterType cabF4;    
     DelayDataType* delay;
     uint8_t cabSimType;
     
