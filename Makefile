@@ -26,6 +26,8 @@ COMMON_OBJS := $(patsubst Src/common/%.c,out/%.o,$(wildcard Src/common/*.c))
 AUDIO_OBJS := $(patsubst Src/common/audio/%.c,out/%.o,$(wildcard Src/common/audio/*.c))
 AUDIO_FX_OBJS := $(patsubst Src/pipicofx/%.c,out/%.o,$(wildcard Src/pipicofx/*.c))
 GRAPHICS_OBJS := $(patsubst Src/common/graphics/%.c,out/%.o,$(wildcard Src/common/graphics/*.c))
+NEOPIXEL_OBJS := $(patsubst Src/common/neopixel/%.c,out/%.o,$(wildcard Src/common/neopixel/*.c))
+SDCARD_OBJS := $(patsubst Src/common/sdcard/%.c,out/%.o,$(wildcard Src/common/sdcard/*.c))
 APPS_OBJS := $(patsubst Src/apps/%.c,out/%.o,$(wildcard Src/apps/*.c))
 SERVICES_OBJS := $(patsubst Src/services/%.c,out/%.o,$(wildcard Src/services/*.c))
 ASSET_IMAGES := $(patsubst Assets/%.png,Inc/images/%.h,$(wildcard Assets/*.png))
@@ -35,6 +37,8 @@ all_rp2040: $(RP2040_OBJS) $(RP2040_OBJS_ASM)
 all_common: $(COMMON_OBJS)
 all_audio: $(AUDIO_OBJS) $(AUDIO_FX_OBJS)
 all_graphics: $(GRAPHICS_OBJS)
+all_neopixel: $(NEOPIXEL_OBJS)
+all_sdcard: $(SDCARD_OBJS)
 all_apps: $(APPS_OBJS)
 all_services: $(SERVICES_OBJS)
 all_images: $(ASSET_IMAGES)
@@ -123,6 +127,14 @@ out/%.o: Src/pipicofx/%.c
 out/%.o: Src/common/graphics/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
 
+# sdcard libs
+out/%.o: Src/common/neopixel/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
+# neopixel libs
+out/%.o: Src/common/sdcard/%.c
+	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+
 # rp2040 specific libs
 out/%.o: Src/rp2040/%.c
 	$(CC) $(CARGS) $(OPT) -c $^ -o $@
@@ -158,7 +170,7 @@ Inc/gen/pio0_pio.h: Inc/gen tools/pioasm
 
 
 # main linking and generating flashable content
-$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common all_apps all_services all_audio all_graphics $(ASSET_IMAGES)
+$(PROJECT).elf: bootstage2.o pico_startup2.o all_rp2040 all_common  all_audio all_graphics  $(ASSET_IMAGES)
 	$(CC) $(LARGS) -o ./out/$(PROJECT).elf ./out/*.o 
 #~/pico/pico-libs/rp2_common/pico_stdio/stdio.c.obj ~/pico/pico-libs/common/pico_sync/mutex.c.obj ~/pico/pico-libs/rp2_common/hardware_timer/timer.c.obj ~/pico/pico-libs/common/pico_time/time.c.obj
 

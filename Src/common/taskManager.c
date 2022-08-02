@@ -13,12 +13,8 @@
  */
 #include "taskManager.h"
 
-#include "interpolators.h"
 #include "stringFunctions.h"
-#include "neopixelCommands.h"
 #include "utilCommands.h"
-#include "sdAccessCommands.h"
-#include "displayCommands.h"
 #include "uart.h"
 
 RGBStream lampsdata[N_LAMPS];
@@ -30,49 +26,11 @@ RGBStream * lamps = lampsdata;
  * 
  */
 const UserCommandType userCommands[] = {
-	{"BACKGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"FOREGROUND",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"RED",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"GREEN",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"DARKBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"LIGHTBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"MAGENTA",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"YELLOW",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"ORANGE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"PURPLE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"YELLOWGREEN",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"MEDIUMBLUE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"DARKYELLOW",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"AQUA",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"DARKPURPLE",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"GRAY",&colorCommand,CONTEXT_TYPE_RGBSTREAM},
-	{"RGB",&rgbCommand,CONTEXT_TYPE_RGBSTREAM},
-	//{"NPENGINE",&npEngineCommand,CONTEXT_TYPE_NONE},
-	//{"START",&startCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"STOP",&stopCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"SAVE",&saveCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"LOAD",&loadCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"INTERP",&interpCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"ISTEP",&istepCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"DESCI",&desciCommand,CONTEXT_TYPE_INTERPOLATORS},
-	//{"DESTROY",&destroyCommand,CONTEXT_TYPE_INTERPOLATORS},
+
 	{"API",&apiCommand,CONTEXT_TYPE_BUFFEREDINPUT},
 	{"CONSOLE",&consoleCommand,CONTEXT_TYPE_BUFFEREDINPUT},
-	//{"SETUPBT",&setupBluetoothCommand,CONTEXT_TYPE_NONE},
 	{"SYSINFO",&sysInfoCommand,CONTEXT_TYPE_NONE},
 	{"SETDT",&setDateTimeCommand,CONTEXT_TYPE_NONE},
-	//{"SDINIT",&sdInitCommand,CONTEXT_TYPE_NONE},
-	//{"MOUNT",&mountCommand, CONTEXT_TYPE_NONE},
-	{"CD",&cdCommand,CONTEXT_TYPE_NONE},
-	{"LS",&lsCommand,CONTEXT_TYPE_NONE},
-	{"MKDIR",&mkdirCommand,CONTEXT_TYPE_NONE},
-	{"RMDIR",&rmdirCommand,CONTEXT_TYPE_NONE},	
-	{"RM",&rmCommand,CONTEXT_TYPE_NONE},
-	{"READ",&readCommand,CONTEXT_TYPE_NONE},
-	{"INITDISPLAY",&initDisplayCommand,CONTEXT_TYPE_NONE},
-	{"BACKLIGHT",&setBacklightCommand,CONTEXT_TYPE_NONE},
-	{"SETCURSOR",&setCursorCommand,CONTEXT_TYPE_NONE},
-	{"DWRITE",&writeStringCommand,CONTEXT_TYPE_NONE},
 	{"HELP",&helpCommand,CONTEXT_TYPE_NONE},
 	{"0",0}
 };
