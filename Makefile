@@ -18,7 +18,7 @@ LARGS_BS2=-nostdlib -T ./bs2_default.ld -Xlinker -Map="./out/bs2_default.map"
 CPYARGS=-Obinary
 BOOTLOADER=bs2_fast_qspi2
 
-all: clean_objs bs2_code_size $(PROJECT).uf2 
+all: bs2_code_size $(PROJECT).uf2 
 
 RP2040_OBJS := $(patsubst Src/rp2040/%.c,out/%.o,$(wildcard Src/rp2040/*.c))
 RP2040_OBJS_ASM := $(patsubst Src/rp2040/%.S,out/%.o,$(wildcard Src/rp2040/*.S))
@@ -112,44 +112,44 @@ bootstage2.o: bootstage2.S
 	$(CC) $(CARGS) $(OPT) -c ./out/bootstage2.S -o ./out/bootstage2.o 
 
 # common libs
-out/%.o: Src/common/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/common/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # audio libs
-out/%.o: Src/common/audio/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/common/audio/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # audio fx libs
-out/%.o: Src/pipicofx/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/pipicofx/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # graphics libs
-out/%.o: Src/common/graphics/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/common/graphics/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # sdcard libs
-out/%.o: Src/common/neopixel/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/common/neopixel/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # neopixel libs
-out/%.o: Src/common/sdcard/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/common/sdcard/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # rp2040 specific libs
-out/%.o: Src/rp2040/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/rp2040/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # rp2040 specific assembly libs
-out/%.o: Src/rp2040/%.S
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/rp2040/%.S $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # application layer
-out/%.o: Src/apps/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/apps/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # services layer
-out/%.o: Src/services/%.c
-	$(CC) $(CARGS) $(OPT) -c $^ -o $@
+out/%.o: Src/services/%.c $(ASSET_IMAGES) Inc/gen/pio0_pio.h
+	$(CC) $(CARGS) $(OPT) -c $< -o $@
 
 # image assets
 Inc/images/%.h: Assets/%.png

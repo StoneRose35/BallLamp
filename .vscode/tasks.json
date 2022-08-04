@@ -6,11 +6,21 @@
         {
             "label": "Build using make",
             "type": "shell",
-            "command": "make all",
+            "command": "make clean_objs; make -j8 all",
             "problemMatcher": [],
             "group": {
                 "kind": "build",
                 "isDefault": true
+            }
+        },
+        {
+            "label": "Clean using make",
+            "type": "shell",
+            "command": "make clean",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": false
             }
         },
         {
