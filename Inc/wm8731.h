@@ -70,6 +70,31 @@
 
 #define WM8731_R15 (0xF<<9)
 
-void w8731_write(uint16_t data);
+#define SAMPLEDEPTH_16BIT 0
+#define SAMPLEDEPTH_20BIT 1
+#define SAMPLEDEPTH_24BIT 2
+#define SAMPLERATE_8KHZ 0
+#define SAMPLERATE_32KHz 1
+#define SAMPLERATE_48KHZ 2
+
+/**
+ * @brief low-level register write function
+ * 
+ * @param data b15 - b9: register, b8 - b0: data
+ */
+void wm8731_write(uint16_t data);
+
+/**
+ * @brief sets the interface to the desired sample depth and sample rate
+ * only both line inputs and headphone outputs are activated
+ * mic is muted, any bypass is also muted
+ * 
+ * @param sampledepth 
+ * @param samplerate 
+ */
+void setupWm8731(uint8_t sampledepth,uint8_t samplerate);
+
+
+
 
 #endif
