@@ -113,6 +113,7 @@ jmp y-- bitloop side 0 [4]
 
 
 .program i2s_duplex
+; full duplex mode, rp2040 is the 
 ; one out pin, two sideset pins, one input pin
 ; pio program runs at 8* the speed of the bit clock 8*(samplingrate*2*16)
 ; shift out to the left, in from the right
@@ -137,6 +138,43 @@ set y,14 side 3 [3-1]
 public is2_duplex_start:
 set y,14 side 3 
 jmp i2s_duplex_loop_l side 3
+
+
+.program i2s_duplex_slave
+i2s_duplex_slave_start:
+wait 1 pin 2
+wait 0 pin 2 
+i2s_d_s_proc_right_last:
+wait 0 pin 1
+out pins,1
+pull noblock
+wait 1 pin 1 
+in pins,1
+push noblock
+i2s_d_s_proc_left:
+wait 0 pin 1
+jmp pin i2s_d_s_last_left ; jump to last left when 1
+; last left
+out pins,1
+wait 1 pin 1 
+in pins,1
+jmp i2s_d_s_proc_left
+i2s_d_s_last_left:
+out pins,1
+wait 1 pin 1 
+in pins,1
+;jmp i2s_d_s_proc_right
+i2s_d_s_proc_right:
+wait 0 pin 1
+jmp pin i2s_d_s_cont_right; continue to read right when 1
+jmp i2s_d_s_proc_right_last
+i2s_d_s_cont_right:
+out pins,1
+wait 1 pin 1 
+in pins,1
+jmp i2s_d_s_proc_right
+
+
 
 .program i2s_write_2
 ; one out pin, two sideset pins
