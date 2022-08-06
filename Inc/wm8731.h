@@ -6,22 +6,22 @@
 
 // register map
 #define WM8731_R0 (0x0<<9)
-#define LRIN_B0TH_LSB 8
+#define LRIN_BOTH_LSB 8
 #define LIN_MUTE_LSB 7
 #define LIN_VOL 0  
 
 #define WM8731_R1 (0x1<<9)
-#define RLIN_B0TH_LSB 8
+#define RLIN_BOTH_LSB 8
 #define RIN_MUTE_LSB 7
 #define RIN_VOL 0  
 
 #define WM8731_R2 (0x2<<9)
-#define LRHP_B0TH_LSB 8
+#define LRHP_BOTH_LSB 8
 #define LZCEN_LSB 7
 #define LHPVOL_LSB 0 
 
 #define WM8731_R3 (0x3<<9)
-#define RLHP_B0TH_LSB 8
+#define RLHP_BOTH_LSB 8
 #define RZCEN_LSB 7
 #define RHPVOL_LSB 0 
 
@@ -74,7 +74,7 @@
 #define SAMPLEDEPTH_20BIT 1
 #define SAMPLEDEPTH_24BIT 2
 #define SAMPLERATE_8KHZ 0
-#define SAMPLERATE_32KHz 1
+#define SAMPLERATE_32KHZ 1
 #define SAMPLERATE_48KHZ 2
 
 /**
