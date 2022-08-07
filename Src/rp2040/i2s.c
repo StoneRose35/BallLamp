@@ -233,8 +233,8 @@ void initI2SSlave()
 	// set clock divider to 1 (fastest possible)
 	*PIO1_SM0_CLKDIV = (1 << PIO_SM0_CLKDIV_INT_LSB);
 
-    // set pin directions to output
-    *PIO1_SM0_INSTR = 0xE087;
+    // set data_pin direction to output
+    *PIO1_SM0_INSTR = 0xE081;
 
 	// jump to first instruction
 	*PIO1_SM0_INSTR = first_instr_pos;

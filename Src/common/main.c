@@ -171,6 +171,7 @@
 #include "rotaryEncoder.h"
 #include "cliApiTask.h"
 #include "i2s.h"
+#include "i2c.h"
 #include "audio/sineplayer.h"
 #include "audio/simpleChorus.h"
 #include "audio/secondOrderIirFilter.h"
@@ -223,8 +224,6 @@ int main(void)
 	enableFpu();
 	#endif
     setupClock();
-	
-
 	initUsbPll();
 	initSystickTimer();
 	initDMA();
@@ -232,7 +231,8 @@ int main(void)
 	initGpio();
 	initTimer();
 	initAdc();
-	//
+	//initI2c(50);
+	
 
 
 	/*
@@ -242,7 +242,6 @@ int main(void)
 	 * */
 	initSsd1306Display();
 	initI2S();
-	//enableAudioEngine(); // i2s adc and dac
 	initDebugLed();
 	initRotaryEncoder(switchesPins,2);
 
@@ -280,7 +279,7 @@ int main(void)
 
 	ticEnd=0;
 	ticStart=0;
-	setNote(64);
+
 
     /* Loop forever */
 	for(;;)
