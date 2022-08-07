@@ -23,6 +23,13 @@
 #define I2C_IC_SS_SCL_LCNT ((volatile uint32_t*)(I2C0_BASE +I2C_IC_SS_SCL_LCNT_OFFSET))
 #define I2C_IC_STATUS ((volatile uint32_t*)(I2C0_BASE +I2C_IC_STATUS_OFFSET))
 
+#define I2C_IC_CLR_TX_ABRT ((volatile uint32_t*)(I2C0_BASE +I2C_IC_CLR_TX_ABRT_OFFSET))
+#define I2C_IC_RAW_INTR_STAT ((volatile uint32_t*)(I2C0_BASE +I2C_IC_RAW_INTR_STAT_OFFSET))
+#define I2C_IC_TX_ABRT_SOURCE ((volatile uint32_t*)(I2C0_BASE +I2C_IC_TX_ABRT_SOURCE_OFFSET))
+
+#define I2C_ERROR_ARBITRATION_LOST 1
+#define I2C_ERROR_SLAVE_ADDRESS_NACK 2
+#define I2C_ERROR_DATA_NACK 3
 void initI2c(uint8_t slaveAdress);
 
 
