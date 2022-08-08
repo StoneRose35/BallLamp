@@ -45,6 +45,16 @@
 // backlight for lcd display
 #define BACKLIGHT 8
 
+// 1.8" Color TFT LCD display with MicroSD Card Breakout - ST7735R
+// one spi sharing connection to a ST7735 display and  an sd card
+#define CS_SDCARD 5
+#define CS_DISPLAY 12
+#define MISO 20
+#define MOSI 19
+#define SCK 18
+#define DISPLAY_RESET 24
+#define DISPLAY_CD 25
+#define DISPLAY_BACKLIGHT 8 
 
 // ****************************************
 // * other device-specific configurations *
@@ -66,6 +76,10 @@
 
 #define REMOTESWITCH_CLKDIV 26640
 #define REMOTESWITCH_INSTR_MEM_OFFSET 20
+
+#define SCK_SDCARD_INIT 199 // SPI clock divider for SD-Card initialization
+#define SCK_SDCARD_MEDIUM 5 // SPI clock divider for SD-Card operation
+#define SCK_DISPLAY_SLOW 5 // resulting in 10 MHz spi clock for display
 
 /**
  * @brief register definitions
@@ -204,16 +218,6 @@
 #define PIO1_SM2_INSTR  ((volatile uint32_t*)(PIO1_BASE+PIO_SM2_INSTR_OFFSET))
 #define PIO1_SM2_RXF ((volatile uint32_t*)(PIO1_BASE+PIO_RXF2_OFFSET))
 
-#define PWM_CH1_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*HEATER))
-#define PWM_CH1_DIV ((volatile uint32_t*)(PWM_BASE + PWM_CH0_DIV_OFFSET + 10*HEATER))
-#define PWM_CH1_CC ((volatile uint16_t*)(PWM_BASE + PWM_CH0_CC_OFFSET + 10*HEATER + (HEATER & 1)*2))
-#define PWM_CH1_TOP ((volatile uint32_t*)(PWM_BASE + PWM_CH0_TOP_OFFSET + 10*HEATER))
-
-#define I2C_SCL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2C_SCL))
-#define I2C_SDA_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2C_SDA))
-
-#define I2C_SCL_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + 4*I2C_SCL + 4))
-#define I2C_SDA_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + 4*I2C_SDA + 4))
 
 #define I2C_ENABLE_IC ((volatile uint32_t*)(I2C0_BASE +I2C_IC_ENABLE_OFFSET))
 #define I2C_IC_CON ((volatile uint32_t*)(I2C0_BASE +I2C_IC_CON_OFFSET))
@@ -227,6 +231,12 @@
 #define I2C_IC_CLR_TX_ABRT ((volatile uint32_t*)(I2C0_BASE +I2C_IC_CLR_TX_ABRT_OFFSET))
 #define I2C_IC_RAW_INTR_STAT ((volatile uint32_t*)(I2C0_BASE +I2C_IC_RAW_INTR_STAT_OFFSET))
 #define I2C_IC_TX_ABRT_SOURCE ((volatile uint32_t*)(I2C0_BASE +I2C_IC_TX_ABRT_SOURCE_OFFSET))
+
+#define SSPCR0 ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPCR0_OFFSET))
+#define SSPCR1 ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPCR1_OFFSET))
+#define SSPCPSR ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPCPSR_OFFSET))
+#define SSPDR ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPDR_OFFSET))
+#define SSPSR ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPSR_OFFSET))
 
 // device-specific pins/pads
 #define DS18B20_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DS18B20_PIN))
@@ -277,5 +287,33 @@
 #define SWITCH_EDGE_LOW (((4*SWITCH) & 0x1F)+2)
 #define SWITCH_EDGE_HIGH (((4*SWITCH) & 0x1F)+3)
 
+#define MISO_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*MISO))
+#define MOSI_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*MOSI))
+#define SCK_PIN_CNTR  ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SCK))
+#define MISO_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*MISO))
+#define CS_SDCARD_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_SDCARD))
+#define CS_DISPLAY_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*CS_DISPLAY))
+
+#define DISPLAY_RESET_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_RESET))
+#define DISPLAY_CD_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_CD))
+
+#define I2C_SCL_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2C_SCL))
+#define I2C_SDA_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*I2C_SDA))
+
+#define I2C_SCL_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + 4*I2C_SCL + 4))
+#define I2C_SDA_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + 4*I2C_SDA + 4))
+
+#define DISPLAY_BACKLIGHT_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_BACKLIGHT))
+
+// PWM Channels
+#define PWM_CH1_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*HEATER))
+#define PWM_CH1_DIV ((volatile uint32_t*)(PWM_BASE + PWM_CH0_DIV_OFFSET + 10*HEATER))
+#define PWM_CH1_CC ((volatile uint16_t*)(PWM_BASE + PWM_CH0_CC_OFFSET + 10*HEATER + (HEATER & 1)*2))
+#define PWM_CH1_TOP ((volatile uint32_t*)(PWM_BASE + PWM_CH0_TOP_OFFSET + 10*HEATER))
+
+#define PWM_CH0_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*DISPLAY_BACKLIGHT))
+#define PWM_CH0_DIV ((volatile uint32_t*)(PWM_BASE + PWM_CH0_DIV_OFFSET + 10*DISPLAY_BACKLIGHT))
+#define PWM_CH0_CC ((volatile uint16_t*)(PWM_BASE + PWM_CH0_CC_OFFSET + 10*DISPLAY_BACKLIGHT + (DISPLAY_BACKLIGHT & 1)*2))
+#define PWM_CH0_TOP ((volatile uint32_t*)(PWM_BASE + PWM_CH0_TOP_OFFSET + 10*DISPLAY_BACKLIGHT))
 
 #endif

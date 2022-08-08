@@ -2,10 +2,18 @@
 #include "spi_sdcard_display.h"
 #include "systick.h"
 #include "dma.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/spi.h"
+#include "hardware/regs/resets.h"
+#include "hardware/regs/io_bank0.h"
+#include "hardware/regs/pads_bank0.h"
+#include "hardware/regs/sio.h"
+#include "hardware/regs/pwm.h"
+#include "hardware/rp2040_registers.h"
 
 /**
  * @brief Driver for https://www.adafruit.com/product/358
- * 
+ * 1.8" Color TFT LCD display with MicroSD Card Breakout - ST7735R
  */
 
 void initSpi()

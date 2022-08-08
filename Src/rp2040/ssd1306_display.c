@@ -20,17 +20,17 @@ void initSsd1306Display()
 	while ((*RESETS_DONE & (1 << RESETS_RESET_SPI0_LSB)) == 0);
 
     // wire up the spi
-    *MOSI_PIN_CNTR = 1;
-    *SCK_PIN_CNTR = 1;
-    *CS_DISPLAY_PIN_CNTR = 1;
+    *SSD1306_MOSI_PIN_CNTR = 1;
+    *SSD1306_SCK_PIN_CNTR = 1;
+    *SSD1306_CS_DISPLAY_PIN_CNTR = 1;
 
-    *GPIO_OE |= (1 << DISPLAY_RESET);
-    *GPIO_OE |= (1 << DISPLAY_CD); 
-    *DISPLAY_CD_PIN_CNTR = 5;
-    *DISPLAY_RESET_PIN_CNTR = 5;
+    *GPIO_OE |= (1 << SSD1306_DISPLAY_RESET);
+    *GPIO_OE |= (1 << SSD1306_DISPLAY_CD); 
+    *SSD1306_DISPLAY_CD_PIN_CNTR = 5;
+    *SSD1306_DISPLAY_RESET_PIN_CNTR = 5;
 
     // configure control register 0: 8-bit data, 5 MHz Clock
-    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
+    *SSPCR0 = (0x7 << SPI_SSPCR0_DSS_LSB) | (SSD1306_SCK_DISPLAY_SLOW << SPI_SSPCR0_SCR_LSB);
     // configure clock divider
     *SSPCPSR = 2;
     // configure control register 1: enable by setting synchronous operation
@@ -39,17 +39,17 @@ void initSsd1306Display()
 
 
     // reset high
-    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
+    *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_RESET);
     waitSysticks(1);
     // reset low
-    *(GPIO_OUT + 2) = (1 << DISPLAY_RESET);
+    *(GPIO_OUT + 2) = (1 << SSD1306_DISPLAY_RESET);
     waitSysticks(1);
     // reset high
-    *(GPIO_OUT + 1) = (1 << DISPLAY_RESET);
+    *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_RESET);
     waitSysticks(1);
 
     // manually set display offset and  startline since these two values turned out to be wrong after reset
-    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *(GPIO_OUT + 2) = (1 << SSD1306_DISPLAY_CD);
     *SSPDR = 0x40; // set startline 0
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
     // set displayoffset 0
@@ -60,7 +60,7 @@ void initSsd1306Display()
 
 
     // send display on command
-    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *(GPIO_OUT + 2) = (1 << SSD1306_DISPLAY_CD);
     *SSPDR = 0xAF;
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) ); 
     waitSysticks(11);
@@ -74,7 +74,7 @@ void initSsd1306Display()
  */
 void setCursor(uint8_t row, uint8_t col)
 {
-    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *(GPIO_OUT + 2) = (1 << SSD1306_DISPLAY_CD);
     // set column, low nibble
     *SSPDR = ((col+2) & 0x0F);
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
@@ -95,7 +95,7 @@ void ssd1306ClearDisplay()
         for(uint8_t c=0;c<128;c++)
         {
             setCursor(r,c);
-            *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
+            *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_CD); // switch to data
             *SSPDR = 0x0;
             while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );
         }
@@ -113,7 +113,7 @@ void ssd1306ClearDisplay()
 void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint16_t arrayLength)
 {
     setCursor(row,col);
-    *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
+    *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_CD); // switch to data
     for (uint16_t c=0;c<arrayLength;c++)
     {
         *SSPDR = *(arr + c);
@@ -133,7 +133,7 @@ void ssd1306DisplayByteArray(uint8_t row,uint8_t col,uint8_t *arr,uint16_t array
 void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * img)
 {
     //setCursor(py,px);
-    *(GPIO_OUT + 2) = (1 << DISPLAY_CD);
+    *(GPIO_OUT + 2) = (1 << SSD1306_DISPLAY_CD);
 
     // set vertical addressing mode
     *SSPDR = 0x20;
@@ -158,7 +158,7 @@ void ssd1306DisplayImage(uint8_t px,uint8_t py,uint8_t sx,uint8_t sy,uint8_t * i
     while ((*SSPSR & (1 << SPI_SSPSR_BSY_LSB))==(1 << SPI_SSPSR_BSY_LSB) );        
 
     uint16_t c=0;
-    *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+    *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_CD);
     while(c<sx*sy)
     {
         *SSPDR = *(img + c);
@@ -188,7 +188,7 @@ void ssd1306DisplayImageStandardAdressing(uint8_t px,uint8_t py,uint8_t sx,uint8
     for(uint8_t cc=0;cc<sy;cc++)
     {
         setCursor(py+cc,px);
-        *(GPIO_OUT + 1) = (1 << DISPLAY_CD);
+        *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_CD);
         for(uint8_t c=0;c<sx;c++)
         {
             index=c*sy + cc;
@@ -204,7 +204,7 @@ void ssd1306WriteChar(uint8_t row,uint8_t col,char chr)
     setCursor(row,col*6);
     fontIdx = (uint8_t)chr - ' ';
 
-    *(GPIO_OUT + 1) = (1 << DISPLAY_CD); // switch to data
+    *(GPIO_OUT + 1) = (1 << SSD1306_DISPLAY_CD); // switch to data
     for (uint8_t c=0;c<5;c++)
     {
         *SSPDR = oled_font_5x7[fontIdx][c];
