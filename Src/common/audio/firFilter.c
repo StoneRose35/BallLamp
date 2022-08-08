@@ -1,6 +1,9 @@
 #include "audio/firFilter.h"
 #ifdef RP2040_FEATHER
 #include "multicore.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/sio.h"
+#include "hardware/rp2040_registers.h"
 #endif
 
 void initfirFilter(FirFilterType*data)

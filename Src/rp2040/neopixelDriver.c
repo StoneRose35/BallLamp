@@ -10,19 +10,18 @@
 
 #include "neopixelDriver.h"
 #include "system.h"
-#include "dma.h"
 #ifndef _PIO_0_H_
 #define PIO_0_H_
 #include "gen/pio0_pio.h"
 #endif
 #include "hardware/regs/pio.h"
-//#include "hardware/pio.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/resets.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/dma.h"
 #include "hardware/regs/m0plus.h"
+#include "hardware/rp2040_registers.h"
 
 
 volatile uint8_t sendState=SEND_STATE_INITIAL;

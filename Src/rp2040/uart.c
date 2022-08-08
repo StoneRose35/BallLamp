@@ -10,7 +10,6 @@
 #include <neopixelDriver.h>
 #include "uart.h"
 #include "system.h"
-#include "dma.h"
 #include "consoleHandler.h"
 #include "bufferedInputHandler.h"
 
@@ -19,6 +18,8 @@
 #include "hardware/regs/resets.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/m0plus.h"
+#include "hardware/regs/dma.h"
+#include "hardware/rp2040_registers.h"
 
 
 extern uint32_t task;

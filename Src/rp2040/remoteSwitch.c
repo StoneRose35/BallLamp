@@ -4,6 +4,7 @@
 #include "hardware/regs/io_bank0.h"
 #include "gen/pio0_pio.h"
 #include "remoteSwitch.h"
+#include "hardware/rp2040_registers.h"
 
 void initRemoteSwitch()
 {

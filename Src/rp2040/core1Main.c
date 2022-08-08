@@ -8,7 +8,12 @@
 #include "pipicofx/pipicofxui.h"
 #include "adc.h"
 #include "rotaryEncoder.h"
-#include "i2s.h"
+//#include "i2s.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/sio.h"
+#include "hardware/regs/m0plus.h"
+#include "hardware/rp2040_registers.h"
+
 
 int16_t firstHalfOut;
 FirFilterType**core1FirData;

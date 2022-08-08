@@ -3,6 +3,11 @@
 #include "neopixelDriver.h"
 #include "i2s.h"
 #include "adc.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/resets.h"
+#include "hardware/regs/m0plus.h"
+#include "hardware/regs/dma.h"
+#include "hardware/rp2040_registers.h"
 
 extern volatile uint8_t sendState;
 extern volatile uint32_t task;

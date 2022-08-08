@@ -2,6 +2,7 @@
 #include "hardware/regs/sio.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/pads_bank0.h"
+#include "hardware/rp2040_registers.h"
 #include "gpio.h"
 
 

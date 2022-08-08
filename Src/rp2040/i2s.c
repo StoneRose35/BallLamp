@@ -2,10 +2,13 @@
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/pio.h"
 #include "hardware/regs/io_bank0.h"
+#include "hardware/regs/pads_bank0.h"
+#include "hardware/regs/dma.h"
 #include "gen/pio0_pio.h"
 #include "i2s.h"
-#include "dma.h"
 #include "adc.h"
+#include "hardware/rp2040_registers.h"
+
 
 
 static int16_t i2sDoubleBuffer[AUDIO_BUFFER_SIZE*2*2];

@@ -3,6 +3,7 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/regs/pads_bank0.h"
 #include "hardware/regs/i2c.h"
+#include "hardware/rp2040_registers.h"
 #include "i2c.h"
 
 

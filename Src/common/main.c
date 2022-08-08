@@ -150,8 +150,10 @@
 #ifndef SIMPLE_NEOPIXEL
 
 
-
 #include <neopixelDriver.h>
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/sio.h"
+#include "hardware/rp2040_registers.h"
 #include "system.h"
 #include "core.h"
 #include "systemClock.h"

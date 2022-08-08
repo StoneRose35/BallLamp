@@ -1,6 +1,14 @@
 #include "adc.h"
 #include "dma.h"
 #include "system.h"
+#include "hardware/regs/resets.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/adc.h"
+#include "hardware/regs/clocks.h"
+#include "hardware/regs/pads_bank0.h"
+#include "hardware/regs/m0plus.h"
+#include "hardware/regs/dma.h" 
+#include "hardware/rp2040_registers.h"
 
 static uint16_t audioInDoubleBuffer[AUDIO_INPUT_BUFFER_SIZE*2];
 static volatile  uint32_t dbfrPtr; 

@@ -1,6 +1,7 @@
-#include "ds18b20.h"
+#include <stdint.h>
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/resets.h"
+#include "hardware/rp2040_registers.h"
 
 void initPio()
 {

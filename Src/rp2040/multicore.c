@@ -1,5 +1,9 @@
 
 #include "multicore.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/m0plus.h"
+#include "hardware/regs/sio.h"
+#include "hardware/rp2040_registers.h"
 extern uint32_t __StackBottom;
 
 

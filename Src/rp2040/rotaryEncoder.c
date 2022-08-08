@@ -5,6 +5,7 @@
 #include "hardware/regs/pads_bank0.h"
 #include "hardware/regs/m0plus.h"
 #include "hardware/regs/sio.h"
+#include "hardware/rp2040_registers.h"
 #include "systick.h"
 
 static uint32_t oldtickenc,oldtickswitch;
@@ -22,7 +23,7 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_HIGH);
         if(lastTrigger == 1)
         {
-            ((*ENCODER_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
+            ((*GPIO_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal-- : encoderVal++;
         }
         lastTrigger = 0;
     }
@@ -31,7 +32,7 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_1_INTR |= (1 << ENCODER_1_EDGE_LOW);
         if(lastTrigger==1)
         {
-            ((*ENCODER_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
+            ((*GPIO_IN & (1 << ENCODER_2)) == (1 << ENCODER_2)) ? encoderVal++ : encoderVal--;
         }
         lastTrigger = 0;
     }
@@ -40,7 +41,7 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_HIGH);
         if(lastTrigger == 0)
         {
-            ((*ENCODER_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal++ : encoderVal--;
+            ((*GPIO_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal++ : encoderVal--;
         }
         lastTrigger = 1;
     }
@@ -49,7 +50,7 @@ void isr_io_irq_bank0_irq13()
         *ENCODER_2_INTR |= (1 << ENCODER_2_EDGE_LOW);
         if(lastTrigger == 0)
         {
-            ((*ENCODER_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal-- : encoderVal++;
+            ((*GPIO_IN & (1 << ENCODER_1)) == (1 << ENCODER_1)) ? encoderVal-- : encoderVal++;
         }
         lastTrigger = 1;
     }
