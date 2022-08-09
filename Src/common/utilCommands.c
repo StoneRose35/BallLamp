@@ -11,7 +11,7 @@
 #include "neopixelDriver.h"
 #include "uart.h"
 #include "datetimeClock.h"
-
+#include "consoleBase.h"
 /**
  * @brief prints a brief overview of the commands
  * 

@@ -6,7 +6,7 @@
 #include "stringFunctions.h"
 #include "taskManagerUtils.h" 
 #include <string.h>
-
+#include "consoleBase.h"
 static uint8_t ptrX=0;
 static uint8_t ptrY=0;
 

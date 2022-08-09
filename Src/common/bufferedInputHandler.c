@@ -11,6 +11,7 @@
 #include "bufferedInputHandler.h"
 #include "consoleHandler.h"
 #include "apiHandler.h"
+#include "consoleBase.h"
 #ifndef HARDWARE
 #include <stdio.h>
 #endif

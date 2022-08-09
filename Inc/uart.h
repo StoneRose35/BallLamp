@@ -59,18 +59,15 @@ void initUart(uint16_t baudrate);
 void initBTUart(uint16_t baudrate);
 
 /**
- * @brief send one character without awaiting the end of transmission
- * however wait if the uart interface is busy
- * can be implemented with a dma transfer allow multiple "fast" calls
- * 
- * @return uint8_t 0 if successful,1 if error
+ * @brief send's one or multiple characters from out output buffer 
+ * doesn't wait until the transmission has terminated
+ * depending on the hardware one can fill a FIFO or use DMA to send the output buffer
+ * the calling duration must be independent of the baud rate
+ *  * 
+ * @return uint8_t 1 if transmission has terminated (buffer emptied), 0 if buffer is not empty
  */
 uint8_t sendCharAsyncUsb();
 uint8_t sendCharAsyncBt();
-
-void printf(const char*);
-
-
 
 
 #endif /* UART_H_ */

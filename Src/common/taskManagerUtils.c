@@ -13,10 +13,11 @@
 #include "intFunctions.h"
 #include <string.h>
 #include <stdlib.h>
+
 #ifndef HARDWARE
 #include <stdio.h>
 #else
-#include "uart.h"
+#include "consoleBase.h"
 #endif
 
 /**
