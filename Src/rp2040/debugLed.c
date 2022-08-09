@@ -1,3 +1,4 @@
+#include "stdint.h"
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/sio.h"
 #include "hardware/regs/io_bank0.h"

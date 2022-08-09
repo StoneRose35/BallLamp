@@ -1,6 +1,9 @@
 
 #include "systick.h"
 #include "system.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/m0plus.h"
+#include "hardware/rp2040_registers.h"
 
 volatile static uint32_t ticks=0;
 

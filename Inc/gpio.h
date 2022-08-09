@@ -4,6 +4,7 @@
 #define PULL_STATE_NONE 0
 #define PULL_STATE_UP 1
 #define PULL_STATE_DOWN 2
+void initGpio();
 
 void setAsOuput(uint8_t pinNr);
 void setAsInput(uint8_t pinNr, uint8_t PullState);

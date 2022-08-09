@@ -56,6 +56,20 @@
 #define DISPLAY_CD 25
 #define DISPLAY_BACKLIGHT 8 
 
+// driver for ssd1306-based display (128*64 pixel oled display interfaced using spi)
+#define SSD1306_CS_DISPLAY 21
+#define SSD1306_SCK 18
+#define SSD1306_MOSI 19
+#define SSD1306_DISPLAY_CD 14
+#define SSD1306_DISPLAY_RESET 15
+
+// pin definitions for two uart ports
+#define UART_USB_RX 1
+#define UART_USB_TX 0
+#define UART_BT_RX 9
+#define UART_BT_TX 8
+
+
 // ****************************************
 // * other device-specific configurations *
 // ****************************************
@@ -80,6 +94,8 @@
 #define SCK_SDCARD_INIT 199 // SPI clock divider for SD-Card initialization
 #define SCK_SDCARD_MEDIUM 5 // SPI clock divider for SD-Card operation
 #define SCK_DISPLAY_SLOW 5 // resulting in 10 MHz spi clock for display
+
+#define SSD1306_SCK_DISPLAY_SLOW 10 // resulting in 5 MHz spi clock for display
 
 /**
  * @brief register definitions
@@ -238,6 +254,29 @@
 #define SSPDR ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPDR_OFFSET))
 #define SSPSR ((volatile uint32_t*)(SPI0_BASE +  SPI_SSPSR_OFFSET))
 
+#define XOSC_STARTUP ((volatile uint32_t*)(XOSC_BASE+XOSC_STARTUP_OFFSET))
+#define XOSC_CTRL_ENABLE ((volatile uint32_t*)(XOSC_BASE+XOSC_CTRL_OFFSET))
+#define XOSC_STATUS ((volatile uint32_t*)(XOSC_BASE+XOSC_STATUS_OFFSET))
+
+#define CLK_SYS_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_SYS_CTRL_OFFSET))
+#define CLK_REF_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_REF_CTRL_OFFSET))
+#define CLK_PERI_CTRL ((volatile uint32_t*)(CLOCKS_BASE+CLOCKS_CLK_PERI_CTRL_OFFSET))
+
+typedef struct {
+	volatile uint32_t cs;
+	volatile uint32_t pwr;
+	volatile uint32_t fbdiv;
+	volatile uint32_t prim;
+} PllType;
+
+#define PLL_SYS ((PllType*)PLL_SYS_BASE)
+
+#define PLL_USB ((PllType*)PLL_USB_BASE)
+
+#define M0PLUS_SYST_CSR ((volatile uint32_t*)(PPB_BASE + M0PLUS_SYST_CSR_OFFSET))
+#define M0PLUS_SYST_RVR ((volatile uint32_t*)(PPB_BASE + M0PLUS_SYST_RVR_OFFSET))
+#define M0PLUS_SYST_CVR ((volatile uint32_t*)(PPB_BASE + M0PLUS_SYST_CVR_OFFSET))
+
 // device-specific pins/pads
 #define DS18B20_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DS18B20_PIN))
 #define DS18B20_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + PADS_BANK0_GPIO0_OFFSET + 4*DS18B20_PIN))
@@ -304,6 +343,48 @@
 #define I2C_SDA_PAD_CNTR ((volatile uint32_t*)(PADS_BANK0_BASE + 4*I2C_SDA + 4))
 
 #define DISPLAY_BACKLIGHT_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*DISPLAY_BACKLIGHT))
+
+
+#define SSD1306_MOSI_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SSD1306_MOSI))
+#define SSD1306_CS_DISPLAY_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SSD1306_CS_DISPLAY))
+#define SSD1306_DISPLAY_CD_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SSD1306_DISPLAY_CD))
+#define SSD1306_SCK_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SSD1306_SCK))
+#define SSD1306_DISPLAY_RESET_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*SSD1306_DISPLAY_RESET))
+
+#define TIMER_TIMEHW ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMEHW_OFFSET))
+#define TIMER_TIMELW ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELW_OFFSET))
+#define TIMER_TIMEHR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMEHR_OFFSET))
+#define TIMER_TIMELR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELR_OFFSET))
+
+#define WATCHDOG_TICK ((volatile uint32_t*)(WATCHDOG_BASE + WATCHDOG_TICK_OFFSET))
+
+#define UART_UARTIBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTIBRD_OFFSET))
+#define UART_UARTFBRD ((volatile uint32_t*)(UART0_BASE+UART_UARTFBRD_OFFSET))
+#define UART_UARTCR ((volatile uint32_t*)(UART0_BASE+UART_UARTCR_OFFSET))
+#define UART_UARTLCR_H ((volatile uint32_t*)(UART0_BASE+UART_UARTLCR_H_OFFSET))
+#define UART_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_USB_RX))
+#define UART_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_USB_TX))
+#define UART_UARTIMSC ((volatile uint32_t*)(UART0_BASE+UART_UARTIMSC_OFFSET))
+#define UART_UARTMIS ((volatile uint32_t*)(UART0_BASE+UART_UARTMIS_OFFSET))
+#define UART_UARTCR ((volatile uint32_t*)(UART0_BASE+UART_UARTCR_OFFSET))
+#define UART_UARTDR ((volatile uint32_t*)(UART0_BASE+UART_UARTDR_OFFSET))
+#define UART_UARTRIS ((volatile uint32_t*)(UART0_BASE+UART_UARTRIS_OFFSET))
+#define UART_UARTFR ((volatile uint32_t*)(UART0_BASE+UART_UARTFR_OFFSET))
+#define UART_UARTDMACR ((volatile uint32_t*)(UART0_BASE+UART_UARTDMACR_OFFSET))
+
+#define UARTBT_UARTIBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTIBRD_OFFSET))
+#define UARTBT_UARTFBRD ((volatile uint32_t*)(UART1_BASE+UART_UARTFBRD_OFFSET))
+#define UARTBT_UARTCR ((volatile uint32_t*)(UART1_BASE+UART_UARTCR_OFFSET))
+#define UARTBT_UARTLCR_H ((volatile uint32_t*)(UART1_BASE+UART_UARTLCR_H_OFFSET))
+#define UARTBT_RX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_BT_RX))
+#define UARTBT_TX_PIN_CNTR ((volatile uint32_t*)(IO_BANK0_BASE + IO_BANK0_GPIO0_CTRL_OFFSET + 8*UART_BT_TX))
+#define UARTBT_UARTIMSC ((volatile uint32_t*)(UART1_BASE+UART_UARTIMSC_OFFSET))
+#define UARTBT_UARTMIS ((volatile uint32_t*)(UART1_BASE+UART_UARTMIS_OFFSET))
+#define UARTBT_UARTCR ((volatile uint32_t*)(UART1_BASE+UART_UARTCR_OFFSET))
+#define UARTBT_UARTDR ((volatile uint32_t*)(UART1_BASE+UART_UARTDR_OFFSET))
+#define UARTBT_UARTRIS ((volatile uint32_t*)(UART1_BASE+UART_UARTRIS_OFFSET))
+#define UARTBT_UARTFR ((volatile uint32_t*)(UART1_BASE+UART_UARTFR_OFFSET))
+#define UARTBT_UARTDMACR ((volatile uint32_t*)(UART1_BASE+UART_UARTDMACR_OFFSET))
 
 // PWM Channels
 #define PWM_CH1_CSR ((volatile uint32_t*)(PWM_BASE + PWM_CH0_CSR_OFFSET + 10*HEATER))

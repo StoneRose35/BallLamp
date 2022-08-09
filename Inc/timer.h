@@ -6,20 +6,29 @@
 #include "hardware/regs/resets.h"
 #include "hardware/regs/watchdog.h"
 
-#define RESETS ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_OFFSET))
-#define RESETS_DONE ((volatile uint32_t*)(RESETS_BASE + RESETS_RESET_DONE_OFFSET))
 
-#define TIMER_TIMEHW ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMEHW_OFFSET))
-#define TIMER_TIMELW ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELW_OFFSET))
-#define TIMER_TIMEHR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMEHR_OFFSET))
-#define TIMER_TIMELR ((volatile uint32_t*)(TIMER_BASE + TIMER_TIMELR_OFFSET))
+/**
+ * @brief a us-timebase, i.e. a time which increases by one every microsecond
+ * 
+ */
 
-#define WATCHDOG_TICK ((volatile uint32_t*)(WATCHDOG_BASE + WATCHDOG_TICK_OFFSET))
-
+/**
+ * @brief initialize and start the time
+ * 
+ */
 void initTimer();
 
+/**
+ * @brief reset the timer value to zeros
+ * 
+ */
 void resetTime();
 
+/**
+ * @brief Get the lower word of a potentially 64bit timer value
+ * 
+ * @return uint32_t 
+ */
 uint32_t getTimeLW();
 
 #endif

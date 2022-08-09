@@ -4,14 +4,13 @@
  *  Created on: 21.08.2021
  *      Author: philipp
  */
-#ifdef RP2040_FEATHER
 #include <stdint.h>
 #include "hardware/regs/addressmap.h"
 #include "hardware/regs/xosc.h"
 #include "hardware/regs/clocks.h"
 #include "hardware/regs/pll.h"
 #include "hardware/regs/resets.h"
-
+#include "hardware/rp2040_registers.h"
 #include "systemClock.h"
 #include "system.h"
 
@@ -83,4 +82,3 @@ void initUsbPll()
 	PLL_USB->pwr &= ~(1 << PLL_PWR_POSTDIVPD_LSB);
 }
 
-#endif

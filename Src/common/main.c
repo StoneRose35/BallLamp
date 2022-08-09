@@ -163,6 +163,7 @@
 #include "pio.h"
 #include "adc.h"
 #include "timer.h"
+#include "gpio.h"
 #include "ssd1306_display.h"
 #include "debugLed.h"
 #include "consoleHandler.h"

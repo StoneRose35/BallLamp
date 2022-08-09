@@ -1,4 +1,9 @@
+#include "stdint.h"
 #include "timer.h"
+#include "hardware/regs/addressmap.h"
+#include "hardware/regs/timer.h"
+#include "hardware/regs/watchdog.h"
+#include "hardware/rp2040_registers.h"
 
 void initTimer()
 {
