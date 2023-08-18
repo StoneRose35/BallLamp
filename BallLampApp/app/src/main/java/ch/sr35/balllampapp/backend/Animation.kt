@@ -2,15 +2,17 @@ package ch.sr35.balllampapp.backend
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.io.Serializable
 import java.util.*
 import kotlin.collections.ArrayList
 
 const val FRAMERATE = 30.0
 
-class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
+class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable, Serializable {
 
     var mappingLower: IntArray? = null
     var mappingUpper: IntArray? = null
+    var name: String? = null
 
     constructor(): this(ArrayList<LampAnimation>(0))
 
@@ -26,6 +28,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
         {
             lampAnimations.add(q)
         }
+        name = parcel.readString()
     }
 
 
@@ -137,6 +140,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable {
         parcel.writeIntArray(mappingUpper)
         parcel.writeInt(lampAnimations.size)
         parcel.writeTypedArray(lampAnimations.toTypedArray(),0)
+        parcel.writeString(name)
     }
 
     override fun describeContents(): Int {

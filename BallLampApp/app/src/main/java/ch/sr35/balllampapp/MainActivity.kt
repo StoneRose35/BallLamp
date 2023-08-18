@@ -56,7 +56,6 @@ class MainActivity : AppCompatActivity() {
         val btMan: BluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         btAdapter = btMan.adapter
         connectionInitActive = true
-
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
@@ -114,6 +113,9 @@ class MainActivity : AppCompatActivity() {
                     alFragment.setInitialSavedState(alInstanceState)
                     setFragment(alFragment)
                 }
+            }
+            R.id.nav_stored_animations -> {
+
             }
         }
         return true

@@ -16,4 +16,11 @@
         android:visible="true"
         android:title="@string/navig_animation"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/nav_stored_animations"
+        android:icon="@drawable/app_icon_stored_animations"
+        android:visible="true"
+        android:title="Saved Animations"
+        app:showAsAction="ifRoom"
+        />
 </menu>

@@ -1,11 +1,15 @@
 package ch.sr35.balllampapp.fragments
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import ch.sr35.balllampapp.*
@@ -33,27 +37,27 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
 
         val af = frameViewModel.animationFrame.value
-            if (af?.editedStep != null) {
-                for (la in animation.lampAnimations.withIndex())
-                {
-                    if (la.index < 10) {
-                        if (af.lampdataUpper?.colors != null) {
-                            la.value.steps[af.editedStep!!].color =
-                                af.lampdataUpper?.colors!![la.index]
-                        }
+        if (af?.editedStep != null) {
+            for (la in animation.lampAnimations.withIndex())
+            {
+                if (la.index < 10) {
+                    if (af.lampdataUpper?.colors != null) {
+                        la.value.steps[af.editedStep!!].color =
+                            af.lampdataUpper?.colors!![la.index]
                     }
-                    else
-                    {
-                        if (af.lampDataLower?.colors != null) {
-                            la.value.steps[af.editedStep!!].color =
-                                af.lampDataLower?.colors!![la.index-10]
-                        }
-                    }
-                    la.value.steps[af.editedStep!!].duration =
-                        (af.duration?.times(30.0))?.toLong() ?: 0
                 }
-
+                else
+                {
+                    if (af.lampDataLower?.colors != null) {
+                        la.value.steps[af.editedStep!!].color =
+                            af.lampDataLower?.colors!![la.index-10]
+                    }
+                }
+                la.value.steps[af.editedStep!!].duration =
+                    (af.duration?.times(30.0))?.toLong() ?: 0
             }
+
+        }
 
         val animationListAdapter = AnimationListAdapter(animation)
         val recyclerView: RecyclerView = view.findViewById(R.id.recycleViewer)
@@ -68,11 +72,11 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 viewHolder: RecyclerView.ViewHolder,
                 target: RecyclerView.ViewHolder
             ): Boolean {
-                var p1 = viewHolder.adapterPosition
-                var p2 = target.adapterPosition
+                val p1 = viewHolder.adapterPosition
+                val p2 = target.adapterPosition
                 for (la in animation.lampAnimations)
                 {
-                    var swap = la.steps[p2]
+                    val swap = la.steps[p2]
                     la.steps[p2] = la.steps[p1]
                     la.steps[p1] = swap
                 }
@@ -136,11 +140,22 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 cmdDispatcher.start()
             }
         }
+
+        val saveButton = view.findViewById<Button>(R.id.saveAnimation)
+        saveButton.setOnClickListener {
+            val nameDlg = GetNameDialog()
+            nameDlg.show(requireActivity().supportFragmentManager,"GetName")
+        }
         setDurationAndSize()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setFragmentResultListener("muh1")
+        {
+            _,bundle ->
+            animation.name = bundle.getString("animationName")
+         }
     }
 
     private fun setDurationAndSize(){
@@ -150,4 +165,5 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         val txt = resources.getString(R.string.tv_anim_descr,durationString,byteSizeString)
         textViewAnimDescr?.text = txt
     }
+
 }
