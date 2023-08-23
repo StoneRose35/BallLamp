@@ -6,10 +6,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:textAlignment="center"
+    android:id="@+id/fragmentAnimationList"
     tools:context=".fragments.AnimationList">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycleViewer"
+        android:id="@+id/recycleViewerAnimation"
         android:layout_width="match_parent"
         android:layout_height="597dp"
         android:layout_marginStart="2dp"

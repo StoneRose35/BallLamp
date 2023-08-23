@@ -2,9 +2,10 @@ package ch.sr35.balllampapp.backend
 
 import android.os.Parcel
 import android.os.Parcelable
+import java.io.Serializable
 import kotlin.random.Random
 
-class SimpleIntColor(var r: Int, var g: Int, var b: Int): Parcelable {
+class SimpleIntColor(var r: Int, var g: Int, var b: Int): Parcelable, Serializable {
 
 
     constructor(parcel: Parcel) : this(

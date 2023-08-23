@@ -1,5 +1,6 @@
 package ch.sr35.balllampapp
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
@@ -7,6 +8,7 @@ import android.bluetooth.BluetoothSocket
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -20,11 +22,12 @@ import android.widget.TextView
 
 import androidx.activity.viewModels
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
 import androidx.fragment.app.Fragment
 import ch.sr35.balllampapp.backend.Animation
-import ch.sr35.balllampapp.backend.FrameViewModel
 import ch.sr35.balllampapp.fragments.AnimationList
 import ch.sr35.balllampapp.fragments.ColorSelect
+import ch.sr35.balllampapp.fragments.SavedAnimations
 import java.io.IOException
 import java.io.InputStream
 
@@ -46,9 +49,11 @@ class MainActivity : AppCompatActivity() {
 
     private var csInstanceState: Fragment.SavedState? = null
     private var alInstanceState: Fragment.SavedState? = null
+    private var saInstanceState: Fragment.SavedState? = null
     var csFragment: ColorSelect = ColorSelect()
     var alFragment: AnimationList = AnimationList()
-    private val frameViewModel: FrameViewModel by viewModels()
+    var saFragment: SavedAnimations = SavedAnimations()
+    //val frameViewModelAnimation: FrameViewModelAnimation by viewModels()
 
 
 
@@ -59,7 +64,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContentView(R.layout.activity_main)
-        frameViewModel.animationFrame.value?.duration=0.4
+        //frameViewModelAnimation.animationFrame.value?.duration=0.4
 
 
         val restoredAnimation = savedInstanceState?.getParcelable<Animation>("anim")
@@ -75,7 +80,7 @@ class MainActivity : AppCompatActivity() {
         toolbar.showOverflowMenu()
 
 
-        frameViewModel.animationFrame.value?.editedStep=null
+        //frameViewModelAnimation.animationFrame.value?.editedStep=null
 
 
         val btReceiver = BTReceiver(this)
@@ -100,22 +105,45 @@ class MainActivity : AppCompatActivity() {
         when(item.itemId)
         {
             R.id.nav_color_select -> {
-                if (supportFragmentManager.fragments.contains(alFragment)) {
-                    frameViewModel.animationFrame.value?.editedStep = null
-                    alInstanceState = supportFragmentManager.saveFragmentInstanceState(alFragment)
+                if (supportFragmentManager.fragments[0] !is ColorSelect) {
+                    if (supportFragmentManager.fragments.contains(alFragment)) {
+                        //frameViewModelAnimation.animationFrame.value?.editedStep = null
+                        alInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(alFragment)
+                    } else if (supportFragmentManager.fragments.contains(saFragment)) {
+                        saInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(saFragment)
+                    }
                     csFragment.setInitialSavedState(csInstanceState)
                     setFragment(csFragment)
                 }
             }
             R.id.nav_animation_view -> {
-                if (supportFragmentManager.fragments.contains(csFragment)) {
-                    csInstanceState = supportFragmentManager.saveFragmentInstanceState(csFragment)
+                if (supportFragmentManager.fragments[0] !is AnimationList) {
+                    if (supportFragmentManager.fragments.contains(csFragment)) {
+                        csInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(csFragment)
+                    } else if (supportFragmentManager.fragments.contains(saFragment)) {
+                        saInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(saFragment)
+                    }
                     alFragment.setInitialSavedState(alInstanceState)
                     setFragment(alFragment)
                 }
             }
             R.id.nav_stored_animations -> {
-
+                if (supportFragmentManager.fragments[0] !is SavedAnimations) {
+                    if (supportFragmentManager.fragments.contains(alFragment)) {
+                        //frameViewModelAnimation.animationFrame.value?.editedStep = null
+                        alInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(alFragment)
+                    } else if (supportFragmentManager.fragments.contains(csFragment)) {
+                        csInstanceState =
+                            supportFragmentManager.saveFragmentInstanceState(csFragment)
+                    }
+                    saFragment.setInitialSavedState(saInstanceState)
+                    setFragment(saFragment)
+                }
             }
         }
         return true
@@ -154,6 +182,13 @@ class MainActivity : AppCompatActivity() {
                 if (btAdapter?.state == BluetoothAdapter.STATE_OFF) {
                     val btOnIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
                     connectionInitActive = false
+                    if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.BLUETOOTH_CONNECT
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        return
+                    }
                     startActivity(btOnIntent)
                 } else {
                     btDevice =
@@ -248,8 +283,8 @@ class RGBSeekBarChangeListener(private var csFragment: ColorSelect, private var 
             csFragment.lampBallSelectorUpper?.setColorForSelected(csFragment.mainClr)
             csFragment.lampBallSelectorLower?.setColorForSelected(csFragment.mainClr)
 
-            csFragment.frameViewModel.animationFrame.value?.lampDataLower = csFragment.lampBallSelectorLower?.lampData
-            csFragment.frameViewModel.animationFrame.value?.lampdataUpper = csFragment.lampBallSelectorUpper?.lampData
+            csFragment.animationFrame?.lampdataUpper = csFragment.lampBallSelectorLower?.lampData
+            csFragment.animationFrame?.lampdataUpper = csFragment.lampBallSelectorUpper?.lampData
 
 
             val lampsUpper = csFragment.lampBallSelectorUpper?.getSelectedString()
@@ -321,6 +356,13 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
     {
 
         try {
+            if (ActivityCompat.checkSelfPermission(
+                    caller,
+                    Manifest.permission.BLUETOOTH_CONNECT
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                return
+            }
             caller.btSocket = caller.btDevice?.createInsecureRfcommSocketToServiceRecord(appUuid)
             caller.btSocket?.connect()
 

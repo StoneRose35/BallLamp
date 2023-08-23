@@ -32,7 +32,8 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
     var duration: Double = 0.0
     var serialLogger: TextView? = null
     private var btnConnect: Button? = null
-    val frameViewModel: FrameViewModel by activityViewModels()
+    //val frameViewModelAnimation: FrameViewModelAnimation by activityViewModels()
+    var animationFrame: AnimationFrame? = null
     var durationField: EditText? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +49,9 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         {
             lampBallSelectorUpper?.lampData=ldUpper
         }
+        if (animationFrame == null) {
+            animationFrame = AnimationFrame(null, null, 0.4, null)
+        }
 
     }
 
@@ -58,7 +62,7 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         durationField?.doOnTextChanged { text, _, _, _ ->
             try {
                 duration = text.toString().toDouble()
-                frameViewModel.animationFrame.value?.duration = duration
+                animationFrame?.duration = duration
                 durationField?.setBackgroundColor(Color.WHITE)
             } catch (e: java.lang.NumberFormatException)
             {
@@ -144,12 +148,12 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         }
 
         durationField = view.findViewById(R.id.editTextDuration)
-        duration = frameViewModel.animationFrame.value?.duration!!
+        duration = animationFrame?.duration!!
 
         view.findViewById<Button>(R.id.add_to_animation).setOnClickListener {
 
             if (duration >= 0.0) {
-                frameViewModel.animationFrame.value?.editedStep = null
+                animationFrame?.editedStep = null
                 for (la in (activity as MainActivity).alFragment.animation.lampAnimations.withIndex()) {
 
                     if (la.index < 10 && lampBallSelectorUpper != null) {
@@ -185,11 +189,11 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
 
         initButtons()
 
-        val ldLower = frameViewModel.animationFrame.value?.lampDataLower
+        val ldLower = animationFrame?.lampDataLower
         if (ldLower != null) {
             lampBallSelectorLower?.lampData = ldLower
         }
-        val ldUpper = frameViewModel.animationFrame.value?.lampdataUpper
+        val ldUpper = animationFrame?.lampdataUpper
         if (ldUpper != null) {
             lampBallSelectorUpper?.lampData = ldUpper
         }
@@ -239,8 +243,8 @@ class ColorSelect : Fragment(R.layout.fragment_color_select) {
         lampBallSelectorLower?.setColorForAll(siclr)
         lampBallSelectorUpper?.setColorForAll(siclr)
 
-        frameViewModel.animationFrame.value?.lampdataUpper = lampBallSelectorUpper?.lampData
-        frameViewModel.animationFrame.value?.lampDataLower = lampBallSelectorLower?.lampData
+        animationFrame?.lampDataLower = lampBallSelectorLower?.lampData
+        animationFrame?.lampdataUpper = lampBallSelectorUpper?.lampData
     }
 
 

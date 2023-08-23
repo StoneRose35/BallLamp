@@ -159,7 +159,7 @@ class Animation(var lampAnimations: ArrayList<LampAnimation>): Parcelable, Seria
 
 }
 
-class LampAnimation(var lampNr: Byte, var steps: ArrayList<Step>, var repeating: Boolean): Parcelable
+class LampAnimation(var lampNr: Byte, var steps: ArrayList<Step>, var repeating: Boolean): Parcelable, Serializable
 {
     fun getByteSize(): Int
     {
@@ -215,7 +215,7 @@ class LampAnimation(var lampNr: Byte, var steps: ArrayList<Step>, var repeating:
     }
 }
 
-class Step(var color: SimpleIntColor?, var duration: Long, var interpolation: InterpolationType): Parcelable {
+class Step(var color: SimpleIntColor?, var duration: Long, var interpolation: InterpolationType): Parcelable, Serializable {
 
     constructor(parcel: Parcel) : this(
         parcel.readParcelable(SimpleIntColor::class.java.classLoader),

@@ -14,12 +14,15 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
 import ch.sr35.balllampapp.*
 import ch.sr35.balllampapp.backend.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
 
 
 class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
     var animation: Animation = Animation(ArrayList())
-    val frameViewModel: FrameViewModel by activityViewModels()
+    //val frameViewModel: FrameViewModelAnimation by activityViewModels()
 
     init {
         for (i in 0..19) {
@@ -36,7 +39,7 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         animation.mappingLower = resources.getIntArray(R.array.lampMappingLower)
 
 
-        val af = frameViewModel.animationFrame.value
+        val af = (activity as MainActivity).csFragment.animationFrame //frameViewModel.animationFrame.value
         if (af?.editedStep != null) {
             for (la in animation.lampAnimations.withIndex())
             {
@@ -60,7 +63,7 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         }
 
         val animationListAdapter = AnimationListAdapter(animation)
-        val recyclerView: RecyclerView = view.findViewById(R.id.recycleViewer)
+        val recyclerView: RecyclerView = view.findViewById(R.id.recycleViewerAnimation)
         recyclerView.adapter = animationListAdapter
 
 
@@ -97,10 +100,11 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                     ItemTouchHelper.LEFT -> {
                         // move to edit screen, fill duration and colors
                         val mainAct = (activity as MainActivity)
-                        frameViewModel.animationFrame.value?.lampDataLower = (viewHolder as AnimationListAdapter.ViewHolder).lampSelectorLower.lampData
-                        frameViewModel.animationFrame.value?.lampdataUpper = viewHolder.lampSelectorUpper.lampData
-                        frameViewModel.animationFrame.value?.duration = viewHolder.duration
-                        frameViewModel.animationFrame.value?.editedStep = viewHolder.adapterPosition
+                        mainAct.csFragment.animationFrame
+                        mainAct.csFragment.animationFrame?.lampDataLower = (viewHolder as AnimationListAdapter.ViewHolder).lampSelectorLower.lampData
+                        mainAct.csFragment.animationFrame?.lampdataUpper = viewHolder.lampSelectorUpper.lampData
+                        mainAct.csFragment.animationFrame?.duration = viewHolder.duration
+                        mainAct.csFragment.animationFrame?.editedStep = viewHolder.adapterPosition
                         mainAct.setFragment(mainAct.csFragment)
                     }
                 }
@@ -151,11 +155,39 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFragmentResultListener("muh1")
+        setFragmentResultListener("fragment_get_name_ok")
         {
             _,bundle ->
+            var file_idx: Int = 0
             animation.name = bundle.getString("animationName")
-         }
+            if (activity != null) {
+                var fDir = activity!!.filesDir
+                fDir.listFiles()?.iterator()?.forEach {
+                    if (it.isFile && it.name.endsWith("anm")) {
+                        file_idx = Integer.parseInt(it.name.split(".")[0])
+
+                    }
+                }
+                file_idx += 1
+
+                var savedAnimationDao = SavedAnimationDao(
+                    animation.name,
+                    fDir.absolutePath + File.separator + file_idx.toString() + ".anm",
+                    animation)
+                val newAnimationFile = File(savedAnimationDao.fileName)
+                newAnimationFile.createNewFile()
+                val fos = FileOutputStream(newAnimationFile)
+                val oos = ObjectOutputStream(fos)
+                try {
+                    oos.writeObject(savedAnimationDao)
+                } catch (e: Exception)
+                {
+                    e.printStackTrace()
+                }
+                oos.close()
+            }
+
+        }
     }
 
     private fun setDurationAndSize(){

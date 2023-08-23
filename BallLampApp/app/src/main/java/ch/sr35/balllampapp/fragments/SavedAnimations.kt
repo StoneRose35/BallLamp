@@ -2,10 +2,18 @@ package ch.sr35.balllampapp.fragments
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.RecyclerView
 import ch.sr35.balllampapp.R
+import ch.sr35.balllampapp.SavedAnimationAdapter
+import ch.sr35.balllampapp.backend.SavedAnimationDao
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InvalidClassException
+import java.io.ObjectInputStream
+import java.io.OptionalDataException
+import java.io.StreamCorruptedException
 
 
 /**
@@ -13,35 +21,69 @@ import ch.sr35.balllampapp.R
  * Use the [SavedAnimations.newInstance] factory method to
  * create an instance of this fragment.
  */
-class SavedAnimations : Fragment() {
+class SavedAnimations : Fragment(R.layout.fragment_saved_animations) {
     // TODO: Rename and change types of parameters
+    var savedAnimations: ArrayList<SavedAnimationDao> = ArrayList<SavedAnimationDao>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        var fDir = activity!!.filesDir
+        savedAnimations.clear()
+        fDir.listFiles()?.iterator()?.forEach {
+            if (it.isFile && it.name.endsWith("anm")) {
+                val fis = FileInputStream(it)
+                val ois = ObjectInputStream(fis)
+                try {
+                    val readbackObject = ois.readObject()
+                    if (readbackObject is SavedAnimationDao)
+                    {
+                        savedAnimations.add(readbackObject)
+                    }
+                } catch (e: ClassNotFoundException)
+                {
 
-    }
+                } catch (e1: InvalidClassException)
+                {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_saved_animations, container, false)
-    }
+                } catch (e2: StreamCorruptedException)
+                {
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @return A new instance of fragment SavedAnimations.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            SavedAnimations().apply {
-                arguments = Bundle().apply {
+                } catch (e3: OptionalDataException)
+                {
+
+                } catch (e4: IOException)
+                {
+
                 }
+
             }
+        }
+
     }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        val savedAnimationAdapter = SavedAnimationAdapter(savedAnimations)
+        val recyclerView: RecyclerView = view.findViewById(R.id.recycleViewSavedAnimation)
+        recyclerView.adapter = savedAnimationAdapter
+        val touchHelperCallback = object: ItemTouchHelper.SimpleCallback(
+            ItemTouchHelper.UP.or(ItemTouchHelper.DOWN),
+            ItemTouchHelper.START)
+        {
+            override fun onMove(
+                recyclerView: RecyclerView,
+                viewHolder: RecyclerView.ViewHolder,
+                target: RecyclerView.ViewHolder
+            ): Boolean {
+                TODO("Not yet implemented")
+            }
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+            }
+
+        }
+    }
+
 }

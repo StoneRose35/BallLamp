@@ -26,7 +26,7 @@ class GetNameDialog: DialogFragment()  {
             builder.setView(dlgView)
                 .setPositiveButton("Ok") { _,_ ->
                     val tv = dlgView.findViewById<TextView>(R.id.getNameEditText)
-                    setFragmentResult("muh1", bundleOf("animationName" to tv.text.toString()))
+                    setFragmentResult("fragment_get_name_ok", bundleOf("animationName" to tv.text.toString()))
                 }
                 .setNegativeButton("Cancel")
                 {
