@@ -41,4 +41,8 @@
 
     <string name="save_animation">Save</string>
 
+    <string name="animation_name_default">CoolAnimation</string>
+    <string name="saved_animation_save_as_new">Save As New</string>
+    <string name="saved_animation_set_name">Name of the stored Animation</string>
+
 </resources>
