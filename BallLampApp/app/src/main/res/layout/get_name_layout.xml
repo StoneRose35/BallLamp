@@ -1,15 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <EditText
         android:id="@+id/getNameEditText"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:ems="10"
         android:inputType="text"
-        android:text="CoolAnimation" />
+        android:padding="3dp"
+        android:autofillHints="name"
+        android:hint="@string/saved_animation_set_name"
+        android:text="@string/animation_name_default" />
 
+    <Switch
+        android:id="@+id/switchSaveAsNew"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="@string/saved_animation_save_as_new"
+        tools:ignore="UseSwitchCompatOrMaterialXml" />
 </LinearLayout>

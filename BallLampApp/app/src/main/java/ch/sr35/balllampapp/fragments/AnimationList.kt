@@ -1,14 +1,11 @@
 package ch.sr35.balllampapp.fragments
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
-import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
@@ -22,7 +19,7 @@ import java.io.ObjectOutputStream
 class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
     var animation: Animation = Animation(ArrayList())
-    //val frameViewModel: FrameViewModelAnimation by activityViewModels()
+    var fileName: String? = null
 
     init {
         for (i in 0..19) {
@@ -100,7 +97,6 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                     ItemTouchHelper.LEFT -> {
                         // move to edit screen, fill duration and colors
                         val mainAct = (activity as MainActivity)
-                        mainAct.csFragment.animationFrame
                         mainAct.csFragment.animationFrame?.lampDataLower = (viewHolder as AnimationListAdapter.ViewHolder).lampSelectorLower.lampData
                         mainAct.csFragment.animationFrame?.lampdataUpper = viewHolder.lampSelectorUpper.lampData
                         mainAct.csFragment.animationFrame?.duration = viewHolder.duration
@@ -147,7 +143,7 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
 
         val saveButton = view.findViewById<Button>(R.id.saveAnimation)
         saveButton.setOnClickListener {
-            val nameDlg = GetNameDialog()
+            val nameDlg = GetNameDialog(animation.name,fileName)
             nameDlg.show(requireActivity().supportFragmentManager,"GetName")
         }
         setDurationAndSize()
@@ -158,23 +154,42 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         setFragmentResultListener("fragment_get_name_ok")
         {
             _,bundle ->
-            var file_idx: Int = 0
+            var file_idx = 0
+            val fname = bundle.getString("fileName")
             animation.name = bundle.getString("animationName")
             if (activity != null) {
-                var fDir = activity!!.filesDir
-                fDir.listFiles()?.iterator()?.forEach {
-                    if (it.isFile && it.name.endsWith("anm")) {
-                        file_idx = Integer.parseInt(it.name.split(".")[0])
+                val fDir = activity!!.filesDir
+                val newAnimationFile: File
+                val savedAnimationDao: SavedAnimationDao
+                if (fname == null) {
+                    fDir.listFiles()?.iterator()?.forEach {
+                        if (it.isFile && it.name.endsWith("anm")) {
+                            file_idx = Integer.parseInt(it.name.split(".")[0])
 
+                        }
+                    }
+                    file_idx += 1
+
+                    savedAnimationDao = SavedAnimationDao(
+                        animation.name,
+                        fDir.absolutePath + File.separator + file_idx.toString() + ".anm",
+                        animation
+                    )
+                    newAnimationFile = File(savedAnimationDao.fileName)
+                }
+                else
+                {
+                    savedAnimationDao = SavedAnimationDao(
+                        animation.name,
+                        fname,
+                        animation
+                    )
+                    newAnimationFile = File(savedAnimationDao.fileName)
+                    if (fDir.listFiles()?.any { f -> f.name==newAnimationFile.name } == true)
+                    {
+                        newAnimationFile.delete()
                     }
                 }
-                file_idx += 1
-
-                var savedAnimationDao = SavedAnimationDao(
-                    animation.name,
-                    fDir.absolutePath + File.separator + file_idx.toString() + ".anm",
-                    animation)
-                val newAnimationFile = File(savedAnimationDao.fileName)
                 newAnimationFile.createNewFile()
                 val fos = FileOutputStream(newAnimationFile)
                 val oos = ObjectOutputStream(fos)
