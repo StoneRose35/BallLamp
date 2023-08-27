@@ -7,6 +7,7 @@
     android:id="@+id/fragmentColorSelect"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,68 +15,68 @@
         android:scrollbars="vertical"
         tools:context=".fragments.ColorSelect">
 
-    <SeekBar
-        android:id="@+id/amountRed"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="49dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_red"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.51"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <SeekBar
+            android:id="@+id/amountRed"
+            android:layout_width="312dp"
+            android:layout_height="17dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginEnd="49dp"
+            android:max="255"
+            android:progressBackgroundTint="@color/lamp_red"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.51"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    <SeekBar
-        android:id="@+id/amountGreen"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="19dp"
-        android:layout_marginEnd="49dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_green"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountRed" />
+        <SeekBar
+            android:id="@+id/amountGreen"
+            android:layout_width="312dp"
+            android:layout_height="17dp"
+            android:layout_marginStart="50dp"
+            android:layout_marginTop="19dp"
+            android:layout_marginEnd="49dp"
+            android:max="255"
+            android:progressBackgroundTint="@color/lamp_green"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/amountRed" />
 
-    <SeekBar
-        android:id="@+id/amountBlue"
-        android:layout_width="312dp"
-        android:layout_height="17dp"
-        android:layout_marginStart="49dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="50dp"
-        android:max="255"
-        android:progressBackgroundTint="@color/lamp_blue"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountGreen" />
+        <SeekBar
+            android:id="@+id/amountBlue"
+            android:layout_width="312dp"
+            android:layout_height="17dp"
+            android:layout_marginStart="49dp"
+            android:layout_marginTop="22dp"
+            android:layout_marginEnd="50dp"
+            android:max="255"
+            android:progressBackgroundTint="@color/lamp_blue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/amountGreen" />
 
 
-    <TextView
-        android:id="@+id/textViewConnectionState"
-        android:layout_width="184dp"
-        android:layout_height="32dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:background="@drawable/rectangles"
-        android:gravity="center"
-        android:shadowColor="#734343"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+        <TextView
+            android:id="@+id/textViewConnectionState"
+            android:layout_width="184dp"
+            android:layout_height="32dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/rectangles"
+            android:gravity="center"
+            android:shadowColor="#734343"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
-    <Button
-        android:id="@+id/btnConnect"
-        android:layout_width="142dp"
-        android:layout_height="51dp"
-        android:layout_marginStart="232dp"
-        android:layout_marginTop="8dp"
-        android:text="@string/connect_text"
-        app:layout_constraintStart_toStartOf="@+id/lampSelectorLower"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+        <Button
+            android:id="@+id/btnConnect"
+            android:layout_width="142dp"
+            android:layout_height="51dp"
+            android:layout_marginStart="13dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/connect_text"
+            app:layout_constraintStart_toEndOf="@+id/textViewConnectionState"
+            app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
 
         <TextView
             android:id="@+id/serialOut"
@@ -97,125 +98,140 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/editTextDuration" />
 
-    <ch.sr35.balllampapp.LampSelectorView
-        android:id="@+id/lampSelectorUpper"
-        android:layout_width="169dp"
-        android:layout_height="157dp"
-        android:layout_marginTop="92dp"
-        android:layout_marginEnd="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue"
-        app:mappingTable="@array/lampMappingUpper" />
+        <LinearLayout
+            android:id="@+id/lampSelectors"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnConnect">
 
-    <ch.sr35.balllampapp.LampSelectorView
-        android:id="@+id/lampSelectorLower"
-        android:layout_width="175dp"
-        android:layout_height="154dp"
-        android:layout_marginTop="80dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <Button
-        android:id="@+id/buttonRed"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_red"
-        android:text="@string/button_red_text"
-        android:textColor="#9CFFA0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorLower" />
+                <TextView
+                    android:id="@+id/textViewLblUpper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/lbl_upper"
+                    app:layout_constraintBottom_toTopOf="@+id/lampSelectorUpper"
+                    app:layout_constraintStart_toStartOf="@+id/lampSelectorUpper" />
 
-    <Button
-        android:id="@+id/buttonGreen"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_green"
-        android:text="@string/button_green_text"
-        android:textColor="#000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonRed"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorLower" />
+                <ch.sr35.balllampapp.LampSelectorView
+                    android:id="@+id/lampSelectorUpper"
+                    android:layout_width="169dp"
+                    android:layout_height="157dp"
+                    android:layout_marginTop="10dp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:mappingTable="@array/lampMappingUpper" />
+            </LinearLayout>
 
-    <Button
-        android:id="@+id/buttonBlue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/lamp_blue"
-        android:text="@string/button_blue_text"
-        app:layout_constraintStart_toEndOf="@+id/buttonGreen"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorUpper" />
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
 
-    <Button
-        android:id="@+id/buttonWarmWhite"
-        android:layout_width="91dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_war_white"
-        android:text="@string/button_warm_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonRed" />
+                <TextView
+                    android:id="@+id/textViewLblLower"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:text="@string/lbl_lower" />
 
-    <Button
-        android:id="@+id/buttonColdWhite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_cold_white"
-        android:text="@string/button_cold_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonWarmWhite"
-        app:layout_constraintTop_toBottomOf="@+id/buttonGreen" />
+                <ch.sr35.balllampapp.LampSelectorView
+                    android:id="@+id/lampSelectorLower"
+                    android:layout_width="169dp"
+                    android:layout_height="157dp"
+                    android:layout_marginTop="10dp"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
+            </LinearLayout>
+        </LinearLayout>
+        <TableLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/lampSelectors"
+            android:id="@+id/tableColorButtons"
+            >
+            <TableRow>
+                <Button
+                    android:id="@+id/buttonRed"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="16dp"
+                    android:backgroundTint="@color/lamp_red"
+                    android:text="@string/button_red_text"
+                    android:textColor="#9CFFA0"
+                 />
 
-    <Button
-        android:id="@+id/buttonBrightWhite"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/lamp_bright"
-        android:text="@string/button_bright_white_text"
-        android:textColor="#FF000000"
-        app:layout_constraintStart_toEndOf="@+id/buttonColdWhite"
-        app:layout_constraintTop_toBottomOf="@+id/buttonBlue" />
+                <Button
+                    android:id="@+id/buttonGreen"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/lamp_green"
+                    android:text="@string/button_green_text"
+                    android:textColor="#000000"
+                 />
 
-    <Button
-        android:id="@+id/buttonOff"
-        android:layout_width="87dp"
-        android:layout_height="93dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="@color/black"
-        android:text="@string/button_off_text"
-        app:layout_constraintStart_toEndOf="@+id/buttonBlue"
-        app:layout_constraintTop_toBottomOf="@+id/lampSelectorUpper" />
+                <Button
+                    android:id="@+id/buttonBlue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/lamp_blue"
+                    android:text="@string/button_blue_text"
+                />
+                <Button
+                    android:id="@+id/buttonOff"
+                    android:layout_width="80dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="0dp"
+                    android:backgroundTint="@color/black"
+                    android:text="@string/button_off_text"
+                />
+            </TableRow>
+            <TableRow>
+                <Button
+                    android:id="@+id/buttonWarmWhite"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/lamp_war_white"
+                    android:text="@string/button_warm_white_text"
+                    android:textColor="#FF000000"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonRed" />
 
-    <TextView
-        android:id="@+id/textViewLblLower"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="28dp"
-        android:layout_marginBottom="12dp"
-        android:text="@string/lbl_lower"
-        app:layout_constraintBottom_toTopOf="@+id/lampSelectorLower"
-        app:layout_constraintStart_toStartOf="parent" />
+                <Button
+                    android:id="@+id/buttonColdWhite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/lamp_cold_white"
+                    android:text="@string/button_cold_white_text"
+                    android:textColor="#FF000000"
+                    app:layout_constraintStart_toEndOf="@+id/buttonWarmWhite"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonGreen" />
 
-    <TextView
-        android:id="@+id/textViewLblUpper"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginBottom="4dp"
-        android:text="@string/lbl_upper"
-        app:layout_constraintBottom_toTopOf="@+id/lampSelectorUpper"
-        app:layout_constraintStart_toStartOf="@+id/lampSelectorUpper" />
+                <Button
+                    android:id="@+id/buttonBrightWhite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:backgroundTint="@color/lamp_bright"
+                    android:text="@string/button_bright_white_text"
+                    android:textColor="#FF000000"
+                    app:layout_constraintStart_toEndOf="@+id/buttonColdWhite"
+                    app:layout_constraintTop_toBottomOf="@+id/buttonBlue" />
+            </TableRow>
+        </TableLayout>
+
 
         <Button
             android:id="@+id/add_to_animation"
@@ -223,9 +239,10 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
+            android:layout_marginBottom="8dp"
             android:text="@string/button_add_to_animation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonOff" />
+            app:layout_constraintBottom_toTopOf="@+id/serialOut"
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <EditText
             android:id="@+id/editTextDuration"
@@ -233,12 +250,11 @@
             android:layout_height="51dp"
             android:layout_marginStart="8dp"
             android:layout_marginTop="24dp"
-            android:layout_marginEnd="44dp"
+            android:layout_marginEnd="60dp"
             android:ems="10"
             android:inputType="numberDecimal"
-            app:layout_constraintEnd_toStartOf="@+id/add_to_animation"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/buttonColdWhite" />
+            app:layout_constraintTop_toBottomOf="@+id/tableColorButtons" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </ScrollView>

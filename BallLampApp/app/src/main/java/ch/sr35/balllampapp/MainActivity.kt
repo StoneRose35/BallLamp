@@ -231,8 +231,6 @@ class MainActivity : AppCompatActivity() {
 
 
 
-
-
     fun setFragment(fragment: Fragment)
     {
 
@@ -247,6 +245,10 @@ class MainActivity : AppCompatActivity() {
         if(btSocket == null)
         {
             initConnection()
+        }
+        else if (btSocket?.isConnected != true)
+        {
+            return
         }
         else
         {
@@ -361,7 +363,9 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
                     Manifest.permission.BLUETOOTH_CONNECT
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                return
+                val permission = Manifest.permission.BLUETOOTH_CONNECT
+                val permissions = Array(1){permission}
+                ActivityCompat.requestPermissions(caller,  permissions,42)
             }
             caller.btSocket = caller.btDevice?.createInsecureRfcommSocketToServiceRecord(appUuid)
             caller.btSocket?.connect()

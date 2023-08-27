@@ -1,10 +1,13 @@
 package ch.sr35.balllampapp.fragments
 
+import android.app.AlertDialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -88,11 +91,18 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 when(direction)
                 {
                     ItemTouchHelper.RIGHT -> {
-                        for (la in animation.lampAnimations) {
-                            la.steps.removeAt(viewHolder.adapterPosition)
-                        }
-                        animationListAdapter.notifyItemRemoved(viewHolder.adapterPosition)
-                        setDurationAndSize()
+                        val alertDlgBuilder =  AlertDialog.Builder((activity as MainActivity))
+                            .setMessage("really delete")
+                            .setPositiveButton("Yes") { _, _ ->
+                                for (la in animation.lampAnimations) {
+                                    la.steps.removeAt(viewHolder.adapterPosition)
+                                }
+                                animationListAdapter.notifyItemRemoved(viewHolder.adapterPosition)
+                                setDurationAndSize()
+                            }
+                            .setNegativeButton("No") {_, _ -> animationListAdapter.notifyItemChanged(viewHolder.adapterPosition)}
+                        val alertDlg = alertDlgBuilder.create()
+                        alertDlg.show()
                     }
                     ItemTouchHelper.LEFT -> {
                         // move to edit screen, fill duration and colors
@@ -155,6 +165,7 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
         {
             _,bundle ->
             var file_idx = 0
+            var old_idx = 0
             val fname = bundle.getString("fileName")
             animation.name = bundle.getString("animationName")
             if (activity != null) {
@@ -165,10 +176,14 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                     fDir.listFiles()?.iterator()?.forEach {
                         if (it.isFile && it.name.endsWith("anm")) {
                             file_idx = Integer.parseInt(it.name.split(".")[0])
+                            if (file_idx > old_idx)
+                            {
+                                old_idx = file_idx
+                            }
 
                         }
                     }
-                    file_idx += 1
+                    file_idx = old_idx + 1
 
                     savedAnimationDao = SavedAnimationDao(
                         animation.name,
