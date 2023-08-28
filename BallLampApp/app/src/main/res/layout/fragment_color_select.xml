@@ -150,13 +150,15 @@
                     app:layout_constraintTop_toBottomOf="@+id/amountBlue" />
             </LinearLayout>
         </LinearLayout>
+
         <TableLayout
+            android:id="@+id/tableColorButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:layout_constraintTop_toBottomOf="@id/lampSelectors"
-            android:id="@+id/tableColorButtons"
-            >
+            app:layout_constraintTop_toBottomOf="@id/lampSelectors">
+
             <TableRow>
+
                 <Button
                     android:id="@+id/buttonRed"
                     android:layout_width="wrap_content"
@@ -164,8 +166,7 @@
                     android:layout_marginStart="16dp"
                     android:backgroundTint="@color/lamp_red"
                     android:text="@string/button_red_text"
-                    android:textColor="#9CFFA0"
-                 />
+                    android:textColor="#9CFFA0" />
 
                 <Button
                     android:id="@+id/buttonGreen"
@@ -174,8 +175,7 @@
                     android:layout_marginStart="8dp"
                     android:backgroundTint="@color/lamp_green"
                     android:text="@string/button_green_text"
-                    android:textColor="#000000"
-                 />
+                    android:textColor="#000000" />
 
                 <Button
                     android:id="@+id/buttonBlue"
@@ -183,8 +183,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:backgroundTint="@color/lamp_blue"
-                    android:text="@string/button_blue_text"
-                />
+                    android:text="@string/button_blue_text" />
+
                 <Button
                     android:id="@+id/buttonOff"
                     android:layout_width="80dp"
@@ -192,10 +192,11 @@
                     android:layout_marginStart="8dp"
                     android:layout_marginEnd="0dp"
                     android:backgroundTint="@color/black"
-                    android:text="@string/button_off_text"
-                />
+                    android:text="@string/button_off_text" />
             </TableRow>
+
             <TableRow>
+
                 <Button
                     android:id="@+id/buttonWarmWhite"
                     android:layout_marginStart="16dp"
@@ -252,6 +253,7 @@
             android:layout_marginTop="24dp"
             android:layout_marginEnd="60dp"
             android:ems="10"
+            android:hint="Duration of the animation Frame"
             android:inputType="numberDecimal"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/tableColorButtons" />

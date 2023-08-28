@@ -268,8 +268,13 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
                     triangleCntr++
                 }
             }
+            return performClick()
         }
         return super.onTouchEvent(event)
+    }
+
+    override fun performClick(): Boolean {
+        return super.performClick()
     }
 
 

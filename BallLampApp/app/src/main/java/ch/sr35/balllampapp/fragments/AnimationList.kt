@@ -92,15 +92,15 @@ class AnimationList: Fragment(R.layout.fragment_animation_list) {
                 {
                     ItemTouchHelper.RIGHT -> {
                         val alertDlgBuilder =  AlertDialog.Builder((activity as MainActivity))
-                            .setMessage("really delete")
-                            .setPositiveButton("Yes") { _, _ ->
+                            .setMessage(getString(R.string.alert_dialog_really_delete))
+                            .setPositiveButton(getString(R.string.yes)) { _, _ ->
                                 for (la in animation.lampAnimations) {
                                     la.steps.removeAt(viewHolder.adapterPosition)
                                 }
                                 animationListAdapter.notifyItemRemoved(viewHolder.adapterPosition)
                                 setDurationAndSize()
                             }
-                            .setNegativeButton("No") {_, _ -> animationListAdapter.notifyItemChanged(viewHolder.adapterPosition)}
+                            .setNegativeButton(getString(R.string.no)) {_, _ -> animationListAdapter.notifyItemChanged(viewHolder.adapterPosition)}
                         val alertDlg = alertDlgBuilder.create()
                         alertDlg.show()
                     }

@@ -84,15 +84,15 @@ class SavedAnimations : Fragment(R.layout.fragment_saved_animations) {
                 {
                     ItemTouchHelper.RIGHT -> {
                         val alertDlgBuilder =  AlertDialog.Builder((activity as MainActivity))
-                            .setMessage("really delete")
-                            .setPositiveButton("Yes") { _, _ ->
+                            .setMessage(getString(R.string.alert_dialog_really_delete))
+                            .setPositiveButton(getString(R.string.yes)) { _, _ ->
                                 val fileToDelete = File(savedAnimations[viewHolder.adapterPosition].fileName)
                                 fileToDelete.delete()
                                 savedAnimations.removeAt(viewHolder.adapterPosition)
                                 savedAnimationAdapter.notifyItemRemoved(viewHolder.adapterPosition)
                                 
                             }
-                            .setNegativeButton("No") {_, _ -> savedAnimationAdapter.notifyItemChanged(viewHolder.adapterPosition)}
+                            .setNegativeButton(getString(R.string.no)) {_, _ -> savedAnimationAdapter.notifyItemChanged(viewHolder.adapterPosition)}
                         val alertDlg = alertDlgBuilder.create()
                         alertDlg.show()
                     }

@@ -38,15 +38,16 @@ class SavedAnimationAdapter(private val dataSet: List<SavedAnimationDao>): Recyc
     override fun onBindViewHolder(holder: ViewHolderSA, position: Int) {
         val cmds = ArrayList<String>()
         val nFrames: Int
+
         holder.textViewAnimationName.text = dataSet[position].animation?.name ?: ""
         val totDuration: Double = dataSet[position].animation?.getTotalDurationInSeconds() ?: 0.0
-        holder.textViewAnimationLength.text = String.format("Duration: %.2f",totDuration)
+        holder.textViewAnimationLength.text = String.format(holder.itemView.context.getString(R.string.saved_animation_duration),totDuration)
         nFrames = if (dataSet[position].animation != null) {
             dataSet[position].animation!!.lampAnimations[0].steps.size
         } else {
             0
         }
-        holder.textViewAnimationNFrames.text = String.format("Frames: %d",nFrames)
+        holder.textViewAnimationNFrames.text = String.format(holder.itemView.context.getString(R.string.saved_animation_frames),nFrames)
         holder.savedAnimation = dataSet[position]
         holder.itemView.setOnClickListener {
             if ((it.context as MainActivity).btSocket != null && (it.context as MainActivity).btSocket?.isConnected == true) {
@@ -61,7 +62,7 @@ class SavedAnimationAdapter(private val dataSet: List<SavedAnimationDao>): Recyc
                 (it.context as MainActivity).alFragment.fileName = holder.savedAnimation!!.fileName
                 (it.context as MainActivity).alFragment.view?.findViewById<SwitchCompat>(R.id.switchAnimationOn)?.isChecked =
                     true
-                val sbLaunchAnimation  = Snackbar.make(it.rootView,"Animation launched",LENGTH_SHORT)
+                val sbLaunchAnimation  = Snackbar.make(it.rootView,holder.itemView.context.getString(R.string.saved_animation_launched),LENGTH_SHORT)
                 sbLaunchAnimation.show()
             }
         }

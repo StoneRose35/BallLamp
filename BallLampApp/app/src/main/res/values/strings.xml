@@ -45,4 +45,10 @@
     <string name="saved_animation_save_as_new">Save As New</string>
     <string name="saved_animation_set_name">Name of the stored Animation</string>
 
+    <string name="alert_dialog_really_delete">really delete?</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="saved_animation_duration">Duration: %.2f</string>
+    <string name="saved_animation_frames">Frames: %d</string>
+    <string name="saved_animation_launched">Animation launched</string>
 </resources>
