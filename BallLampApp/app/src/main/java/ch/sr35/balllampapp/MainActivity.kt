@@ -9,6 +9,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
@@ -19,10 +20,10 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 
-
-import androidx.activity.viewModels
+import androidx.annotation.RequiresApi
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import ch.sr35.balllampapp.backend.Animation
 import ch.sr35.balllampapp.fragments.AnimationList
@@ -54,9 +55,10 @@ class MainActivity : AppCompatActivity() {
     var alFragment: AnimationList = AnimationList()
     var saFragment: SavedAnimations = SavedAnimations()
     //val frameViewModelAnimation: FrameViewModelAnimation by viewModels()
+    private var grants=0
 
 
-
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         val btMan: BluetoothManager = applicationContext.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         btAdapter = btMan.adapter
@@ -66,6 +68,18 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         //frameViewModelAnimation.animationFrame.value?.duration=0.4
 
+        if (ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_CONNECT)!=PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_SCAN)!=PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH_ADMIN)!=PackageManager.PERMISSION_GRANTED
+            || ContextCompat.checkSelfPermission(applicationContext, Manifest.permission.BLUETOOTH)!=PackageManager.PERMISSION_GRANTED
+            )
+        {
+            requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT,Manifest.permission.BLUETOOTH_SCAN,Manifest.permission.BLUETOOTH_ADMIN,Manifest.permission.BLUETOOTH),42)
+        }
+        else
+        {
+            grants = 15
+        }
 
         val restoredAnimation = savedInstanceState?.getParcelable<Animation>("anim")
         if (restoredAnimation != null)
@@ -82,22 +96,47 @@ class MainActivity : AppCompatActivity() {
 
         //frameViewModelAnimation.animationFrame.value?.editedStep=null
 
+        if (grants== 15) {
+            val btReceiver = BTReceiver(this)
+            registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+            registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
+            registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
-        val btReceiver = BTReceiver(this)
-        registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
-        registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
-        registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
 
-
-        if (btSocket?.isConnected == false || btSocket==null)
-        {
-            connectionInitActive=true
-            initConnection()
+            if (btSocket?.isConnected == false || btSocket == null) {
+                connectionInitActive = true
+                initConnection()
+            } else {
+                csFragment.connectionState?.text = resources.getString(R.string.bt_connected)
+                csFragment.view?.findViewById<Button>(R.id.btnConnect)?.text =
+                    resources.getString(R.string.bt_btn_disconnect)
+            }
         }
-        else
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode==42 && grantResults.sum()==0 )
         {
-            csFragment.connectionState?.text = resources.getString(R.string.bt_connected)
-            csFragment.view?.findViewById<Button>(R.id.btnConnect)?.text = resources.getString(R.string.bt_btn_disconnect)
+            grants = 15
+            val btReceiver = BTReceiver(this)
+            registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_FOUND))
+            registerReceiver(btReceiver, IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED))
+            registerReceiver(btReceiver, IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED))
+
+
+            if (btSocket?.isConnected == false || btSocket == null) {
+                connectionInitActive = true
+                initConnection()
+            } else {
+                csFragment.connectionState?.text = resources.getString(R.string.bt_connected)
+                csFragment.view?.findViewById<Button>(R.id.btnConnect)?.text =
+                    resources.getString(R.string.bt_btn_disconnect)
+            }
         }
     }
 
@@ -354,6 +393,7 @@ class BluetoothConnectionThread(private var caller: MainActivity): Thread() {
     private val looper: Looper=Looper.getMainLooper()
     private val handler: Handler = Handler(looper)
 
+    @RequiresApi(Build.VERSION_CODES.S)
     override fun run()
     {
 
