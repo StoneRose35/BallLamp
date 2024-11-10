@@ -3,7 +3,6 @@ package ch.sr35.balllampapp.backend
 import android.os.Parcel
 import android.os.Parcelable
 import java.io.Serializable
-import java.util.*
 import kotlin.collections.ArrayList
 
 const val FRAMERATE = 30.0

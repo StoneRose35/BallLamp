@@ -129,7 +129,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             path.fillType = Path.FillType.EVEN_ODD
             filler.color = Color.argb(255,triangleColors[triangleCntr].r, triangleColors[triangleCntr].g,triangleColors[triangleCntr].b)
             filler.strokeCap = Paint.Cap.ROUND
-            canvas?.drawPath(path,filler)
+            canvas.drawPath(path,filler)
 
             if(triangleSelected[triangleCntr] )
             {
@@ -137,7 +137,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
                 filler.color = Color.argb(255, 255 - triangleColors[triangleCntr].r,
                     255 - triangleColors[triangleCntr].g,
                     255 - triangleColors[triangleCntr].b)
-                canvas?.drawCircle(centerPt.x.toFloat(), centerPt.y.toFloat(),triangle.inscribedRadius().toFloat()*0.3f,filler)
+                canvas.drawCircle(centerPt.x.toFloat(), centerPt.y.toFloat(),triangle.inscribedRadius().toFloat()*0.3f,filler)
             }
 
             triangleCntr++
@@ -158,28 +158,28 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
             filler.style = Paint.Style.FILL
             path.fillType = Path.FillType.EVEN_ODD
             filler.color = Color.argb(255,triangleColors[triangleCntr].r, triangleColors[triangleCntr].g,triangleColors[triangleCntr].b)
-            canvas?.drawPath(path,filler)
+            canvas.drawPath(path,filler)
 
 
 
             // draw outer lines
 
-            canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+            canvas.drawLine(centerX.toFloat(),centerY.toFloat(),
                 centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),blackLine)
-            canvas?.drawLine(centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),
+            canvas.drawLine(centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),
                 centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat() +  coord1[1].toFloat(),blackLine)
-            canvas?.drawLine(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat()+ coord[1].toFloat(),
+            canvas.drawLine(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat()+ coord[1].toFloat(),
                 centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),blackLine)
-            canvas?.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
+            canvas.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
                 centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),blackLine)
 
-            canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+            canvas.drawLine(centerX.toFloat(),centerY.toFloat(),
                 centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),whiteLine)
-            canvas?.drawLine(centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),
+            canvas.drawLine(centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),
                 centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat() +  coord1[1].toFloat(),whiteLine)
-            canvas?.drawLine(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat()+ coord[1].toFloat(),
+            canvas.drawLine(centerX.toFloat() + coord[0].toFloat(),centerY.toFloat()+ coord[1].toFloat(),
                 centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),whiteLine)
-            canvas?.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
+            canvas.drawLine(centerX.toFloat() + coord1[0].toFloat(),centerY.toFloat()+ coord1[1].toFloat(),
                 centerX.toFloat() + coord2[0].toFloat(),centerY.toFloat() + coord2[1].toFloat(),whiteLine)
 
             if(triangleSelected[triangleCntr] )
@@ -188,15 +188,15 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
                 filler.color = Color.argb(255, 255 - triangleColors[triangleCntr].r,
                     255 - triangleColors[triangleCntr].g,
                     255 - triangleColors[triangleCntr].b)
-                canvas?.drawCircle(centerPt.x.toFloat(), centerPt.y.toFloat(),triangle.inscribedRadius().toFloat()*0.3f,filler)
+                canvas.drawCircle(centerPt.x.toFloat(), centerPt.y.toFloat(),triangle.inscribedRadius().toFloat()*0.3f,filler)
             }
 
             triangleCntr++
         }
         coord = toXYCoordinates(innerRadius, 0.0)
-        canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+        canvas.drawLine(centerX.toFloat(),centerY.toFloat(),
             centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),blackLine)
-        canvas?.drawLine(centerX.toFloat(),centerY.toFloat(),
+        canvas.drawLine(centerX.toFloat(),centerY.toFloat(),
             centerX.toFloat()+coord[0].toFloat(),centerY.toFloat()+coord[1].toFloat(),whiteLine)
 
     }
