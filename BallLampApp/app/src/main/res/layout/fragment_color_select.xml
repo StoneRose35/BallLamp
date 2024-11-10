@@ -17,7 +17,7 @@
 
         <SeekBar
             android:id="@+id/amountRed"
-            android:layout_width="312dp"
+            android:layout_width="0dp"
             android:layout_height="17dp"
             android:layout_marginStart="50dp"
             android:layout_marginTop="16dp"
@@ -31,7 +31,7 @@
 
         <SeekBar
             android:id="@+id/amountGreen"
-            android:layout_width="312dp"
+            android:layout_width="0dp"
             android:layout_height="17dp"
             android:layout_marginStart="50dp"
             android:layout_marginTop="19dp"
@@ -44,7 +44,7 @@
 
         <SeekBar
             android:id="@+id/amountBlue"
-            android:layout_width="312dp"
+            android:layout_width="0dp"
             android:layout_height="17dp"
             android:layout_marginStart="49dp"
             android:layout_marginTop="22dp"

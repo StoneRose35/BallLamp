@@ -82,7 +82,7 @@ class LampSelectorView(context: Context,attributes: AttributeSet): View(context,
         return triangleSelected.count { el->el}
     }
 
-    override fun onDraw(canvas: Canvas?) {
+    override fun onDraw(canvas: Canvas) {
 
         super.onDraw(canvas)
         blackLine.color= Color.BLACK

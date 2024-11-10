@@ -203,14 +203,14 @@ class LampAnimation(var lampNr: Byte, var steps: ArrayList<Step>, var repeating:
         TODO("Not yet implemented")
     }
 
-    override fun writeToParcel(dest: Parcel?, flags: Int) {
-        dest?.writeByte(lampNr)
-        dest?.writeTypedArray(steps.toTypedArray(),0)
+    override fun writeToParcel(dest: Parcel, flags: Int) {
+        dest.writeByte(lampNr)
+        dest.writeTypedArray(steps.toTypedArray(),0)
         if (repeating) {
-            dest?.writeByte(1)
+            dest.writeByte(1)
         } else
         {
-            dest?.writeByte(0)
+            dest.writeByte(0)
         }
     }
 }
